@@ -19,6 +19,5 @@ pnpm-debug.log*
 # macOS-specific files
 .DS_Store
 
-# Published from emerald-lang and emerald-vscode by `npm run sync`.
-src/content/docs/docs/
+# Copied from emerald-vscode by `npm run sync`.
 src/generated/

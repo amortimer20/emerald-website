@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 
-// Written by `npm run sync` (scripts/sync-docs.mjs) from emerald-vscode.
+// Written by `npm run sync` (scripts/sync-grammar.mjs) from emerald-vscode.
 function emeraldGrammar() {
 	try {
 		return JSON.parse(readFileSync(new URL('./src/generated/emerald.tmLanguage.json', import.meta.url), 'utf8'));
