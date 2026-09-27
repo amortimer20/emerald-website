@@ -8,7 +8,7 @@ language, built with [Astro](https://astro.build) and
 
 - **About** — `src/content/docs/about.md`.
 - **Learn** — `src/content/docs/learn/`.
-- **Docs** — `src/content/docs/docs/`: the Language Reference, Core API, and StdLib API.
+- **Docs** — `src/content/docs/docs/`: the Language Reference, Built-ins, and Standard Library.
 
 Every page is written for this site. emerald-lang's own `docs/` are maintainers' notes and
 are not published here.
