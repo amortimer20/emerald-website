@@ -4,15 +4,17 @@
 //
 //   <Member name="clamp" params="minimum: Float, maximum: Float" returns="Float">
 //   <Member owner="Float." name="nan" returns="Float">     (no params: a property)
+//   <Member name="times" block="index: Int => ...">        (a trailing block; no result)
 interface Props {
 	name: string;
-	returns: string;
+	returns?: string;
 	params?: string;
+	block?: string;
 	owner?: string;
 	id?: string;
 }
 
-const { name, returns, params, owner = '', id = name.replace(/[?!]/g, '') } = Astro.props;
+const { name, returns, params, block, owner = '', id = name.replace(/[?!]/g, '') } = Astro.props;
 ---
 
 <section class="member" id={id}>
@@ -20,7 +22,7 @@ const { name, returns, params, owner = '', id = name.replace(/[?!]/g, '') } = As
 		<a href={`#${id}`}>
 			<code>
 				{owner && <span class="member-owner">{owner}</span>}
-				<span class="member-name">{name}</span>{params !== undefined && <span class="member-params">({params})</span>}<span class="member-returns">: {returns}</span>
+				<span class="member-name">{name}</span>{params !== undefined && <span class="member-params">({params})</span>}{block && <span class="member-params">{` { ${block} }`}</span>}{returns && <span class="member-returns">: {returns}</span>}
 			</code>
 		</a>
 	</p>

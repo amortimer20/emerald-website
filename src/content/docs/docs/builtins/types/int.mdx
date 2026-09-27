@@ -1,0 +1,383 @@
+---
+title: Int
+description: A whole number, such as 42, 0, or -7.
+sidebar:
+  order: 2
+---
+
+import Member from '../../../../../components/Member.astro';
+import Raises from '../../../../../components/Raises.astro';
+
+<p class="reference-facts">Built-in type · Written <code>42</code>, <code>-7</code>, or <code>1_000_000</code></p>
+
+An `Int` is a whole number. Use one for counting, positions in a list, scores, years, and
+anything else that is never a fraction; use [`Float`](../float/) when it can be.
+
+Underscores can group the digits of a long number, so `1_000_000` is one million. An `Int`
+holds any whole number from `-9223372036854775808` to `9223372036854775807`, which is more
+than nine quintillion either way. A calculation that would go past those limits raises an
+error rather than giving a wrong answer.
+
+```emerald
+const lives = 3
+const population = 8_100_000_000
+const next_year = 2026 + 1       # → 2027
+
+print(lives * 2)                 # → 6
+print(17 // 5, 17 % 5)           # → 3 2
+```
+
+Dividing with `/` always gives a [`Float`](../float/), even for two `Int`s: `7 / 2` is
+`3.5`. To divide and keep a whole number, use `//`, and `%` for what is left over. Wherever
+a `Float` is expected, an `Int` is accepted and becomes one.
+
+## At a glance
+
+| Counting | |
+| --- | --- |
+| [`times { ... }`](#times) | Runs a block that many times |
+| [`up_to(target)`](#up_to) | Counts up to a number |
+| [`down_to(target)`](#down_to) | Counts down to a number |
+
+| Checking | |
+| --- | --- |
+| [`even?()`](#even), [`odd?()`](#odd) | Whether it is even or odd |
+| [`multiple_of?(divisor)`](#multiple_of) | Whether it divides evenly |
+| [`zero?()`](#zero), [`positive?()`](#positive), [`negative?()`](#negative) | Its sign |
+
+| Comparing and limiting | |
+| --- | --- |
+| [`abs()`](#abs) | The distance from zero |
+| [`clamp(minimum, maximum)`](#clamp) | Kept within a range |
+| [`between?(minimum, maximum)`](#between) | Whether it is within a range |
+
+| Showing as text | |
+| --- | --- |
+| [`to_string()`](#to_string) | The same text `print` shows, or another base |
+| [`format(...)`](#format) | With digit grouping |
+
+| Number theory | |
+| --- | --- |
+| [`digits()`](#digits) | Its decimal digits |
+| [`gcd(other)`](#gcd), [`lcm(other)`](#lcm) | Greatest common divisor, least common multiple |
+| [`factorial()`](#factorial) | The product of every whole number up to it |
+
+| Converting | |
+| --- | --- |
+| [`to_float()`](#to_float) | The same number as a `Float` |
+
+## Operators
+
+| Operator | Meaning | Example |
+| --- | --- | --- |
+| `+` `-` `*` | Add, subtract, multiply | `10 - 3 * 2` → `4` |
+| `/` | Divide, giving a `Float` | `7 / 2` → `3.5` |
+| `//` | Divide, then round down | `7 // 2` → `3` |
+| `%` | The remainder after `//` | `7 % 3` → `1` |
+| `**` | Raise to a power | `2 ** 10` → `1024` |
+| `==` `!=` `<` `<=` `>` `>=` | Compare | `3 < 5` → `true` |
+
+`//` always rounds down, toward negative numbers, so `-7 // 2` is `-4`, and `%` gives the
+matching remainder: `-7 % 3` is `2`. A negative power, such as `2 ** -1`, raises an error,
+because its answer is a fraction; write `2.0 ** -1` to get `0.5`. Dividing by zero raises an
+error.
+
+## Counting
+
+<Member name="times" block="index: Int => ...">
+
+Runs the block this many times, passing it `0`, then `1`, and so on, up to one less than
+the number.
+
+```emerald
+3.times { index =>
+    print("Turn #{index}")
+}
+# prints Turn 0, Turn 1, Turn 2
+```
+
+<Raises>when the number is negative.</Raises>
+
+</Member>
+
+<Member name="up_to" params="target: Int" returns="Range">
+
+A [`Range`](../range/) from this number up to `target`, including both. It is the same as
+writing `number..target`.
+
+```emerald
+1.up_to(4)   # → 1..4
+
+for floor in 1.up_to(3) {
+    print("Floor #{floor}")
+}
+# prints Floor 1, Floor 2, Floor 3
+```
+
+When `target` is smaller, the range is empty. If both numbers are written out, Emerald
+points this out before the program runs and suggests [`down_to`](#down_to).
+
+</Member>
+
+<Member name="up_to" id="up_to-block" params="target: Int" block="value: Int => ...">
+
+Counts up to `target` right away, running the block with each number.
+
+```emerald
+2.up_to(4) { value =>
+    print(value)
+}
+# prints 2, 3, 4
+```
+
+</Member>
+
+<Member name="down_to" params="target: Int" returns="Range">
+
+A [`Range`](../range/) from this number down to `target`, including both.
+
+```emerald
+for count in 3.down_to(1) {
+    print(count)
+}
+print("Liftoff!")
+# prints 3, 2, 1, Liftoff!
+```
+
+When `target` is larger, the range is empty.
+
+</Member>
+
+<Member name="down_to" id="down_to-block" params="target: Int" block="value: Int => ...">
+
+Counts down to `target` right away, running the block with each number.
+
+```emerald
+3.down_to(1) { value =>
+    print(value)
+}
+# prints 3, 2, 1
+```
+
+</Member>
+
+## Checking
+
+<Member name="even?" params="" returns="Bool">
+
+Whether the number is even.
+
+```emerald
+4.even?()   # → true
+7.even?()   # → false
+```
+
+</Member>
+
+<Member name="odd?" params="" returns="Bool">
+
+Whether the number is odd.
+
+```emerald
+7.odd?()   # → true
+```
+
+</Member>
+
+<Member name="multiple_of?" params="divisor: Int" returns="Bool">
+
+Whether the number divides evenly by `divisor`, leaving nothing over.
+
+```emerald
+12.multiple_of?(4)   # → true
+12.multiple_of?(5)   # → false
+```
+
+<Raises>when `divisor` is zero.</Raises>
+
+</Member>
+
+<Member name="zero?" params="" returns="Bool">
+
+Whether the number is zero.
+
+```emerald
+0.zero?()   # → true
+```
+
+</Member>
+
+<Member name="positive?" params="" returns="Bool">
+
+Whether the number is greater than zero.
+
+```emerald
+3.positive?()   # → true
+0.positive?()   # → false
+```
+
+</Member>
+
+<Member name="negative?" params="" returns="Bool">
+
+Whether the number is less than zero.
+
+```emerald
+(-3).negative?()   # → true
+```
+
+</Member>
+
+## Comparing and limiting
+
+<Member name="abs" params="" returns="Int">
+
+The distance from zero: the number without its sign.
+
+```emerald
+(-5).abs()   # → 5
+```
+
+Write the parentheses around a negative number: `-5.abs()` means `-(5.abs())`, which is
+`-5`.
+
+<Raises>for the smallest `Int`, `-9223372036854775808`, whose distance from zero is one too
+large to be an `Int`.</Raises>
+
+</Member>
+
+<Member name="clamp" params="minimum: Int, maximum: Int" returns="Int">
+
+The number, kept within `minimum` to `maximum`. A number below the range becomes `minimum`,
+and a number above it becomes `maximum`.
+
+```emerald
+15.clamp(0, 10)     # → 10
+(-3).clamp(0, 10)   # → 0
+7.clamp(0, 10)      # → 7
+```
+
+<Raises>when `minimum` is greater than `maximum`.</Raises>
+
+</Member>
+
+<Member name="between?" params="minimum: Int, maximum: Int" returns="Bool">
+
+Whether the number is from `minimum` to `maximum`, including both.
+
+```emerald
+7.between?(1, 10)    # → true
+10.between?(1, 10)   # → true
+11.between?(1, 10)   # → false
+```
+
+<Raises>when `minimum` is greater than `maximum`.</Raises>
+
+</Member>
+
+## Showing as text
+
+<Member name="to_string" params="base: Int = 10" returns="String">
+
+The number as text, exactly as `print` shows it. With a `base` from 2 to 36, it is written
+in that base instead, using the digits `0` to `9` and then the letters `a` to `z`.
+
+```emerald
+42.to_string()                # → "42"
+255.to_string(base: 16)       # → "ff"
+5.to_string(base: 2)          # → "101"
+```
+
+<Raises>when `base` is not from 2 to 36.</Raises>
+
+</Member>
+
+<Member name="format" params="group_digits: Bool = false" returns="String">
+
+The number as text. With `group_digits: true`, a comma separates every three digits.
+
+```emerald
+1234567.format(group_digits: true)   # → "1,234,567"
+```
+
+</Member>
+
+## Number theory
+
+<Member name="digits" params="" returns="List[Int]">
+
+The number's decimal digits, from left to right. A negative number gives the same digits as
+its positive twin.
+
+```emerald
+2048.digits()   # → [2, 0, 4, 8]
+0.digits()      # → [0]
+```
+
+</Member>
+
+<Member name="gcd" params="other: Int" returns="Int">
+
+The greatest common divisor: the largest number that divides both this number and `other`
+evenly.
+
+```emerald
+12.gcd(18)   # → 6
+```
+
+<Raises>when the answer is too large to be an `Int`, which only very large numbers reach.</Raises>
+
+</Member>
+
+<Member name="lcm" params="other: Int" returns="Int">
+
+The least common multiple: the smallest positive number that both this number and `other`
+divide evenly. It is `0` when either number is `0`.
+
+```emerald
+4.lcm(6)   # → 12
+```
+
+<Raises>when the answer is too large to be an `Int`.</Raises>
+
+</Member>
+
+<Member name="factorial" params="" returns="Int">
+
+The product of every whole number from 1 up to this one. The factorial of `0` is `1`.
+
+```emerald
+5.factorial()   # → 120
+0.factorial()   # → 1
+```
+
+<Raises>when the number is negative, or 21 or more, whose factorial is too large to be an
+`Int`.</Raises>
+
+</Member>
+
+## Converting
+
+<Member name="to_float" params="" returns="Float">
+
+The same number as a [`Float`](../float/). You rarely need it: an `Int` becomes a `Float` on
+its own wherever a `Float` is expected.
+
+```emerald
+3.to_float()   # → 3.0
+```
+
+</Member>
+
+## Making an Int
+
+An `Int` can also come from text, or from a `Float` by rounding it:
+
+```emerald
+"42".to_int()             # → 42
+"4.5".to_int_maybe()      # → nothing
+"abc".to_int_or(0)        # → 0
+2.7.round()               # → 3
+```
+
+See [`String`](../string/) and [`Float`](../float/) for these methods.
