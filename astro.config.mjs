@@ -19,8 +19,10 @@ export default defineConfig({
 			logo: { src: './src/assets/emerald.svg' },
 			description: 'A programming language for learning to program.',
 			social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/amortimer20/emerald-lang' }],
+			customCss: ['./src/styles/reference.css'],
 			expressiveCode: {
 				shiki: { langs: [emeraldGrammar()] },
+				styleOverrides: { borderRadius: '0.3rem', frames: { frameBoxShadowCssValue: 'none' } },
 			},
 			sidebar: [
 				{ label: 'About', slug: 'about' },

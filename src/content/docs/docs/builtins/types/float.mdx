@@ -1,0 +1,372 @@
+---
+title: Float
+description: A number that can have a fractional part, such as 3.14 or -0.5.
+sidebar:
+  order: 3
+---
+
+import Member from '../../../../../components/Member.astro';
+import Raises from '../../../../../components/Raises.astro';
+
+<p class="reference-facts">Built-in type · Written <code>3.14</code>, <code>-0.5</code>, or <code>6.02e23</code></p>
+
+A `Float` is a number that can have a fractional part. Use one for measurements, prices,
+averages, and anything else that is not always a whole number; use [`Int`](../int/) for
+counting.
+
+A number with a decimal point or an exponent is a `Float`. Dividing with `/` always gives
+one, even when both numbers are whole. And wherever a `Float` is expected, an `Int` is
+accepted and becomes one.
+
+```emerald
+const price = 19.99
+const average = 7 / 2          # → 3.5
+const distance: Float = 42     # → 42.0
+
+print(price.round())           # → 20
+print(average.format(decimal_places: 2))   # → 3.50
+```
+
+A `Float` holds about 15 significant digits, and like floating-point numbers in every
+language, it stores most fractions approximately: `0.1 + 0.2` is `0.30000000000000004`.
+Round a result when you show it, rather than comparing two calculated values for exact
+equality.
+
+A whole `Float` always keeps its `.0` when printed (`2.0`, not `2`), so you can tell it
+from an `Int`. Very large and very small values print in scientific notation, such as
+`1e+16` and `1e-7`.
+
+## At a glance
+
+| Rounding | |
+| --- | --- |
+| [`round()`](#round) | To the nearest whole number |
+| [`floor()`](#floor) | Down to a whole number |
+| [`ceil()`](#ceil) | Up to a whole number |
+| [`truncate()`](#truncate) | Toward zero, dropping the fraction |
+| [`round_to(places)`](#round_to) | To a number of decimal places, staying a `Float` |
+
+| Showing as text | |
+| --- | --- |
+| [`format(...)`](#format) | Fixed decimal places, with optional digit grouping |
+| [`to_string()`](#to_string) | The same text `print` shows |
+
+| Comparing and limiting | |
+| --- | --- |
+| [`abs()`](#abs) | The distance from zero |
+| [`clamp(minimum, maximum)`](#clamp) | Kept within a range |
+| [`between?(minimum, maximum)`](#between) | Whether it is within a range |
+| [`zero?()`](#zero), [`positive?()`](#positive), [`negative?()`](#negative) | Its sign |
+
+| Math | |
+| --- | --- |
+| [`square_root()`](#square_root) | The square root |
+| [`to_radians()`](#to_radians), [`to_degrees()`](#to_degrees) | Converting an angle |
+
+| Special values | |
+| --- | --- |
+| [`Float.infinity`](#infinity), [`Float.nan`](#nan) | Infinity and "not a number" |
+| [`finite?()`](#finite), [`infinite?()`](#infinite), [`nan?()`](#nan-1) | Checking for them |
+| [`to_int()`](#to_int) | Converting to an `Int` |
+
+## Operators
+
+| Operator | Meaning | Example |
+| --- | --- | --- |
+| `+` `-` `*` | Add, subtract, multiply | `1.5 * 2` → `3.0` |
+| `/` | Divide | `7 / 2` → `3.5` |
+| `//` | Divide, then round down | `7.5 // 2` → `3.0` |
+| `%` | The remainder after `//` | `7.5 % 2` → `1.5` |
+| `**` | Raise to a power | `2 ** 0.5` → `1.4142135623730951` |
+| `==` `!=` `<` `<=` `>` `>=` | Compare | `2.5 < 3` → `true` |
+
+When either side is a `Float`, the result is a `Float`. Dividing by zero raises an error
+rather than giving infinity.
+
+## Rounding
+
+<Member name="round" params="" returns="Int">
+
+The nearest whole number. A value exactly halfway rounds away from zero.
+
+```emerald
+2.4.round()      # → 2
+2.5.round()      # → 3
+(-2.5).round()   # → -3
+```
+
+<Raises>when the value is infinity or not a number, or too large for an `Int`.</Raises>
+
+</Member>
+
+<Member name="floor" params="" returns="Int">
+
+The nearest whole number at or below the value.
+
+```emerald
+2.7.floor()      # → 2
+(-2.5).floor()   # → -3
+```
+
+<Raises>when the value is infinity or not a number, or too large for an `Int`.</Raises>
+
+</Member>
+
+<Member name="ceil" params="" returns="Int">
+
+The nearest whole number at or above the value.
+
+```emerald
+2.1.ceil()       # → 3
+(-2.5).ceil()    # → -2
+```
+
+<Raises>when the value is infinity or not a number, or too large for an `Int`.</Raises>
+
+</Member>
+
+<Member name="truncate" params="" returns="Int">
+
+The whole-number part, with the fraction dropped. This rounds toward zero, so it rounds
+positive numbers down and negative numbers up.
+
+```emerald
+2.7.truncate()      # → 2
+(-2.7).truncate()   # → -2
+```
+
+<Raises>when the value is infinity or not a number, or too large for an `Int`.</Raises>
+
+</Member>
+
+<Member name="round_to" params="places: Int" returns="Float">
+
+The value rounded to `places` decimal places. The result is still a number, not text; to
+show a fixed number of places, use [`format`](#format). A negative `places` rounds to tens,
+hundreds, and so on.
+
+```emerald
+3.14159.round_to(2)    # → 3.14
+2.675.round_to(2)      # → 2.68
+1234.5.round_to(-2)    # → 1200.0
+```
+
+</Member>
+
+## Showing as text
+
+<Member name="format" params="decimal_places: Int? = nothing, group_digits: Bool = false" returns="String">
+
+The value as text. With `decimal_places`, it has exactly that many digits after the decimal
+point, never scientific notation. With `group_digits: true`, a comma separates every three
+digits of the whole-number part.
+
+```emerald
+12.5.format(decimal_places: 2)     # → "12.50"
+12.0.format(decimal_places: 0)     # → "12"
+1234567.891.format(decimal_places: 2, group_digits: true)   # → "1,234,567.89"
+```
+
+<Raises>when `decimal_places` is not from 0 to 100.</Raises>
+
+</Member>
+
+<Member name="to_string" params="" returns="String">
+
+The value as text, exactly as `print` shows it.
+
+```emerald
+2.0.to_string()    # → "2.0"
+1e16.to_string()   # → "1e+16"
+```
+
+</Member>
+
+## Comparing and limiting
+
+<Member name="abs" params="" returns="Float">
+
+The distance from zero: the value without its sign.
+
+```emerald
+(-2.5).abs()   # → 2.5
+```
+
+Write the parentheses around a negative number: `-2.5.abs()` means `-(2.5.abs())`,
+which is `-2.5`.
+
+</Member>
+
+<Member name="clamp" params="minimum: Float, maximum: Float" returns="Float">
+
+The value, kept within `minimum` to `maximum`. A value below the range becomes `minimum`,
+and a value above it becomes `maximum`.
+
+```emerald
+12.7.clamp(0, 10)     # → 10.0
+(-3.0).clamp(0, 10)   # → 0.0
+4.2.clamp(0, 10)      # → 4.2
+```
+
+<Raises>when `minimum` is greater than `maximum`.</Raises>
+
+</Member>
+
+<Member name="between?" params="minimum: Float, maximum: Float" returns="Bool">
+
+Whether the value is from `minimum` to `maximum`, including both.
+
+```emerald
+3.2.between?(0, 5)   # → true
+7.5.between?(0, 5)   # → false
+```
+
+<Raises>when `minimum` is greater than `maximum`.</Raises>
+
+</Member>
+
+<Member name="zero?" params="" returns="Bool">
+
+Whether the value is zero.
+
+```emerald
+0.0.zero?()   # → true
+```
+
+</Member>
+
+<Member name="positive?" params="" returns="Bool">
+
+Whether the value is greater than zero.
+
+```emerald
+0.5.positive?()   # → true
+0.0.positive?()   # → false
+```
+
+</Member>
+
+<Member name="negative?" params="" returns="Bool">
+
+Whether the value is less than zero.
+
+```emerald
+(-0.5).negative?()   # → true
+```
+
+</Member>
+
+## Math
+
+<Member name="square_root" params="" returns="Float">
+
+The square root.
+
+```emerald
+16.0.square_root()   # → 4.0
+2.0.square_root()    # → 1.4142135623730951
+```
+
+</Member>
+
+<Member name="to_radians" params="" returns="Float">
+
+An angle in degrees, converted to radians. [`Math`](../../../library/program/math/)'s
+trigonometry functions take radians.
+
+```emerald
+180.0.to_radians()   # → 3.141592653589793
+```
+
+</Member>
+
+<Member name="to_degrees" params="" returns="Float">
+
+An angle in radians, converted to degrees.
+
+```emerald
+Math.pi.to_degrees()   # → 180.0
+```
+
+</Member>
+
+## Special values
+
+<Member owner="Float." name="infinity" returns="Float">
+
+A value larger than every other `Float`. Write `-Float.infinity` for negative infinity.
+
+```emerald
+Float.infinity > 1e300   # → true
+```
+
+</Member>
+
+<Member owner="Float." name="nan" returns="Float">
+
+"Not a number", the result of a calculation with no meaningful answer. It is not equal to
+anything, not even itself, so check for it with [`nan?()`](#nan-1) rather than `==`.
+
+```emerald
+Float.nan == Float.nan   # → false
+Float.nan.nan?()         # → true
+```
+
+</Member>
+
+<Member name="finite?" params="" returns="Bool">
+
+Whether the value is an ordinary number: neither infinity nor not a number.
+
+```emerald
+1.5.finite?()              # → true
+Float.infinity.finite?()   # → false
+```
+
+</Member>
+
+<Member name="infinite?" params="" returns="Bool">
+
+Whether the value is infinity or negative infinity.
+
+```emerald
+Float.infinity.infinite?()   # → true
+```
+
+</Member>
+
+<Member name="nan?" id="nan-1" params="" returns="Bool">
+
+Whether the value is not a number.
+
+```emerald
+Float.nan.nan?()   # → true
+1.5.nan?()         # → false
+```
+
+</Member>
+
+<Member name="to_int" params="" returns="Int">
+
+The value as an `Int`, with the fraction dropped. It gives the same result as
+[`truncate()`](#truncate); use whichever name says what you mean.
+
+```emerald
+2.7.to_int()   # → 2
+```
+
+<Raises>when the value is infinity or not a number, or too large for an `Int`.</Raises>
+
+</Member>
+
+## Making a Float
+
+A `Float` can also come from text or from an `Int`:
+
+```emerald
+"3.75".to_float()         # → 3.75
+"abc".to_float_maybe()    # → nothing
+3.to_float()              # → 3.0
+```
+
+See [`String`](../string/) and [`Int`](../int/) for these methods.

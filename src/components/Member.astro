@@ -1,0 +1,30 @@
+---
+// One entry in an API reference page: a signature line that links to itself,
+// then the entry's description and examples.
+//
+//   <Member name="clamp" params="minimum: Float, maximum: Float" returns="Float">
+//   <Member owner="Float." name="nan" returns="Float">     (no params: a property)
+interface Props {
+	name: string;
+	returns: string;
+	params?: string;
+	owner?: string;
+	id?: string;
+}
+
+const { name, returns, params, owner = '', id = name.replace(/[?!]/g, '') } = Astro.props;
+---
+
+<section class="member" id={id}>
+	<p class="member-signature">
+		<a href={`#${id}`}>
+			<code>
+				{owner && <span class="member-owner">{owner}</span>}
+				<span class="member-name">{name}</span>{params !== undefined && <span class="member-params">({params})</span>}<span class="member-returns">: {returns}</span>
+			</code>
+		</a>
+	</p>
+	<div class="member-body">
+		<slot />
+	</div>
+</section>

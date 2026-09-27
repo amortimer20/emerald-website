@@ -1,0 +1,79 @@
+/* API reference pages: members read as a calm, even list. A signature is a
+   line of code, not a heading, so it is the same size as the text around it. */
+
+.member {
+	margin-top: 0;
+	padding-block: 1.25rem;
+	border-top: 1px solid var(--sl-color-hairline);
+	scroll-margin-top: calc(var(--sl-nav-height) + 1rem);
+}
+
+.sl-markdown-content h2 + .member,
+.sl-markdown-content h2 + * + .member {
+	border-top: none;
+}
+
+.member-signature {
+	margin: 0;
+	font-size: var(--sl-text-base);
+}
+
+.member-signature a {
+	text-decoration: none;
+	color: inherit;
+}
+
+.member-signature code {
+	display: inline-block;
+	padding: 0.2rem 0.55rem;
+	border-radius: 0.3rem;
+	background: var(--sl-color-gray-6);
+	font-size: inherit;
+	line-height: 1.6;
+}
+
+.member-signature a:hover code,
+.member:target .member-signature code {
+	background: var(--sl-color-accent-low);
+}
+
+.member-owner,
+.member-params,
+.member-returns {
+	color: var(--sl-color-gray-2);
+}
+
+.member-name {
+	color: var(--sl-color-white);
+	font-weight: 600;
+}
+
+.member-body {
+	margin-top: 0.6rem;
+}
+
+.member-body > :first-child {
+	margin-top: 0;
+}
+
+.member-raises {
+	font-size: var(--sl-text-sm);
+	color: var(--sl-color-gray-2);
+}
+
+.member-raises-label {
+	font-weight: 600;
+	color: var(--sl-color-gray-1);
+	margin-inline-end: 0.35rem;
+}
+
+/* "At a glance" tables: signatures on the left, one line each on the right. */
+.sl-markdown-content table code {
+	white-space: nowrap;
+}
+
+/* The line of facts under a reference page's title. */
+.reference-facts {
+	font-size: var(--sl-text-sm);
+	color: var(--sl-color-gray-2);
+}
