@@ -20,10 +20,10 @@ accepted and becomes one.
 
 ```emerald
 const price = 19.99
-const average = 7 / 2          # → 3.5
-const distance: Float = 42     # → 42.0
+const average = 7 / 2                      # → 3.5
+const distance: Float = 42                 # → 42.0
 
-print(price.round())           # → 20
+print(price.round())                       # → 20
 print(average.format(decimal_places: 2))   # → 3.50
 ```
 
@@ -90,9 +90,9 @@ rather than giving infinity.
 The nearest whole number. A value exactly halfway rounds away from zero.
 
 ```emerald
-2.4.round()      # → 2
-2.5.round()      # → 3
-(-2.5).round()   # → -3
+2.4.round()    # → 2
+2.5.round()    # → 3
+-2.5.round()   # → -3
 ```
 
 <Raises>when the value is infinity or not a number, or too large for an `Int`.</Raises>
@@ -104,8 +104,8 @@ The nearest whole number. A value exactly halfway rounds away from zero.
 The nearest whole number at or below the value.
 
 ```emerald
-2.7.floor()      # → 2
-(-2.5).floor()   # → -3
+2.7.floor()    # → 2
+-2.5.floor()   # → -3
 ```
 
 <Raises>when the value is infinity or not a number, or too large for an `Int`.</Raises>
@@ -117,8 +117,8 @@ The nearest whole number at or below the value.
 The nearest whole number at or above the value.
 
 ```emerald
-2.1.ceil()       # → 3
-(-2.5).ceil()    # → -2
+2.1.ceil()    # → 3
+-2.5.ceil()   # → -2
 ```
 
 <Raises>when the value is infinity or not a number, or too large for an `Int`.</Raises>
@@ -131,8 +131,8 @@ The whole-number part, with the fraction dropped. This rounds toward zero, so it
 positive numbers down and negative numbers up.
 
 ```emerald
-2.7.truncate()      # → 2
-(-2.7).truncate()   # → -2
+2.7.truncate()    # → 2
+-2.7.truncate()   # → -2
 ```
 
 <Raises>when the value is infinity or not a number, or too large for an `Int`.</Raises>
@@ -146,9 +146,9 @@ show a fixed number of places, use [`format`](#format). A negative `places` roun
 hundreds, and so on.
 
 ```emerald
-3.14159.round_to(2)    # → 3.14
-2.675.round_to(2)      # → 2.68
-1234.5.round_to(-2)    # → 1200.0
+3.14159.round_to(2)   # → 3.14
+2.675.round_to(2)     # → 2.68
+1234.5.round_to(-2)   # → 1200.0
 ```
 
 </Member>
@@ -162,8 +162,8 @@ point, never scientific notation. With `group_digits: true`, a comma separates e
 digits of the whole-number part.
 
 ```emerald
-12.5.format(decimal_places: 2)     # → "12.50"
-12.0.format(decimal_places: 0)     # → "12"
+12.5.format(decimal_places: 2)                              # → "12.50"
+12.0.format(decimal_places: 0)                              # → "12"
 1234567.891.format(decimal_places: 2, group_digits: true)   # → "1,234,567.89"
 ```
 
@@ -189,11 +189,8 @@ The value as text, exactly as `print` shows it.
 The distance from zero: the value without its sign.
 
 ```emerald
-(-2.5).abs()   # → 2.5
+-2.5.abs()   # → 2.5
 ```
-
-Write the parentheses around a negative number: `-2.5.abs()` means `-(2.5.abs())`,
-which is `-2.5`.
 
 </Member>
 
@@ -203,9 +200,9 @@ The value, kept within `minimum` to `maximum`. A value below the range becomes `
 and a value above it becomes `maximum`.
 
 ```emerald
-12.7.clamp(0, 10)     # → 10.0
-(-3.0).clamp(0, 10)   # → 0.0
-4.2.clamp(0, 10)      # → 4.2
+12.7.clamp(0, 10)   # → 10.0
+-3.0.clamp(0, 10)   # → 0.0
+4.2.clamp(0, 10)    # → 4.2
 ```
 
 <Raises>when `minimum` is greater than `maximum`.</Raises>
@@ -251,7 +248,7 @@ Whether the value is greater than zero.
 Whether the value is less than zero.
 
 ```emerald
-(-0.5).negative?()   # → true
+-0.5.negative?()   # → true
 ```
 
 </Member>
@@ -364,9 +361,9 @@ The value as an `Int`, with the fraction dropped. It gives the same result as
 A `Float` can also come from text or from an `Int`:
 
 ```emerald
-"3.75".to_float()         # → 3.75
-"abc".to_float_maybe()    # → nothing
-3.to_float()              # → 3.0
+"3.75".to_float()        # → 3.75
+"abc".to_float_maybe()   # → nothing
+3.to_float()             # → 3.0
 ```
 
 See [`String`](../string/) and [`Int`](../int/) for these methods.

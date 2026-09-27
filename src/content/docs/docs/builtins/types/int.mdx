@@ -21,10 +21,10 @@ error rather than giving a wrong answer.
 ```emerald
 const lives = 3
 const population = 8_100_000_000
-const next_year = 2026 + 1       # → 2027
+const next_year = 2026 + 1   # → 2027
 
-print(lives * 2)                 # → 6
-print(17 // 5, 17 % 5)           # → 3 2
+print(lives * 2)             # → 6
+print(17 // 5, 17 % 5)       # → 3 2
 ```
 
 Dividing with `/` always gives a [`Float`](../float/), even for two `Int`s: `7 / 2` is
@@ -223,7 +223,7 @@ Whether the number is greater than zero.
 Whether the number is less than zero.
 
 ```emerald
-(-3).negative?()   # → true
+-3.negative?()   # → true
 ```
 
 </Member>
@@ -235,11 +235,8 @@ Whether the number is less than zero.
 The distance from zero: the number without its sign.
 
 ```emerald
-(-5).abs()   # → 5
+-5.abs()   # → 5
 ```
-
-Write the parentheses around a negative number: `-5.abs()` means `-(5.abs())`, which is
-`-5`.
 
 <Raises>for the smallest `Int`, `-9223372036854775808`, whose distance from zero is one too
 large to be an `Int`.</Raises>
@@ -252,9 +249,9 @@ The number, kept within `minimum` to `maximum`. A number below the range becomes
 and a number above it becomes `maximum`.
 
 ```emerald
-15.clamp(0, 10)     # → 10
-(-3).clamp(0, 10)   # → 0
-7.clamp(0, 10)      # → 7
+15.clamp(0, 10)   # → 10
+-3.clamp(0, 10)   # → 0
+7.clamp(0, 10)    # → 7
 ```
 
 <Raises>when `minimum` is greater than `maximum`.</Raises>
@@ -283,9 +280,9 @@ The number as text, exactly as `print` shows it. With a `base` from 2 to 36, it 
 in that base instead, using the digits `0` to `9` and then the letters `a` to `z`.
 
 ```emerald
-42.to_string()                # → "42"
-255.to_string(base: 16)       # → "ff"
-5.to_string(base: 2)          # → "101"
+42.to_string()            # → "42"
+255.to_string(base: 16)   # → "ff"
+5.to_string(base: 2)      # → "101"
 ```
 
 <Raises>when `base` is not from 2 to 36.</Raises>
@@ -374,10 +371,10 @@ its own wherever a `Float` is expected.
 An `Int` can also come from text, or from a `Float` by rounding it:
 
 ```emerald
-"42".to_int()             # → 42
-"4.5".to_int_maybe()      # → nothing
-"abc".to_int_or(0)        # → 0
-2.7.round()               # → 3
+"42".to_int()          # → 42
+"4.5".to_int_maybe()   # → nothing
+"abc".to_int_or(0)     # → 0
+2.7.round()            # → 3
 ```
 
 See [`String`](../string/) and [`Float`](../float/) for these methods.
