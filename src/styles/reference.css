@@ -8,8 +8,9 @@
 	scroll-margin-top: calc(var(--sl-nav-height) + 1rem);
 }
 
-.sl-markdown-content h2 + .member,
-.sl-markdown-content h2 + * + .member {
+/* Starlight wraps each heading in a .sl-heading-wrapper for its anchor link. */
+.sl-markdown-content .level-h2 + .member,
+.sl-markdown-content .level-h2 + p + .member {
 	border-top: none;
 }
 

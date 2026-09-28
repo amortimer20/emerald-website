@@ -2,6 +2,7 @@
 import { readFileSync } from 'node:fs';
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
+import { FONTS } from './src/fonts.mjs';
 
 // Written by `npm run sync` (scripts/sync-grammar.mjs) from emerald-vscode.
 function emeraldGrammar() {
@@ -16,10 +17,15 @@ export default defineConfig({
 	integrations: [
 		starlight({
 			title: 'Emerald',
-			logo: { src: './src/assets/emerald.svg' },
+			logo: { src: './src/assets/emerald-deco.svg' },
 			description: 'A programming language for learning to program.',
 			social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/amortimer20/emerald-lang' }],
-			customCss: ['./src/styles/reference.css'],
+			head: [
+				{ tag: 'link', attrs: { rel: 'preconnect', href: 'https://fonts.googleapis.com' } },
+				{ tag: 'link', attrs: { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: true } },
+				{ tag: 'link', attrs: { rel: 'stylesheet', href: FONTS } },
+			],
+			customCss: ['./src/styles/theme.css', './src/styles/reference.css'],
 			expressiveCode: {
 				shiki: { langs: [emeraldGrammar()] },
 				styleOverrides: { borderRadius: '0.3rem', frames: { frameBoxShadowCssValue: 'none' } },

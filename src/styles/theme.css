@@ -1,0 +1,154 @@
+/* The Art Deco theme: emerald green, gold, and cream, after the 1920s and
+   the retro-futurist Deco of games like BioShock. The ornament belongs to the
+   frame of the page (title, navigation, rules, code frames); the reading
+   column stays calm, so a reference page is as easy to read as before.
+
+   Limelight is for large display headings only, and Josefin Sans for labels
+   and navigation. Body text keeps the system font, which reads better at
+   length than either display face. */
+
+:root {
+	--deco-night: #04201a;
+	--deco-deep: #073528;
+	--deco-gold: #d9b45a;
+	--deco-gold-soft: rgba(217, 180, 90, 0.35);
+	--deco-cream: #f3e8cc;
+
+	--sl-font-display: 'Limelight', serif;
+	--sl-font-label: 'Josefin Sans', system-ui, sans-serif;
+	--sl-font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+
+	/* Dark mode, the default. In Starlight, "white" is the strongest text
+	   colour and "black" is the page background. */
+	--sl-color-white: #f3e8cc;
+	--sl-color-gray-1: #e4dbc2;
+	--sl-color-gray-2: #b9c7b8;
+	--sl-color-gray-3: #8ea596;
+	--sl-color-gray-4: #5d7a6b;
+	--sl-color-gray-5: #24473a;
+	--sl-color-gray-6: #0b3326;
+	--sl-color-black: #04201a;
+
+	--sl-color-accent-low: #3a3216;
+	--sl-color-accent: #d9b45a;
+	--sl-color-accent-high: #f0d998;
+
+	--sl-color-bg-nav: #031914;
+	--sl-color-bg-sidebar: #04201a;
+	--sl-color-hairline-light: #1d4236;
+	--sl-color-hairline: #15392d;
+	--sl-color-hairline-shade: #031511;
+
+	--deco-rule: var(--deco-gold-soft);
+}
+
+:root[data-theme='light'] {
+	--deco-gold: #a8842c;
+	--deco-gold-soft: rgba(168, 132, 44, 0.4);
+
+	--sl-color-white: #04201a;
+	--sl-color-gray-1: #0d3326;
+	--sl-color-gray-2: #2a4a3d;
+	--sl-color-gray-3: #4f6b5e;
+	--sl-color-gray-4: #7f9488;
+	--sl-color-gray-5: #d3cbad;
+	--sl-color-gray-6: #eee5ca;
+	--sl-color-gray-7: #f6efdc;
+	--sl-color-black: #fbf7ec;
+
+	/* Gold is too light to read as text on cream, so links and the current
+	   page take emerald in light mode, and gold stays in the ornament. */
+	--sl-color-accent-low: #d5ecdf;
+	--sl-color-accent: #0f6b4f;
+	--sl-color-accent-high: #09442f;
+
+	--sl-color-bg-nav: #f6efdc;
+	--sl-color-bg-sidebar: var(--sl-color-bg);
+	--sl-color-hairline-light: #e6dcbc;
+	--sl-color-hairline: #ddd2b0;
+	--sl-color-hairline-shade: #d3c8a4;
+}
+
+/* The header: a gold rule under a dark band, with the name in Limelight. */
+.header {
+	border-bottom: 1px solid var(--deco-rule);
+}
+
+.site-title {
+	font-family: var(--sl-font-display);
+	font-weight: 400;
+	letter-spacing: 0.06em;
+	color: var(--deco-gold);
+}
+
+/* The top sidebar groups are small capitals, like the signs in a Deco lobby.
+   Nested groups keep ordinary case, so a long name does not wrap. */
+.sidebar-content .top-level > li > a.large,
+.sidebar-content .top-level > li > details > summary .large {
+	font-family: var(--sl-font-label);
+	font-size: var(--sl-text-sm);
+	font-weight: 700;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	color: var(--deco-gold);
+}
+
+/* The page title is the one display heading on a page. */
+.content-panel h1#_top {
+	font-family: var(--sl-font-display);
+	font-weight: 400;
+	letter-spacing: 0.03em;
+}
+
+/* Section headings are set in Josefin Sans over a thin gold rule, so a long
+   reference page divides into parts without shouting. */
+.sl-markdown-content h2 {
+	font-family: var(--sl-font-label);
+	font-weight: 600;
+	letter-spacing: 0.02em;
+}
+
+.sl-markdown-content .sl-heading-wrapper.level-h2 {
+	padding-bottom: 0.3rem;
+	border-bottom: 1px solid var(--deco-rule);
+}
+
+.sl-markdown-content h3,
+.sl-markdown-content h4 {
+	font-family: var(--sl-font-label);
+	font-weight: 600;
+}
+
+/* The table of contents heading, "On this page", is a small label. */
+#starlight__on-this-page {
+	font-family: var(--sl-font-label);
+	font-size: var(--sl-text-xs);
+	font-weight: 700;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	color: var(--deco-gold);
+}
+
+/* Table headers match the other labels. */
+.sl-markdown-content th {
+	font-family: var(--sl-font-label);
+	font-weight: 600;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	font-size: var(--sl-text-xs);
+	color: var(--deco-gold);
+	border-bottom: 1px solid var(--deco-rule);
+}
+
+/* Code blocks: a thin gold frame, with a title bar in Josefin Sans. */
+.expressive-code .frame {
+	border: 1px solid var(--deco-rule);
+	border-radius: 0.3rem;
+}
+
+.expressive-code .frame .header .title {
+	font-family: var(--sl-font-label);
+	font-weight: 600;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+}
