@@ -1,0 +1,88 @@
+---
+title: Tuple
+description: A few values of different types grouped together, such as ("Ada", 36).
+sidebar:
+  order: 8
+---
+
+<p class="reference-facts">Built-in type · Written <code>("Ada", 36)</code></p>
+
+A tuple groups a few values, which can be of different types, into one: a name and an age, a
+point's `x` and `y`, or the two answers a function gives back. Its type lists the type of
+each position, as `(String, Int)`. A tuple always has at least two values, and never
+changes once made.
+
+```emerald
+const person = ("Ada", 36)
+print(person.0)          # prints Ada
+print(person.1)          # prints 36
+```
+
+Use a tuple for a small, short-lived group, such as returning two values from a function.
+When the values deserve names and are passed around a program, a
+[struct](../../../language/structs/) is clearer: `person.name` says more than `person.0`.
+
+## Reading positions
+
+Positions count from 0 and are written after a dot: `person.0`, `person.1`. A tuple inside a
+tuple is reached the same way, as in `nested.0.1`.
+
+A position that does not exist is an error before the program runs, since a tuple's size is
+part of its type. For the same reason, a tuple has no `count`.
+
+## Unpacking
+
+A tuple can be unpacked into one name per position, which usually reads better than
+positions:
+
+```emerald
+const (name, age) = ("Ada", 36)
+print("#{name} is #{age}")          # prints Ada is 36
+```
+
+Unpacking works the same way in a `const` or `var`, in a `for` loop, in a block's
+parameters, and when assigning to names that already exist:
+
+```emerald
+const readings = [("Mon", 3), ("Tue", 5)]
+for (day, count) in readings {
+    print("#{day}: #{count}")
+}
+# prints Mon: 3, then Tue: 5
+
+var first = 1
+var second = 2
+(first, second) = (second, first)   # swaps them
+print(first, second)                # prints 2 1
+```
+
+Write one name for each position; `_` skips a position you do not need, as in
+`const (name, _) = person`. A position can itself be unpacked:
+`const (label, (x, y)) = ("corner", (1, 2))`.
+
+## Returning two values
+
+A function can give back two or more values as a tuple:
+
+```emerald
+func smallest_and_largest(numbers: List[Int]): (Int, Int) {
+    return (numbers.min().or(0), numbers.max().or(0))
+}
+
+const (low, high) = smallest_and_largest([3, 9, 1])
+print(low, high)                    # prints 1 9
+```
+
+## Operators
+
+| Operator | Meaning | Example |
+| --- | --- | --- |
+| `tuple.0`, `tuple.1`, … | The value at a position | `("Ada", 36).1` → `36` |
+| `==` `!=` | Compare | `("a", 1) == ("a", 1)` → `true` |
+
+Two tuples are equal when every position is equal. A tuple prints the way it is written:
+`("Ada", 36)`.
+
+A tuple has no methods. An `(Int, Int)` is accepted where a `(Float, Int)` is expected,
+each position becoming what its type says, just as an `Int` becomes a `Float` wherever one
+is expected.

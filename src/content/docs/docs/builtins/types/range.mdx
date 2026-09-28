@@ -1,0 +1,138 @@
+---
+title: Range
+description: A run of whole numbers, such as 1..10 or 0..<5.
+sidebar:
+  order: 9
+---
+
+import Member from '../../../../../components/Member.astro';
+
+<p class="reference-facts">Built-in type · Written <code>1..10</code> (including 10) or <code>0..&lt;5</code> (stopping before 5)</p>
+
+A `Range` is a run of whole numbers, counting up: `1..10` is every number from 1 to 10, and
+`0..<5` is 0 through 4. It is what a `for` loop usually counts with.
+
+```emerald
+for n in 1..3 {
+    print(n)
+}
+# prints 1, 2, 3
+```
+
+`..` includes the number at the end, and `..<` stops just before it. `..<` suits positions
+in a list, which run from 0 to one less than its count:
+
+```emerald
+const items = ["a", "b", "c"]
+for index in 0..<items.count {
+    print("#{index}: #{items[index]}")
+}
+```
+
+A range is an ordinary value: it can be kept in a variable, passed to a function, and
+counted over later. It holds only its ends, so `1..1_000_000` takes no more room than `1..3`.
+
+**A range always counts up.** When its start is past its end, it is empty, which is what
+makes `0..<items.count` safe for an empty list. A range written with both numbers backwards,
+such as `5..1`, is an error before the program runs; to count down, write `5.down_to(1)`.
+[`Int`](../int/)'s `up_to` and `down_to` make ranges in either direction.
+
+## At a glance
+
+| Size | |
+| --- | --- |
+| [`count`](#count), [`empty?()`](#empty) | How many numbers it has |
+
+| Changing how it counts | |
+| --- | --- |
+| [`step(distance)`](#step) | Every `distance`-th number |
+| [`reverse()`](#reverse) | The same numbers, the other way |
+
+| Converting | |
+| --- | --- |
+| [`to_list()`](#to_list) | Every number, as a list |
+
+## Operators
+
+| Operator | Meaning | Example |
+| --- | --- | --- |
+| `start..end` | From `start` to `end`, including it | `1..3` → 1, 2, 3 |
+| `start..<end` | From `start` to just before `end` | `0..<3` → 0, 1, 2 |
+| `==` `!=` | Compare | `1..3 == 1..3` → `true` |
+
+A range prints the way it would be written, using `..` for the last number it reaches:
+`0..<24` prints as `0..23`.
+
+A range also picks out part of a [`List`](../list/#operators) or a
+[`String`](../string/#operators): `"Emerald"[0..<3]` is `"Eme"`.
+
+## Size
+
+<Member name="count" returns="Int">
+
+How many numbers the range has.
+
+```emerald
+(1..5).count    # → 5
+(1..<5).count   # → 4
+```
+
+</Member>
+
+<Member name="empty?" params="" returns="Bool">
+
+Whether the range has no numbers at all.
+
+```emerald
+(1..3).empty?()   # → false
+```
+
+</Member>
+
+## Changing how it counts
+
+<Member name="step" params="distance: Int" returns="Range">
+
+A range that visits every `distance`-th number, in the same direction. The range decides the
+direction, and the step says only how far, so `distance` is always 1 or more.
+
+```emerald
+(1..10).step(3).to_list()               # → [1, 4, 7, 10]
+10.down_to(0).step(5).to_list()         # → [10, 5, 0]
+```
+
+A range can have only one `step`.
+
+<Raises>when `distance` is less than 1. When the number is written out, as in `step(0)`,
+this is an error before the program runs.</Raises>
+
+</Member>
+
+<Member name="reverse" params="" returns="Range">
+
+The same numbers in the opposite order.
+
+```emerald
+(1..4).reverse().to_list()   # → [4, 3, 2, 1]
+```
+
+`step` and `reverse` apply in the order they are written:
+
+```emerald
+(0..10).step(3).reverse().to_list()     # → [9, 6, 3, 0]
+(0..10).reverse().step(3).to_list()     # → [10, 7, 4, 1]
+```
+
+</Member>
+
+## Converting
+
+<Member name="to_list" params="" returns="List[Int]">
+
+Every number the range visits, in order, as a [`List`](../list/).
+
+```emerald
+(1..5).to_list()   # → [1, 2, 3, 4, 5]
+```
+
+</Member>
