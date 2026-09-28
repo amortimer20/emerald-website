@@ -62,7 +62,9 @@ such as `5..1`, is an error before the program runs; to count down, write `5.dow
 | `==` `!=` | Compare | `1..3 == 1..3` → `true` |
 
 A range prints the way it would be written, using `..` for the last number it reaches:
-`0..<24` prints as `0..23`.
+`0..<24` prints as `0..23`. An empty range prints with the bounds that made it empty, such
+as `0..<0`, so when a loop counts nothing, printing its range shows why. Every empty range
+is equal to every other.
 
 A range also picks out part of a [`List`](../list/#operators) or a
 [`String`](../string/#operators): `"Emerald"[0..<3]` is `"Eme"`.
