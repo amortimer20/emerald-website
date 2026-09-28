@@ -25,7 +25,8 @@ func check(score: Int) {
 
 try {
     check(-5)
-} catch error: InvalidScore {
+}
+catch error: InvalidScore {
     print(error.message)     # prints Score cannot be negative
 }
 ```

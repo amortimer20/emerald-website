@@ -17,7 +17,8 @@ other error marked **Raises** in these pages.
 const values = [1, 2]
 try {
     print(values[5])
-} catch error: RuntimeError {
+}
+catch error: RuntimeError {
     print(error.message)     # prints index 5 is outside this list, which has 2 elements
 }
 ```
