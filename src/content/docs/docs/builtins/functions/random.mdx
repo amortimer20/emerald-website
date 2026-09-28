@@ -1,0 +1,33 @@
+---
+title: "random"
+description: A random whole number from a range.
+sidebar:
+  order: 4
+---
+
+import Member from '../../../../../components/Member.astro';
+import Raises from '../../../../../components/Raises.astro';
+
+<p class="reference-facts">Built-in function · Available everywhere, with no import</p>
+
+`random` picks a whole number from a [`Range`](../../types/range/), with every number in it
+equally likely: a dice roll, a card position, a random guess.
+
+```emerald
+const roll = random(1..6)
+print("You rolled #{roll}")
+```
+
+<Member name="random" params="range: Range" returns="Int">
+
+One number from `range`. The range's ends decide what is possible: `random(1..6)` can give
+`6`, but `random(0..<10)` can never give `10`.
+
+<Raises>when `range` is empty.</Raises>
+
+</Member>
+
+A list picks one of its own items with [`random()`](../../types/list/#random) and shuffles
+with [`shuffle()`](../../types/list/#shuffle). For the same random numbers on every run, as a
+test or a replayable game needs, use a [`Random`](../../../library/program/random/) made with
+a seed.

@@ -1,0 +1,30 @@
+---
+title: "AssertionError"
+description: The error a failed assert raises.
+sidebar:
+  order: 3
+---
+
+import Member from '../../../../../components/Member.astro';
+
+<p class="reference-facts">Built-in class · Extends <code>Error</code></p>
+
+An `AssertionError` is what a failed [`assert`](../../functions/assert/) raises. It extends
+`Error` directly, not [`RuntimeError`](../runtimeerror/), so `catch error: RuntimeError` does
+not catch it: a failed check is a mistake in the program, not something to handle along the
+way.
+
+```emerald
+try {
+    assert 1 + 1 == 3
+} catch error: AssertionError {
+    print(error.message)     # prints assertion failed: `1 + 1 == 3`
+}
+```
+
+<Member name="message" returns="String">
+
+The message written in the `assert`, or, when there was none, the condition that failed:
+``assertion failed: `1 + 1 == 3` ``.
+
+</Member>

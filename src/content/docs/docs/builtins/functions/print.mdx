@@ -1,0 +1,41 @@
+---
+title: "print"
+description: Shows values on their own line.
+sidebar:
+  order: 1
+---
+
+import Member from '../../../../../components/Member.astro';
+
+<p class="reference-facts">Built-in function · Available everywhere, with no import</p>
+
+`print` shows values in the terminal, then starts a new line. It is usually the first thing a
+program does, and the quickest way to see what a value holds while a program runs.
+
+```emerald
+print("Hello, world!")
+print("Score:", 42)          # prints Score: 42
+print()                      # prints an empty line
+```
+
+<Member name="print" params="values..." >
+
+Shows each value, separated by a space, then ends the line. It takes any number of values
+of any type, and none at all prints an empty line.
+
+Text is shown as it is, without quotes. Every other value is shown the way it would appear
+inside `"#{...}"`: numbers as written, lists in brackets, and a struct field by field,
+unless its type adopts [`Textual`](../../traits/textual/) to choose its own form.
+
+```emerald
+print([1, 2, 3], true, 2.5)  # prints [1, 2, 3] true 2.5
+```
+
+The whole line is built before any of it appears, so if showing a value raises an error,
+nothing of that line is printed.
+
+</Member>
+
+To build a line of text around values, [interpolation](../../../language/text/) is usually
+clearer than several arguments: `print("#{name} scored #{points}")`. To show values without
+ending the line, use [`write`](../write/).

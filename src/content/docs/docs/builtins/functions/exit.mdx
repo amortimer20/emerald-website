@@ -1,0 +1,35 @@
+---
+title: "exit"
+description: Ends the program at once.
+sidebar:
+  order: 5
+---
+
+import Member from '../../../../../components/Member.astro';
+import Raises from '../../../../../components/Raises.astro';
+
+<p class="reference-facts">Built-in function · Available everywhere, with no import</p>
+
+`exit` ends the program right away. A program also ends on its own when it reaches its last
+line, so `exit` is for stopping early.
+
+```emerald
+const answer = input("Continue? ")
+if answer != "yes" {
+    print("Goodbye!")
+    exit()
+}
+print("Continuing...")
+```
+
+<Member name="exit" params="code: Int = 0">
+
+Ends the program with the status `code`, which other programs can read: `0` means it
+finished normally, and anything else, up to `255`, means something went wrong. Before the
+program ends, every `finally` block it is inside still runs.
+
+`exit` is not an error, so a `catch` cannot stop it.
+
+<Raises>when `code` is not from 0 to 255.</Raises>
+
+</Member>

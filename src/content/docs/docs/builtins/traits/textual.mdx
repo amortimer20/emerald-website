@@ -1,0 +1,43 @@
+---
+title: "Textual"
+description: Chooses how a value is shown as text.
+sidebar:
+  order: 4
+---
+
+import Member from '../../../../../components/Member.astro';
+
+<p class="reference-facts">Built-in trait · Adopted with <code>with Textual</code></p>
+
+A type that adopts `Textual` chooses how its values are shown: by `print`, inside
+`"#{...}"`, and everywhere else a value becomes text. Without it, a struct is shown field by
+field, which is the more useful form while a program is being written.
+
+```emerald
+struct Money with Textual {
+    const cents: Int
+
+    @override
+    func to_string(): String {
+        return "$#{self.cents // 100}.#{(self.cents % 100).to_string().pad_start(2, "0")}"
+    }
+}
+
+print(Money(399))            # prints $3.99
+print([Money(399), Money(50)])  # prints [$3.99, $0.50]
+```
+
+The value's own form is used wherever it appears, even inside a list, a dictionary, or
+another type's fields, and it is not put in quotes the way text inside a list is.
+
+<Member name="to_string" params="" returns="String">
+
+The value as text. `print(value)` and `value.to_string()` always give the same text.
+
+</Member>
+
+Adopting is explicit. A type with a `to_string` method that does not write `with Textual`
+keeps the field-by-field form, and Emerald warns about it.
+
+An enum can adopt `Textual` too, to show its values in its own words instead of as
+`Weekday.monday`.

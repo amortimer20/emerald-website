@@ -1,0 +1,49 @@
+---
+title: "Hashable"
+description: Lets values with their own equality be dictionary keys and set members.
+sidebar:
+  order: 2
+---
+
+import Member from '../../../../../components/Member.astro';
+
+<p class="reference-facts">Built-in trait · Adopted with <code>with Hashable</code>, which includes <code>Equatable</code></p>
+
+A dictionary or a set finds a value quickly by a number computed from it, its hash. Values
+that are equal must have the same hash, or a set could hold two "equal" values. A struct
+that chooses its own equality with [`Equatable`](../equatable/) must therefore choose a
+matching hash too, by adopting `Hashable`, before it can be a key or a set member.
+
+```emerald
+struct Name with Hashable {
+    const text: String
+
+    @override
+    func equals(other: Name): Bool {
+        return self.text.lower() == other.text.lower()
+    }
+
+    @override
+    func hash(): Int {
+        return self.text.lower().count
+    }
+}
+
+const names: Set[Name] = [Name("Ada"), Name("ADA")]
+print(names.count)   # prints 1
+```
+
+<Member name="hash" params="" returns="Int">
+
+A number for the value. Two values that are equal by `equals` must give the same number;
+two that are not equal may give the same number, but fewer such clashes make a set or a
+dictionary faster.
+
+</Member>
+
+`Hashable` includes `Equatable`, so a type that adopts `Hashable` writes both methods. A
+struct that adopts only `Equatable` cannot be a key, and Emerald says why.
+
+A struct that keeps the usual field-by-field equality needs neither trait: it can already
+be a key, as long as its fields can. An object of a class can never be a key, even with
+`Hashable`, since its fields could change while it is stored.

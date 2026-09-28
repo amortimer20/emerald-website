@@ -1,0 +1,50 @@
+---
+title: "input"
+description: Reads a line the person running the program types.
+sidebar:
+  order: 3
+---
+
+import Member from '../../../../../components/Member.astro';
+import Raises from '../../../../../components/Raises.astro';
+
+<p class="reference-facts">Built-in function · Available everywhere, with no import</p>
+
+`input` waits for the person running the program to type a line and press Enter, then gives
+back what they typed.
+
+```emerald
+const name = input("What is your name? ")
+print("Hello, #{name}!")
+```
+
+What `input` gives back is always text. To read a number, convert it:
+`input("How old are you? ").to_int()`, or `to_int_maybe()` to handle something that is not
+a number.
+
+<Member name="input" params='prompt: String = ""' returns="String">
+
+Shows `prompt`, if there is one, without starting a new line, then reads one line. The line
+comes back without its line break; pressing Enter on its own gives `""`.
+
+<Raises>when there is no more input to read, as when a program reads from a file that has
+ended. Use [`input_maybe`](#input_maybe) to handle that instead.</Raises>
+
+</Member>
+
+<Member name="input_maybe" params='prompt: String = ""' returns="String?">
+
+The same as `input`, but gives back `nothing` when there is no more input, rather than
+raising an error. Use it to read until the input runs out:
+
+```emerald
+var total = 0
+var line = input_maybe()
+while line != nothing {
+    total += line.to_int_or(0)
+    line = input_maybe()
+}
+print(total)
+```
+
+</Member>

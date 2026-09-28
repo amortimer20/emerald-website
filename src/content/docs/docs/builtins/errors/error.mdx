@@ -1,0 +1,48 @@
+---
+title: "Error"
+description: The kind of value a program raises when something goes wrong.
+sidebar:
+  order: 1
+---
+
+import Member from '../../../../../components/Member.astro';
+
+<p class="reference-facts">Built-in class · Every error extends it</p>
+
+An `Error` is a value that describes something that went wrong. `raise` stops the program's
+usual path with one, and `try` and `catch` can handle it. Every error in Emerald, built in or
+written by a program, is an `Error` or extends one.
+
+```emerald
+class InvalidScore extends Error {
+}
+
+func check(score: Int) {
+    if score < 0 {
+        raise InvalidScore("Score cannot be negative")
+    }
+}
+
+try {
+    check(-5)
+} catch error: InvalidScore {
+    print(error.message)     # prints Score cannot be negative
+}
+```
+
+A program makes its own kinds of error by extending `Error`, as `InvalidScore` does above. An
+error class with no fields of its own is built with just its message; one that adds fields
+writes a constructor that starts with `super(message)`.
+
+Only an `Error` can be raised: `raise 1` is an error before the program runs. When nothing
+catches an error, the program stops and shows the message, where it happened, and the
+functions that led there.
+
+<Member name="message" returns="String">
+
+What went wrong, in words.
+
+</Member>
+
+Emerald's own errors are [`RuntimeError`](../runtimeerror/), for a problem found while the
+program runs, and [`AssertionError`](../assertionerror/), for a failed `assert`.

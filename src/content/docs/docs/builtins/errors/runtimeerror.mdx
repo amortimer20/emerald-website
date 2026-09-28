@@ -1,0 +1,36 @@
+---
+title: "RuntimeError"
+description: The error Emerald raises for a problem found while the program runs.
+sidebar:
+  order: 2
+---
+
+import Member from '../../../../../components/Member.astro';
+
+<p class="reference-facts">Built-in class · Extends <code>Error</code></p>
+
+A `RuntimeError` is what Emerald raises when the program asks for something that cannot be
+done: a position outside a list, dividing by zero, a number too large for an `Int`, or any
+other error marked **Raises** in these pages.
+
+```emerald
+const values = [1, 2]
+try {
+    print(values[5])
+} catch error: RuntimeError {
+    print(error.message)     # prints index 5 is outside this list, which has 2 elements
+}
+```
+
+<Member name="message" returns="String">
+
+What went wrong, in words.
+
+</Member>
+
+Each part of the standard library raises its own kind of `RuntimeError`, so a program can
+handle one kind of problem without catching every other:
+[`FileError`](../../../library/files/fileerror/),
+[`DateTimeError`](../../../library/dates-and-times/datetimeerror/),
+[`RegexError`](../../../library/regex/regexerror/), and
+[`JsonError`](../../../library/json/jsonerror/). Catching `RuntimeError` catches all of them.

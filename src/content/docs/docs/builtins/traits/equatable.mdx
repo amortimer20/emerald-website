@@ -1,0 +1,46 @@
+---
+title: "Equatable"
+description: Chooses what makes two values equal.
+sidebar:
+  order: 1
+---
+
+import Member from '../../../../../components/Member.astro';
+
+<p class="reference-facts">Built-in trait · Adopted with <code>with Equatable</code></p>
+
+`==` compares two structs field by field, and two objects of a class by whether they are the
+same object. A type that adopts `Equatable` chooses its own rule instead.
+
+```emerald
+class Money with Equatable {
+    var cents: Int
+
+    constructor(cents: Int) {
+        self.cents = cents
+    }
+
+    @override
+    func equals(other: Money): Bool {
+        return self.cents == other.cents
+    }
+}
+
+print(Money(500) == Money(500))   # prints true
+```
+
+Without `Equatable`, the two `Money` objects above would not be equal, since they are two
+different objects.
+
+<Member name="equals" params="other: Self" returns="Bool">
+
+Whether this value and `other` count as equal. `==` runs it, and `!=` is always its
+opposite.
+
+</Member>
+
+Adopting is explicit. A type with an `equals` method that does not write `with Equatable`
+keeps the usual `==`, and Emerald warns about it.
+
+To use values with custom equality as dictionary keys or in a set, adopt
+[`Hashable`](../hashable/) as well.

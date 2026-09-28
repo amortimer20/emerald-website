@@ -1,0 +1,96 @@
+---
+title: Bytes
+description: Raw binary data, such as the contents of an image file.
+sidebar:
+  order: 10
+---
+
+import Member from '../../../../../components/Member.astro';
+import Raises from '../../../../../components/Raises.astro';
+
+<p class="reference-facts">Built-in type · Made with <code>Bytes.from_list([72, 105])</code>, <code>"Hi".to_bytes()</code>, or <code>File.read_binary(path)</code></p>
+
+`Bytes` holds binary data exactly as stored: the contents of an image, a sound, or any file
+that is not text. Each byte is a whole number from 0 to 255. A `String` must always be valid
+text, so data that may not be text belongs in `Bytes`. Like a `String`, `Bytes` never
+changes; its methods give back new values.
+
+```emerald
+const data = Bytes.from_list([72, 105, 0, 255])
+print(data)          # prints Bytes[4: 48 69 00 ff]
+print(data[0])       # prints 72
+```
+
+`Bytes` prints its bytes in hexadecimal, never as raw characters, so printing binary data
+can never garble the terminal.
+
+## At a glance
+
+| Making and converting | |
+| --- | --- |
+| [`Bytes.from_list(numbers)`](#from_list) | Bytes from whole numbers |
+| [`to_string()`](#to_string), [`to_string_maybe()`](#to_string_maybe) | The bytes read as text |
+
+| Reading | |
+| --- | --- |
+| [`count`](#count) | How many bytes |
+
+## Operators
+
+| Operator | Meaning | Example |
+| --- | --- | --- |
+| `bytes[index]` | One byte, as an `Int` | `data[0]` → `72` |
+| `bytes[start..<end]` | Some of the bytes | `data[1..<3]` → `Bytes[2: 69 00]` |
+| `+` | Join two | `a + b` |
+| `==` `!=` | Compare byte by byte | |
+
+To turn text into bytes, use [`String`](../string/)'s `to_bytes()`, which gives its UTF-8
+encoding. To read and write files of bytes, use `File.read_binary` and `File.write_binary`.
+
+## Making and converting
+
+<Member owner="Bytes." name="from_list" id="from_list" params="numbers: List[Int]" returns="Bytes">
+
+Bytes made from a list of whole numbers, each from 0 to 255.
+
+```emerald
+Bytes.from_list([72, 105])   # → Bytes[2: 48 69]
+```
+
+<Raises>when a number is not from 0 to 255.</Raises>
+
+</Member>
+
+<Member name="to_string" params="" returns="String">
+
+The bytes read as UTF-8 text.
+
+```emerald
+"Hi".to_bytes().to_string()   # → "Hi"
+```
+
+<Raises>when the bytes are not valid UTF-8 text.</Raises>
+
+</Member>
+
+<Member name="to_string_maybe" params="" returns="String?">
+
+The bytes read as UTF-8 text, or `nothing` when they are not valid text.
+
+```emerald
+Bytes.from_list([255]).to_string_maybe()   # → nothing
+```
+
+</Member>
+
+## Reading
+
+<Member name="count" returns="Int">
+
+How many bytes there are.
+
+```emerald
+Bytes.from_list([72, 105]).count   # → 2
+```
+
+</Member>

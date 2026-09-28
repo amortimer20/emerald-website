@@ -1,0 +1,47 @@
+---
+title: "Ordered"
+description: Gives values an order, for <, >, and sorting.
+sidebar:
+  order: 3
+---
+
+import Member from '../../../../../components/Member.astro';
+
+<p class="reference-facts">Built-in trait · Adopted with <code>with Ordered</code></p>
+
+A type that adopts `Ordered` says which of two values comes first. Its values can then be
+compared with `<`, `<=`, `>`, and `>=`, sorted, and given to `min` and `max`.
+
+```emerald
+struct Version with Ordered, Textual {
+    const major: Int
+    const minor: Int
+
+    @override
+    func compare(other: Version): Int {
+        if self.major != other.major {
+            return self.major - other.major
+        }
+        return self.minor - other.minor
+    }
+
+    @override
+    func to_string(): String {
+        return "#{self.major}.#{self.minor}"
+    }
+}
+
+print(Version(1, 10) > Version(1, 9))                      # prints true
+print([Version(2, 0), Version(1, 5)].sort())               # prints [1.5, 2.0]
+```
+
+<Member name="compare" params="other: Self" returns="Int">
+
+A negative number when this value comes before `other`, zero when they are in the same
+place, and a positive number when it comes after. Only the sign matters.
+
+</Member>
+
+Emerald's own types that have an order adopt it: [`Date`](../../../library/dates-and-times/date/),
+[`Time`](../../../library/dates-and-times/time/), and
+[`Duration`](../../../library/dates-and-times/duration/), among others.

@@ -1,0 +1,39 @@
+---
+title: "assert"
+description: Checks that something is true, and stops the program when it is not.
+sidebar:
+  order: 6
+---
+
+import Member from '../../../../../components/Member.astro';
+
+<p class="reference-facts">Built-in statement · Available everywhere, with no import</p>
+
+`assert` checks that a condition is true. When it is not, the program stops with an
+[`AssertionError`](../../errors/assertionerror/) that shows the condition that failed. Use it
+to check what must be true at a point in a program, and in [tests](../../../language/tests/).
+
+```emerald
+const scores = [90, 72, 85]
+assert scores.count == 3
+assert scores.all? { score => score >= 0 }, "scores cannot be negative"
+```
+
+<Member name="assert">
+
+Does nothing when `condition` is `true`. When it is `false`, raises an `AssertionError`
+whose message is `message` if one was written, or the condition's own text otherwise:
+`assertion failed: \`scores.count == 3\``.
+
+It is written without parentheses, as `assert condition` or `assert condition, message`.
+The condition must be a `Bool`, and the message a `String`.
+
+</Member>
+
+When an `==` or `!=` fails, the error Emerald shows also gives both sides' values, so a
+failed check says what the values actually were:
+
+```text
+assertion failed: `total == 10`
+Left was 9; right was 10.
+```
