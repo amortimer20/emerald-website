@@ -1,0 +1,222 @@
+---
+title: Math
+description: Constants, trigonometry, logarithms, and powers.
+sidebar:
+  order: 1
+---
+
+import Member from '../../../../../components/Member.astro';
+
+<p class="reference-facts">Standard library namespace · Always available, with no import</p>
+
+`Math` holds the math that isn't a method of one number: the constants π and e,
+trigonometry, logarithms, and powers. Every function takes `Float` values and gives back a
+`Float`, and an `Int` is accepted wherever a `Float` is expected.
+
+```emerald
+const radius = 3
+const area = Math.pi * radius ** 2
+print(area.round_to(2))                   # prints 28.27
+
+Math.log10(1000)                          # → 3.0
+Math.power(2, 10)                         # → 1024.0
+```
+
+**Angles are in radians,** as in most programming languages, not degrees. `Math.sin(90)` is the
+sine of 90 radians, not of a right angle. A number's own
+[`to_radians()`](../../../builtins/types/float/#to_radians) and
+[`to_degrees()`](../../../builtins/types/float/#to_degrees) convert between them:
+
+```emerald
+Math.sin(90)                              # → 0.8939966636005579
+Math.sin(90.0.to_radians())               # → 1.0
+Math.arc_tan(1).to_degrees()              # → 45.0
+```
+
+Like all `Float` arithmetic, results are close approximations: `Math.sin(30.0.to_radians())`
+is `0.49999999999999994`, not `0.5`. Round a result when you show it.
+
+An impossible question gets an answer rather than an error. The logarithm of a negative
+number, or the arcsine of `2`, is `NaN`, "not a number", and the natural logarithm of `0` is
+`-Infinity`. Check for them with [`nan?()`](../../../builtins/types/float/#nan-1) and
+[`infinite?()`](../../../builtins/types/float/#infinite).
+
+A number's own methods cover the rest: [`square_root()`](../../../builtins/types/float/#square_root),
+[`abs()`](../../../builtins/types/float/#abs), and rounding.
+
+## At a glance
+
+| Constants | |
+| --- | --- |
+| [`Math.pi`](#pi) | π, the ratio of a circle's circumference to its diameter |
+| [`Math.e`](#e) | e, the base of natural logarithms |
+
+| Trigonometry | |
+| --- | --- |
+| [`Math.sin(radians)`](#sin), [`Math.cos(radians)`](#cos), [`Math.tan(radians)`](#tan) | Sine, cosine, and tangent |
+| [`Math.arc_sin(value)`](#arc_sin), [`Math.arc_cos(value)`](#arc_cos), [`Math.arc_tan(value)`](#arc_tan) | The angle with that sine, cosine, or tangent |
+| [`Math.arc_tan2(y, x)`](#arc_tan2) | The angle of a point from the origin |
+
+| Logarithms and powers | |
+| --- | --- |
+| [`Math.natural_log(value)`](#natural_log) | The logarithm with base e |
+| [`Math.log10(value)`](#log10) | The logarithm with base 10 |
+| [`Math.log(value, base)`](#log) | The logarithm with any base |
+| [`Math.power(base, exponent)`](#power) | `base` raised to `exponent` |
+
+## Constants
+
+<Member owner="Math." name="pi" returns="Float">
+
+π, the ratio of a circle's circumference to its diameter.
+
+```emerald
+Math.pi   # → 3.141592653589793
+```
+
+</Member>
+
+<Member owner="Math." name="e" returns="Float">
+
+e, the base of natural logarithms.
+
+```emerald
+Math.e   # → 2.718281828459045
+```
+
+</Member>
+
+## Trigonometry
+
+<Member owner="Math." name="sin" params="radians: Float" returns="Float">
+
+The sine of an angle in radians.
+
+```emerald
+Math.sin(Math.pi / 2)                      # → 1.0
+Math.sin(30.0.to_radians()).round_to(2)    # → 0.5
+```
+
+</Member>
+
+<Member owner="Math." name="cos" params="radians: Float" returns="Float">
+
+The cosine of an angle in radians.
+
+```emerald
+Math.cos(0)         # → 1.0
+Math.cos(Math.pi)   # → -1.0
+```
+
+</Member>
+
+<Member owner="Math." name="tan" params="radians: Float" returns="Float">
+
+The tangent of an angle in radians.
+
+```emerald
+Math.tan(Math.pi / 4)   # → 0.9999999999999999
+```
+
+</Member>
+
+<Member owner="Math." name="arc_sin" params="value: Float" returns="Float">
+
+The angle, in radians, whose sine is `value`: the inverse of `sin`. The answer is between
+-π/2 and π/2. A `value` outside -1 to 1 has no such angle, and gives `NaN`.
+
+```emerald
+Math.arc_sin(1).to_degrees()   # → 90.0
+Math.arc_sin(2).nan?()         # → true
+```
+
+</Member>
+
+<Member owner="Math." name="arc_cos" params="value: Float" returns="Float">
+
+The angle, in radians, whose cosine is `value`: the inverse of `cos`. The answer is between
+0 and π. A `value` outside -1 to 1 gives `NaN`.
+
+```emerald
+Math.arc_cos(0.5).to_degrees().round_to(2)   # → 60.0
+```
+
+</Member>
+
+<Member owner="Math." name="arc_tan" params="value: Float" returns="Float">
+
+The angle, in radians, whose tangent is `value`: the inverse of `tan`. The answer is between
+-π/2 and π/2.
+
+```emerald
+Math.arc_tan(1).to_degrees()   # → 45.0
+```
+
+</Member>
+
+<Member owner="Math." name="arc_tan2" params="y: Float, x: Float" returns="Float">
+
+The angle, in radians, from the positive x-axis to the point (`x`, `y`). Note that `y` comes
+first. Unlike `arc_tan(y / x)`, it uses the signs of both to tell which quarter of the plane
+the point is in, so the answer runs all the way from -π to π. It is the usual way to find the
+direction from one point to another, such as which way a game character should face.
+
+```emerald
+Math.arc_tan2(1, 1).to_degrees()     # → 45.0
+Math.arc_tan2(-1, -1).to_degrees()   # → -135.0
+```
+
+</Member>
+
+## Logarithms and powers
+
+<Member owner="Math." name="natural_log" params="value: Float" returns="Float">
+
+The logarithm with base e: the power e must be raised to to give `value`. A negative `value`
+gives `NaN`, and `0` gives `-Infinity`.
+
+```emerald
+Math.natural_log(Math.e)   # → 1.0
+Math.natural_log(1)        # → 0.0
+Math.natural_log(0)        # → -Infinity
+```
+
+</Member>
+
+<Member owner="Math." name="log10" params="value: Float" returns="Float">
+
+The logarithm with base 10: for a whole power of ten, how many zeros it has. A negative
+`value` gives `NaN`, and `0` gives `-Infinity`.
+
+```emerald
+Math.log10(1000)   # → 3.0
+```
+
+</Member>
+
+<Member owner="Math." name="log" params="value: Float, base: Float" returns="Float">
+
+The logarithm with any `base`: the power `base` must be raised to to give `value`. A negative
+`value`, or a `base` that is zero, negative, or `1`, gives `NaN`.
+
+```emerald
+Math.log(8, 2)    # → 3.0
+Math.log(81, 3)   # → 4.0
+```
+
+</Member>
+
+<Member owner="Math." name="power" params="base: Float, exponent: Float" returns="Float">
+
+`base` raised to `exponent`, always as a `Float`. A negative `base` raised to a fractional
+`exponent` gives `NaN`.
+
+```emerald
+Math.power(2, 10)    # → 1024.0
+Math.power(9, 0.5)   # → 3.0
+```
+
+The `**` operator does the same and is usually easier to read: `2 ** 10` is `1024`, and stays
+an `Int` when both sides are.
+
+</Member>

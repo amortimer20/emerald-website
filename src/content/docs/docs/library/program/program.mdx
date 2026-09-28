@@ -1,0 +1,78 @@
+---
+title: Program
+description: The running program's own arguments, and a way to pause it.
+sidebar:
+  order: 2
+---
+
+import Member from '../../../../../components/Member.astro';
+import Raises from '../../../../../components/Raises.astro';
+
+<p class="reference-facts">Standard library namespace · Always available, with no import</p>
+
+`Program` is about the program that is running: the words it was started with, and a way to
+pause it for a moment.
+
+```emerald
+for count in 3.down_to(1) {
+    print(count)
+    Program.sleep(Duration(seconds: 1))
+}
+print("Go!")
+```
+
+To stop a program early, use the built-in [`exit()`](../../../builtins/functions/exit/).
+
+## At a glance
+
+| The program | |
+| --- | --- |
+| [`Program.arguments`](#arguments) | The words given after `--` when the program was started |
+| [`Program.sleep(duration)`](#sleep) | Pause for a length of time |
+
+## The program
+
+<Member owner="Program." name="arguments" returns="List[String]">
+
+The words written after `--` when the program was started, in order. Everything before the
+`--` belongs to the `emerald` command itself.
+
+```emerald
+const names = Program.arguments
+if names.count == 0 {
+    print("Hello, whoever you are!")
+}
+else {
+    for name in names {
+        print("Hello, #{name}!")
+    }
+}
+```
+
+```bash
+emerald run greet.em                 # prints Hello, whoever you are!
+emerald run greet.em -- Ada Grace    # prints Hello, Ada! and Hello, Grace!
+```
+
+Each argument is text; convert one with `to_int()` or `to_int_maybe()` when you want a number.
+`arguments` is a value, not a method, so it is written without `()`. Under `emerald check`
+and in the REPL it is always an empty list, since no program was started.
+
+</Member>
+
+<Member owner="Program." name="sleep" id="sleep" params="duration: Duration">
+
+Pauses the program for `duration`, then carries on. Nothing else in the program runs
+meanwhile, which suits a countdown, a simple animation, or a pause between messages.
+
+```emerald
+Program.sleep(Duration(milliseconds: 500))
+```
+
+The length is always a [`Duration`](../../dates-and-times/duration/), so its unit is never in
+doubt: `Program.sleep(1)` is an error, since one second and one millisecond are both plausible
+guesses. A zero `Duration` returns at once.
+
+<Raises>a `DateTimeError` for a negative `Duration`.</Raises>
+
+</Member>
