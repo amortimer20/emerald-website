@@ -21,3 +21,6 @@ pnpm-debug.log*
 
 # Copied from emerald-vscode by `npm run sync`.
 src/generated/
+
+# Firebase
+.firebase/
