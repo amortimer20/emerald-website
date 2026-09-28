@@ -1,0 +1,335 @@
+---
+title: Dict
+description: 'Keys paired with values, such as ["Ada": 36, "Grace": 45].'
+sidebar:
+  order: 6
+---
+
+import Member from '../../../../../components/Member.astro';
+
+<p class="reference-facts">Built-in type · Written <code>["Ada": 36, "Grace": 45]</code>, or <code>[]</code> for an empty one</p>
+
+A `Dict`, short for dictionary, pairs each key with a value, so a value can be looked up by
+its key: a person's age by their name, a word's meaning by the word. Its type is written with
+both, as `Dict[String, Int]`. On this page, `K` stands for the key type and `V` for the value
+type.
+
+```emerald
+var ages = ["Ada": 36, "Grace": 45]
+ages["Linus"] = 28                 # adds an entry
+ages["Ada"] = 37                   # changes one
+print(ages["Grace"])               # prints 45
+
+for (name, age) in ages {
+    print("#{name} is #{age}")
+}
+```
+
+An empty dictionary needs its type written out: `var ages: Dict[String, Int] = []`. It
+prints as `[:]`.
+
+**Looking up can miss,** so `ages["Nobody"]` gives `nothing` rather than raising an error, and
+its type is `Int?`. Give a fallback with `.or`, as in `ages["Nobody"].or(0)`, or check
+[`contains_key?`](#contains_key) first.
+
+**A dictionary keeps its entries in the order they were added,** for `for` loops and
+printing. Changing an entry's value keeps its place. Two dictionaries are equal when they
+hold the same entries, in any order.
+
+A key must be a value that never changes: a number, `Bool`, `String`, an enum value, or a
+tuple or struct made only of those. A list, another dictionary, or an object cannot be a key,
+since it could change after it was stored and never be found again.
+
+Like a list, a dictionary is a value: assigning it to another variable gives that variable
+its own copy. Only a `var` dictionary can change.
+
+Blocks given to a dictionary's methods receive each entry as a pair, written
+`{ (name, age) => ... }`.
+
+## At a glance
+
+| Size and lookup | |
+| --- | --- |
+| [`count`](#count), [`empty?()`](#empty) | How many entries it has |
+| [`contains_key?(key)`](#contains_key), [`contains_value?(value)`](#contains_value) | Whether a key or value is in it |
+| [`keys()`](#keys), [`values()`](#values), [`entries()`](#entries) | Its keys, values, or entries as a list |
+
+| Changing it | |
+| --- | --- |
+| [`remove(key)`](#remove) | Remove an entry |
+| [`merge(other)`](#merge) | Add another dictionary's entries |
+
+| Making new dictionaries | |
+| --- | --- |
+| [`map_keys { ... }`](#map_keys), [`map_values { ... }`](#map_values) | Each key or value changed by a block |
+| [`filter { ... }`](#filter), [`reject { ... }`](#reject) | The entries a block accepts, or rejects |
+
+| Visiting and asking | |
+| --- | --- |
+| [`each { ... }`](#each), [`each_with_index { ... }`](#each_with_index), [`reverse_each { ... }`](#reverse_each) | Run a block for each entry |
+| [`map { ... }`](#map), [`flat_map { ... }`](#flat_map), [`filter_map { ... }`](#filter_map) | A list made from the entries |
+| [`find { ... }`](#find), [`find_index { ... }`](#find_index) | The first entry a block accepts |
+| [`any? { ... }`](#any), [`all? { ... }`](#all), [`none? { ... }`](#none), [`one? { ... }`](#one), [`count_where { ... }`](#count_where) | Questions about the entries |
+
+## Operators
+
+| Operator | Meaning | Example |
+| --- | --- | --- |
+| `dict[key]` | The value for a key, or `nothing` | `ages["Ada"]` → `37` |
+| `dict[key] = value` | Add an entry, or change one | `ages["Linus"] = 28` |
+| `==` `!=` | Compare | `["b": 1, "a": 2] == ["a": 2, "b": 1]` → `true` |
+
+To add to a value that may not be there yet, give it a fallback:
+`scores["Ada"] = scores["Ada"].or(0) + 1`.
+
+## Size and lookup
+
+<Member name="count" returns="Int">
+
+How many entries the dictionary has.
+
+```emerald
+["Ada": 36, "Grace": 45].count   # → 2
+```
+
+</Member>
+
+<Member name="empty?" params="" returns="Bool">
+
+Whether the dictionary has no entries.
+
+```emerald
+["Ada": 36].empty?()   # → false
+```
+
+</Member>
+
+<Member name="contains_key?" params="key: K" returns="Bool">
+
+Whether the dictionary has an entry for `key`. This also tells a missing entry apart from one
+whose value is `nothing`.
+
+```emerald
+["Ada": 36].contains_key?("Ada")   # → true
+```
+
+</Member>
+
+<Member name="contains_value?" params="value: V" returns="Bool">
+
+Whether any entry has the value `value`.
+
+```emerald
+["Ada": 36, "Grace": 45].contains_value?(45)   # → true
+```
+
+</Member>
+
+<Member name="keys" params="" returns="List[K]">
+
+The keys, in order.
+
+```emerald
+["Ada": 36, "Grace": 45].keys()   # → ["Ada", "Grace"]
+```
+
+</Member>
+
+<Member name="values" params="" returns="List[V]">
+
+The values, in order.
+
+```emerald
+["Ada": 36, "Grace": 45].values()   # → [36, 45]
+```
+
+</Member>
+
+<Member name="entries" params="" returns="List[(K, V)]">
+
+Each entry as a `(key, value)` pair, in order.
+
+```emerald
+["Ada": 36, "Grace": 45].entries()   # → [("Ada", 36), ("Grace", 45)]
+```
+
+</Member>
+
+## Changing it
+
+These change the dictionary, so they need a `var` dictionary. Adding and changing entries is
+done with `dict[key] = value`.
+
+<Member name="remove" params="key: K" returns="V?">
+
+Removes the entry for `key` and gives back its value, or `nothing` when there was no such
+entry.
+
+```emerald
+var ages = ["Ada": 36, "Linus": 28]
+print(ages.remove("Linus"))   # prints 28
+print(ages)                   # prints ["Ada": 36]
+```
+
+</Member>
+
+<Member name="merge" params="other: Dict[K, V]">
+
+Adds every entry of `other`. When a key is in both, it keeps its place and takes `other`'s
+value.
+
+```emerald
+var ages = ["Ada": 36, "Grace": 45]
+ages.merge(["Grace": 46, "Alan": 41])
+print(ages)   # prints ["Ada": 36, "Grace": 46, "Alan": 41]
+```
+
+</Member>
+
+## Making new dictionaries
+
+These leave the dictionary as it was and give back a new one.
+
+<Member name="map_keys" block="key: K => K2" returns="Dict[K2, V]">
+
+Each key changed by the block, with its value unchanged.
+
+```emerald
+["a": 1, "b": 2].map_keys { key => key.upper() }   # → ["A": 1, "B": 2]
+```
+
+</Member>
+
+<Member name="map_values" block="value: V => V2" returns="Dict[K, V2]">
+
+Each value changed by the block, with its key unchanged.
+
+```emerald
+["a": 1, "b": 2].map_values { value => value * 10 }   # → ["a": 10, "b": 20]
+```
+
+</Member>
+
+<Member name="filter" block="(key: K, value: V) => Bool" returns="Dict[K, V]">
+
+The entries the block accepts, in order.
+
+```emerald
+["Ada": 36, "Grace": 45].filter { (name, age) => age > 40 }   # → ["Grace": 45]
+```
+
+</Member>
+
+<Member name="reject" block="(key: K, value: V) => Bool" returns="Dict[K, V]">
+
+The entries the block does not accept.
+
+```emerald
+["Ada": 36, "Grace": 45].reject { (name, age) => age > 40 }   # → ["Ada": 36]
+```
+
+</Member>
+
+## Visiting and asking
+
+These work as they do for a [`List`](../list/), with each entry given to the block as a
+`(key, value)` pair. The ones that make something new give back a list.
+
+<Member name="each" block="(key: K, value: V) => ...">
+
+Runs the block for each entry, in order. It is the same as a `for` loop.
+
+```emerald
+["Ada": 36, "Grace": 45].each { (name, age) => print(name) }
+# prints Ada, then Grace
+```
+
+</Member>
+
+<Member name="each_with_index" block="(key: K, value: V), index: Int => ...">
+
+Runs the block for each entry, with its position.
+
+</Member>
+
+<Member name="reverse_each" block="(key: K, value: V) => ...">
+
+Runs the block for each entry, from last to first.
+
+</Member>
+
+<Member name="map" block="(key: K, value: V) => U" returns="List[U]">
+
+A list of what the block gives for each entry.
+
+```emerald
+["Ada": 36].map { (name, age) => "#{name}: #{age}" }   # → ["Ada: 36"]
+```
+
+</Member>
+
+<Member name="flat_map" block="(key: K, value: V) => List[U]" returns="List[U]">
+
+The items of every list the block gives, joined into one list.
+
+</Member>
+
+<Member name="filter_map" block="(key: K, value: V) => U?" returns="List[U]">
+
+What the block gives for each entry, leaving out every `nothing`.
+
+</Member>
+
+<Member name="find" block="(key: K, value: V) => Bool" returns="(K, V)?">
+
+The first entry the block accepts, or `nothing`.
+
+```emerald
+["Ada": 36, "Grace": 45].find { (name, age) => age > 40 }   # → ("Grace", 45)
+```
+
+</Member>
+
+<Member name="find_index" block="(key: K, value: V) => Bool" returns="Int?">
+
+The position of the first entry the block accepts, or `nothing`.
+
+</Member>
+
+<Member name="any?" block="(key: K, value: V) => Bool" returns="Bool">
+
+Whether the block accepts at least one entry.
+
+```emerald
+["Ada": 36, "Grace": 45].any? { (name, age) => age > 40 }   # → true
+```
+
+</Member>
+
+<Member name="all?" block="(key: K, value: V) => Bool" returns="Bool">
+
+Whether the block accepts every entry.
+
+</Member>
+
+<Member name="none?" block="(key: K, value: V) => Bool" returns="Bool">
+
+Whether the block accepts no entry.
+
+</Member>
+
+<Member name="one?" block="(key: K, value: V) => Bool" returns="Bool">
+
+Whether the block accepts exactly one entry.
+
+</Member>
+
+<Member name="count_where" block="(key: K, value: V) => Bool" returns="Int">
+
+How many entries the block accepts.
+
+```emerald
+["Ada": 36, "Grace": 45].count_where { (name, age) => age > 30 }   # → 2
+```
+
+</Member>

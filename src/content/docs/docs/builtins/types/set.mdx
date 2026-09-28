@@ -1,0 +1,315 @@
+---
+title: Set
+description: Values kept once each, such as the colors a player has seen.
+sidebar:
+  order: 7
+---
+
+import Member from '../../../../../components/Member.astro';
+
+<p class="reference-facts">Built-in type · Written <code>["red", "blue"]</code> where a <code>Set</code> type is expected</p>
+
+A `Set` holds values once each, and answers one question quickly: is this value in it? Use one
+for the words already guessed, the squares already visited, or the names already seen. Its
+type is written with the type of its values, as `Set[String]`. On this page, `T` stands for
+that type.
+
+```emerald
+var guessed: Set[String] = []
+guessed.add("e")
+guessed.add("e")                   # already there, so nothing changes
+print(guessed.contains?("e"))      # prints true
+print(guessed.count)               # prints 1
+```
+
+A set is written in square brackets, like a list. The brackets make a set only where a `Set`
+type is expected, as in `const primes: Set[Int] = [2, 3, 5, 7]`; anywhere else they make a
+list. [`to_set()`](../list/#to_set) turns a list into a set. A set prints in braces, as
+`{"red", "blue"}`, and an empty one as `{}`.
+
+A set keeps its values in the order they were first added, for `for` loops and printing. Two
+sets are equal when they hold the same values, in any order. A set has no positions, so
+`colors[0]` is an error; ask with [`contains?`](#contains) instead.
+
+A value in a set must be one that never changes: a number, `Bool`, `String`, an enum value,
+or a tuple or struct made only of those.
+
+Like a list, a set is a value: assigning it to another variable gives that variable its own
+copy. Only a `var` set can change.
+
+## At a glance
+
+| Size and membership | |
+| --- | --- |
+| [`count`](#count), [`empty?()`](#empty) | How many values it has |
+| [`contains?(value)`](#contains) | Whether a value is in it |
+
+| Changing it | |
+| --- | --- |
+| [`add(value)`](#add), [`remove(value)`](#remove) | Add or remove a value |
+
+| Combining sets | |
+| --- | --- |
+| [`union(other)`](#union), [`intersection(other)`](#intersection) | Values in either, or in both |
+| [`difference(other)`](#difference), [`symmetric_difference(other)`](#symmetric_difference) | Values in only one |
+| [`subset?(other)`](#subset), [`superset?(other)`](#superset), [`disjoint?(other)`](#disjoint) | How two sets relate |
+
+| Visiting and asking | |
+| --- | --- |
+| [`filter { ... }`](#filter), [`reject { ... }`](#reject) | The values a block accepts, or rejects, as a set |
+| [`each { ... }`](#each), [`each_with_index { ... }`](#each_with_index), [`reverse_each { ... }`](#reverse_each) | Run a block for each value |
+| [`map { ... }`](#map), [`flat_map { ... }`](#flat_map), [`filter_map { ... }`](#filter_map) | A list made from the values |
+| [`find { ... }`](#find), [`find_index { ... }`](#find_index) | The first value a block accepts |
+| [`any? { ... }`](#any), [`all? { ... }`](#all), [`none? { ... }`](#none), [`one? { ... }`](#one), [`count_where { ... }`](#count_where) | Questions about the values |
+
+## Operators
+
+| Operator | Meaning | Example |
+| --- | --- | --- |
+| `==` `!=` | Compare | two sets of the same values are equal, in any order |
+
+## Size and membership
+
+<Member name="count" returns="Int">
+
+How many values the set has.
+
+```emerald
+[3, 1, 3].to_set().count   # → 2
+```
+
+</Member>
+
+<Member name="empty?" params="" returns="Bool">
+
+Whether the set has no values.
+
+```emerald
+[3].to_set().empty?()   # → false
+```
+
+</Member>
+
+<Member name="contains?" params="value: T" returns="Bool">
+
+Whether `value` is in the set. However large the set, this takes about the same time.
+
+```emerald
+["red", "blue"].to_set().contains?("red")   # → true
+```
+
+</Member>
+
+## Changing it
+
+These change the set, so they need a `var` set.
+
+<Member name="add" params="value: T">
+
+Adds `value`. When it is already there, nothing happens.
+
+```emerald
+var seen: Set[String] = ["red"]
+seen.add("blue")
+seen.add("red")
+print(seen)   # prints {"red", "blue"}
+```
+
+</Member>
+
+<Member name="remove" params="value: T">
+
+Removes `value`. When it is not there, nothing happens.
+
+```emerald
+var seen: Set[String] = ["red", "blue"]
+seen.remove("red")
+print(seen)   # prints {"blue"}
+```
+
+</Member>
+
+## Combining sets
+
+These leave both sets as they were and give back a new one.
+
+<Member name="union" params="other: Set[T]" returns="Set[T]">
+
+Every value in either set.
+
+```emerald
+[2, 3, 5, 7].to_set().union([1, 3, 5, 7, 9].to_set())   # → {2, 3, 5, 7, 1, 9}
+```
+
+</Member>
+
+<Member name="intersection" params="other: Set[T]" returns="Set[T]">
+
+The values in both sets.
+
+```emerald
+[2, 3, 5, 7].to_set().intersection([1, 3, 5, 7, 9].to_set())   # → {3, 5, 7}
+```
+
+</Member>
+
+<Member name="difference" params="other: Set[T]" returns="Set[T]">
+
+The values in this set that are not in `other`.
+
+```emerald
+[2, 3, 5, 7].to_set().difference([1, 3, 5, 7, 9].to_set())   # → {2}
+```
+
+</Member>
+
+<Member name="symmetric_difference" params="other: Set[T]" returns="Set[T]">
+
+The values in exactly one of the two sets.
+
+```emerald
+[2, 3, 5, 7].to_set().symmetric_difference([1, 3, 5, 7, 9].to_set())   # → {2, 1, 9}
+```
+
+</Member>
+
+<Member name="subset?" params="other: Set[T]" returns="Bool">
+
+Whether every value in this set is also in `other`.
+
+```emerald
+[3, 5].to_set().subset?([2, 3, 5, 7].to_set())   # → true
+```
+
+</Member>
+
+<Member name="superset?" params="other: Set[T]" returns="Bool">
+
+Whether this set has every value in `other`.
+
+```emerald
+[2, 3, 5, 7].to_set().superset?([3, 5].to_set())   # → true
+```
+
+</Member>
+
+<Member name="disjoint?" params="other: Set[T]" returns="Bool">
+
+Whether the two sets have no values in common.
+
+```emerald
+[2, 3, 5, 7].to_set().disjoint?([4, 6].to_set())   # → true
+```
+
+</Member>
+
+## Visiting and asking
+
+These work as they do for a [`List`](../list/). `filter` and `reject` give back a set; the
+others that make something new give back a list.
+
+<Member name="filter" block="value: T => Bool" returns="Set[T]">
+
+The values the block accepts.
+
+```emerald
+[2, 3, 5, 7].to_set().filter { n => n > 3 }   # → {5, 7}
+```
+
+</Member>
+
+<Member name="reject" block="value: T => Bool" returns="Set[T]">
+
+The values the block does not accept.
+
+</Member>
+
+<Member name="each" block="value: T => ...">
+
+Runs the block for each value, in order. It is the same as a `for` loop.
+
+</Member>
+
+<Member name="each_with_index" block="value: T, index: Int => ...">
+
+Runs the block for each value, with its position in order.
+
+</Member>
+
+<Member name="reverse_each" block="value: T => ...">
+
+Runs the block for each value, from last to first.
+
+</Member>
+
+<Member name="map" block="value: T => U" returns="List[U]">
+
+A list of what the block gives for each value.
+
+```emerald
+[2, 3, 5, 7].to_set().map { n => n * 10 }   # → [20, 30, 50, 70]
+```
+
+</Member>
+
+<Member name="flat_map" block="value: T => List[U]" returns="List[U]">
+
+The items of every list the block gives, joined into one list.
+
+</Member>
+
+<Member name="filter_map" block="value: T => U?" returns="List[U]">
+
+What the block gives for each value, leaving out every `nothing`.
+
+</Member>
+
+<Member name="find" block="value: T => Bool" returns="T?">
+
+The first value the block accepts, or `nothing`.
+
+```emerald
+[2, 3, 5, 7].to_set().find { n => n > 3 }   # → 5
+```
+
+</Member>
+
+<Member name="find_index" block="value: T => Bool" returns="Int?">
+
+The position of the first value the block accepts, or `nothing`.
+
+</Member>
+
+<Member name="any?" block="value: T => Bool" returns="Bool">
+
+Whether the block accepts at least one value.
+
+```emerald
+[2, 3, 5, 7].to_set().any? { n => n > 5 }   # → true
+```
+
+</Member>
+
+<Member name="all?" block="value: T => Bool" returns="Bool">
+
+Whether the block accepts every value.
+
+</Member>
+
+<Member name="none?" block="value: T => Bool" returns="Bool">
+
+Whether the block accepts no value.
+
+</Member>
+
+<Member name="one?" block="value: T => Bool" returns="Bool">
+
+Whether the block accepts exactly one value.
+
+</Member>
+
+<Member name="count_where" block="value: T => Bool" returns="Int">
+
+How many values the block accepts.
+
+</Member>
