@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Emerald — Deco jeweler mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Limelight&family=Poiret+One&family=Josefin+Sans:wght@300;400;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --night: #04201a;
+    --velvet: #061a14;
+    --deep: #0a2e23;
+    --glow: #27c48a;
+    --gold: #d9b45a;
+    --gold-soft: rgba(217, 180, 90, 0.35);
+    --gold-faint: rgba(217, 180, 90, 0.16);
+    --cream: #f3e8cc;
+    --paper: #f6efdd;
+    --muted: #b3c3b6;
+    --ink: #1c2622;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; color: var(--cream);
+    background:
+      radial-gradient(ellipse 60% 40% at 50% 18%, rgba(39, 196, 138, 0.14), transparent 70%),
+      radial-gradient(ellipse at 50% -10%, #0c4a38 0%, transparent 55%),
+      var(--night);
+    font: 300 18px/1.65 "Josefin Sans", sans-serif;
+  }
+  a { color: inherit; }
+  code { font-family: "JetBrains Mono", monospace; font-size: 0.88em; }
+
+  nav {
+    display: flex; justify-content: space-between; align-items: center; max-width: 1120px; margin: 0 auto; padding: 22px 24px;
+    font-family: "Poiret One", sans-serif; letter-spacing: 0.25em; text-transform: uppercase; font-size: 0.95rem;
+  }
+  nav .brand { color: var(--gold); text-decoration: none; }
+  nav .links { display: flex; gap: 32px; }
+  nav .links a { text-decoration: none; opacity: 0.85; }
+  nav .links a:hover { color: var(--gold); opacity: 1; }
+
+  /* Hero: the Jeweler's glowing stone on Deco's sunburst */
+  .hero { position: relative; text-align: center; padding: 30px 24px 90px; overflow: hidden; }
+  .hero::before {
+    content: ""; position: absolute; left: 50%; top: 190px; width: 1500px; height: 1500px; transform: translate(-50%, -50%);
+    background: repeating-conic-gradient(from 0deg, var(--gold-soft) 0deg 0.5deg, transparent 0.5deg 6deg);
+    -webkit-mask: radial-gradient(circle, transparent 0 7%, #000 12%, transparent 50%);
+            mask: radial-gradient(circle, transparent 0 7%, #000 12%, transparent 50%);
+    opacity: 0.6; pointer-events: none;
+  }
+  .hero > * { position: relative; }
+  .stone { width: min(210px, 55vw); animation: turn 9s ease-in-out infinite; filter: drop-shadow(0 0 45px rgba(39, 196, 138, 0.5)); }
+  @keyframes turn { 0%, 100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } }
+  .sparkle { animation: glint 4.5s ease-in-out infinite; }
+  @keyframes glint { 0%, 70%, 100% { opacity: 0; } 80% { opacity: 1; } }
+  @media (prefers-reduced-motion: reduce) { .stone, .sparkle { animation: none; } }
+  h1 {
+    font-family: "Limelight", serif; font-weight: 400; font-size: clamp(3.6rem, 12vw, 7.2rem); line-height: 1;
+    margin: 18px 0 10px; letter-spacing: 0.06em; text-shadow: 0 2px 0 #02120e, 0 0 40px rgba(217, 180, 90, 0.25);
+  }
+  .tagline { font-family: "Poiret One", sans-serif; letter-spacing: 0.3em; text-transform: uppercase; color: var(--gold); font-size: clamp(0.85rem, 2.4vw, 1.1rem); margin: 0 0 32px; }
+  .actions { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+  .button {
+    font-family: "Poiret One", sans-serif; letter-spacing: 0.22em; text-transform: uppercase; text-decoration: none;
+    padding: 14px 30px; border: 1px solid var(--gold); color: var(--gold);
+    clip-path: polygon(12px 0, calc(100% - 12px) 0, 100% 50%, calc(100% - 12px) 100%, 12px 100%, 0 50%);
+  }
+  .button.primary { background: var(--gold); color: var(--night); font-weight: 600; }
+  .button:hover { background: var(--cream); color: var(--night); }
+
+  .divider {
+    height: 18px; max-width: 1120px; margin: 0 auto; opacity: 0.45;
+    background:
+      linear-gradient(135deg, var(--gold) 25%, transparent 25%) -9px 0 / 18px 18px,
+      linear-gradient(225deg, var(--gold) 25%, transparent 25%) -9px 0 / 18px 18px;
+  }
+
+  section { max-width: 1120px; margin: 0 auto; padding: 80px 24px; }
+  h2 { font-family: "Limelight", serif; font-weight: 400; font-size: clamp(1.8rem, 5vw, 2.6rem); color: var(--gold); text-align: center; margin: 0 0 10px; letter-spacing: 0.04em; }
+  .section-sub { text-align: center; color: var(--muted); max-width: 600px; margin: 0 auto 50px; }
+
+  /* The grading report, in a Deco frame */
+  .report {
+    position: relative; max-width: 900px; margin: 0 auto; display: grid; grid-template-columns: 230px 1fr;
+    background: var(--paper); color: var(--ink); outline: 1px solid var(--gold); outline-offset: 7px;
+    box-shadow: 0 30px 70px -30px rgba(0, 0, 0, 0.85);
+  }
+  .report .seal {
+    padding: 28px 24px; color: var(--cream); display: flex; flex-direction: column; justify-content: space-between;
+    background:
+      repeating-conic-gradient(from 180deg at 50% 100%, var(--gold-faint) 0deg 1deg, transparent 1deg 9deg),
+      linear-gradient(160deg, #0e5a41, #05281d);
+  }
+  .report .seal small { font-family: "Poiret One", sans-serif; letter-spacing: 0.22em; text-transform: uppercase; font-size: 0.75rem; color: var(--gold); }
+  .report .seal .title { font-family: "Limelight", serif; font-size: 2rem; margin: 6px 0; }
+  .report .seal .number { font-family: "Poiret One", sans-serif; letter-spacing: 0.2em; color: var(--gold); font-size: 0.85rem; }
+  .report dl { margin: 0; padding: 20px 30px; display: grid; grid-template-columns: 120px 1fr; }
+  .report dt, .report dd { margin: 0; padding: 13px 0; border-bottom: 1px solid #e2d8bf; }
+  .report dt { font-family: "Poiret One", sans-serif; font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; font-size: 0.8rem; color: #8a6d24; padding-top: 16px; }
+  .report dd { font-weight: 600; font-size: 1.1rem; }
+  .report dd em { display: block; font-style: normal; font-weight: 300; font-size: 0.95rem; color: #4e5b55; line-height: 1.5; }
+  .report dl > :nth-last-child(-n+2) { border-bottom: none; }
+
+  /* Code on the bench, in gold frames */
+  .bench { display: grid; grid-template-columns: 1.15fr 1fr; gap: 40px; align-items: start; }
+  .frame { position: relative; padding: 28px 26px 22px; background: rgba(4, 25, 20, 0.88); border: 1px solid var(--gold); outline: 1px solid var(--gold-soft); outline-offset: 6px; }
+  .frame::before, .frame::after { content: ""; position: absolute; width: 24px; height: 24px; border: 2px solid var(--gold); }
+  .frame::before { top: -9px; left: -9px; border-right: none; border-bottom: none; }
+  .frame::after { bottom: -9px; right: -9px; border-left: none; border-top: none; }
+  .frame .label { position: absolute; top: -13px; left: 50%; transform: translateX(-50%); background: var(--night); padding: 0 14px; color: var(--gold); font-family: "Poiret One", sans-serif; letter-spacing: 0.25em; text-transform: uppercase; font-size: 0.8rem; white-space: nowrap; }
+  pre { margin: 0; font: 400 0.9rem/1.7 "JetBrains Mono", monospace; overflow-x: auto; color: #e3ece5; }
+  .kw { color: var(--gold); }
+  .ty { color: #7fd6b0; }
+  .str { color: #f0c9a0; }
+  .num { color: #c9a5f0; }
+  .fn { color: #9ec9ff; }
+  .cm { color: #7f9a8c; }
+  .out { margin-top: 16px; padding-top: 12px; border-top: 1px dashed var(--gold-soft); color: var(--muted); }
+  .caret { color: #ff9e8a; }
+  .loupe {
+    position: absolute; right: -30px; bottom: -58px; width: 150px; height: 150px; border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, rgba(255,255,255,0.2), rgba(255,255,255,0.04) 45%, rgba(4,25,20,0.95) 70%);
+    border: 7px solid var(--gold); box-shadow: 0 0 0 2px #8a6d24, 0 18px 40px -10px rgba(0,0,0,0.85), inset 0 0 20px rgba(0,0,0,0.6);
+    display: grid; place-items: center; text-align: center;
+  }
+  .loupe::after { content: ""; position: absolute; width: 16px; height: 70px; background: linear-gradient(90deg, #8a6d24, var(--gold), #8a6d24); border-radius: 4px; bottom: -64px; right: -16px; transform: rotate(-40deg); }
+  .loupe span { font: 600 1.7rem "JetBrains Mono", monospace; color: #ffd2c8; text-decoration: underline wavy #ff9e8a; text-underline-offset: 6px; }
+  .loupe small { display: block; font-family: "Poiret One", sans-serif; font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); margin-top: 4px; }
+  .note { color: var(--muted); margin: 70px 0 0; font-size: 0.95rem; }
+
+  /* A reference entry, to judge the theme on a page people read */
+  .reference { max-width: 760px; margin: 0 auto; background: rgba(4, 25, 20, 0.6); border-top: 3px double var(--gold); padding: 30px 34px 26px; }
+  .reference .crumb { font-family: "Poiret One", sans-serif; letter-spacing: 0.2em; text-transform: uppercase; font-size: 0.75rem; color: var(--gold); }
+  .reference h3 { font-family: "Limelight", serif; font-weight: 400; font-size: 2.2rem; margin: 4px 0 2px; }
+  .reference .facts { color: var(--muted); font-size: 0.9rem; margin: 0 0 22px; }
+  .member { border-top: 1px solid var(--gold-faint); padding: 20px 0 6px; }
+  .signature { display: inline-block; font: 400 0.95rem "JetBrains Mono", monospace; padding: 4px 10px; background: rgba(217, 180, 90, 0.1); border-left: 2px solid var(--gold); }
+  .signature b { color: var(--cream); font-weight: 600; }
+  .signature span { color: var(--muted); }
+  .member p { margin: 12px 0; }
+  .member pre { background: rgba(0, 0, 0, 0.3); padding: 12px 16px; border: 1px solid var(--gold-faint); }
+  .raises { font-size: 0.92rem; color: var(--muted); }
+  .raises b { font-family: "Poiret One", sans-serif; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold); font-size: 0.78rem; margin-right: 6px; }
+
+  footer { text-align: center; padding: 50px 24px 60px; color: var(--muted); font-family: "Poiret One", sans-serif; letter-spacing: 0.2em; text-transform: uppercase; font-size: 0.8rem; }
+  footer .gold { color: var(--gold); }
+
+  @media (max-width: 820px) {
+    .bench, .report { grid-template-columns: 1fr; }
+    .report dl { grid-template-columns: 1fr; }
+    .report dt { border-bottom: none; padding-bottom: 0; }
+    .loupe { right: 8px; bottom: -70px; width: 120px; height: 120px; }
+    nav .links { gap: 16px; font-size: 0.8rem; }
+    .reference { padding: 24px 18px; }
+  }
+</style>
+</head>
+<body>
+<nav>
+  <a class="brand" href="#">Emerald</a>
+  <div class="links"><a href="#">About</a><a href="#">Learn</a><a href="#">Docs</a></div>
+</nav>
+
+<header class="hero">
+  <svg class="stone" viewBox="0 0 200 260" aria-label="A glowing emerald-cut gem">
+    <defs>
+      <linearGradient id="a" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6ff0bd"/><stop offset="1" stop-color="#0c6e4c"/></linearGradient>
+      <linearGradient id="b" x1="1" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1aa574"/><stop offset="1" stop-color="#053322"/></linearGradient>
+      <linearGradient id="c" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#0a5a3e"/><stop offset="1" stop-color="#2fd192"/></linearGradient>
+      <radialGradient id="table" cx="0.4" cy="0.35" r="0.8"><stop offset="0" stop-color="#8ff5cf"/><stop offset="0.45" stop-color="#1fb27d"/><stop offset="1" stop-color="#07472f"/></radialGradient>
+    </defs>
+    <g stroke="#d9b45a" stroke-width="1.6" stroke-linejoin="round">
+      <polygon points="40,0 160,0 128,46 72,46" fill="url(#a)"/>
+      <polygon points="160,0 200,40 154,72 128,46" fill="url(#b)"/>
+      <polygon points="200,40 200,220 154,188 154,72" fill="url(#c)"/>
+      <polygon points="200,220 160,260 128,214 154,188" fill="url(#b)"/>
+      <polygon points="160,260 40,260 72,214 128,214" fill="url(#c)"/>
+      <polygon points="40,260 0,220 46,188 72,214" fill="url(#a)"/>
+      <polygon points="0,220 0,40 46,72 46,188" fill="url(#b)"/>
+      <polygon points="0,40 40,0 72,46 46,72" fill="url(#c)"/>
+      <polygon points="72,46 128,46 154,72 154,188 128,214 72,214 46,188 46,72" fill="url(#table)"/>
+      <polygon points="84,66 116,66 134,84 134,176 116,194 84,194 66,176 66,84" fill="none" stroke-width="1" opacity="0.7"/>
+    </g>
+    <g class="sparkle" fill="#fff"><path d="M92 58 l3 9 9 3 -9 3 -3 9 -3 -9 -9 -3 9 -3z"/></g>
+  </svg>
+  <h1>EMERALD</h1>
+  <p class="tagline">A language for learning to program</p>
+  <div class="actions"><a class="button primary" href="#">Start learning</a><a class="button" href="#">Read the docs</a></div>
+</header>
+
+<div class="divider"></div>
+
+<section>
+  <h2>Graded for clarity</h2>
+  <p class="section-sub">A gemologist judges a stone by its cut, clarity, color, and carat. We hold a language to the same standard.</p>
+  <div class="report">
+    <div class="seal">
+      <div><small>Language grading report</small><div class="title">Emerald</div></div>
+      <div class="number">No. 0.5.0</div>
+    </div>
+    <dl>
+      <dt>Cut</dt><dd>Clean and simple<em>One readable way to write each idea, kept tidy by a built-in formatter.</em></dd>
+      <dt>Clarity</dt><dd>Every error explained<em>Mistakes are caught before the program runs, with where, what, and what to try.</em></dd>
+      <dt>Color</dt><dd>Vivid, never loud<em>Types when they help, inferred when they don't, and no ceremony before the first line.</em></dd>
+      <dt>Carat</dt><dd>Small, with room to grow<em>Classes, traits, tests, and a standard library, when the student is ready.</em></dd>
+    </dl>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<section>
+  <h2>Under the loupe</h2>
+  <p class="section-sub">Code that reads like what it does, and a close eye for the mistakes that slip in.</p>
+  <div class="bench">
+    <div class="frame">
+      <span class="label">gems.em</span>
+<pre><span class="kw">struct</span> <span class="ty">Gem</span> {
+    <span class="kw">const</span> name: <span class="ty">String</span>
+    <span class="kw">const</span> carats: <span class="ty">Float</span>
+}
+
+<span class="kw">const</span> gems = [<span class="ty">Gem</span>(<span class="str">"Emerald"</span>, <span class="num">2.5</span>), <span class="ty">Gem</span>(<span class="str">"Ruby"</span>, <span class="num">1.25</span>)]
+<span class="kw">for</span> gem <span class="kw">in</span> gems {
+    <span class="fn">print</span>(<span class="str">"#{gem.name}: #{gem.carats} carats"</span>)
+}</pre>
+      <div class="out"><pre>Emerald: 2.5 carats
+Ruby: 1.25 carats</pre></div>
+    </div>
+    <div>
+      <div class="frame">
+        <span class="label">When it goes wrong</span>
+<pre>game.em:2:7: [E1001] `scroe` is not defined
+  print(scroe + 1)
+<span class="caret">        ^^^^^</span>
+Check the spelling, or declare it
+before this line.</pre>
+        <div class="loupe"><div><span>scroe</span><small>not defined</small></div></div>
+      </div>
+      <p class="note">Every problem says what went wrong, where, and what to try, before the program ever runs.</p>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<section>
+  <h2>In the reference</h2>
+  <p class="section-sub">The same theme, calmed down for pages people read for a long time.</p>
+  <div class="reference">
+    <div class="crumb">Built-ins · Types</div>
+    <h3>Float</h3>
+    <p class="facts">A number that can have a fractional part, such as <code>3.14</code> or <code>-0.5</code>.</p>
+    <div class="member">
+      <span class="signature"><b>clamp</b><span>(minimum: Float, maximum: Float): Float</span></span>
+      <p>The value, kept within <code>minimum</code> to <code>maximum</code>. A value below the range becomes <code>minimum</code>, and a value above it becomes <code>maximum</code>.</p>
+<pre>12.7.clamp(0, 10)   <span class="cm"># → 10.0</span>
+-3.0.clamp(0, 10)   <span class="cm"># → 0.0</span>
+4.2.clamp(0, 10)    <span class="cm"># → 4.2</span></pre>
+      <p class="raises"><b>Raises</b>when <code>minimum</code> is greater than <code>maximum</code>.</p>
+    </div>
+    <div class="member">
+      <span class="signature"><b>round</b><span>(): Int</span></span>
+      <p>The nearest whole number. A value exactly halfway rounds away from zero.</p>
+<pre>2.5.round()    <span class="cm"># → 3</span>
+-2.5.round()   <span class="cm"># → -3</span></pre>
+    </div>
+  </div>
+</section>
+
+<footer><span class="gold">◆</span>&nbsp; Emerald &nbsp;<span class="gold">◆</span>&nbsp; About · Learn · Docs &nbsp;<span class="gold">◆</span></footer>
+</body>
+</html>
