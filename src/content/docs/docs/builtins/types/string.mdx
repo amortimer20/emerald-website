@@ -1,0 +1,543 @@
+---
+title: String
+description: Text, such as "Hello" or "café 👋".
+sidebar:
+  order: 4
+---
+
+import Member from '../../../../../components/Member.astro';
+import Raises from '../../../../../components/Raises.astro';
+
+<p class="reference-facts">Built-in type · Written <code>"Hello, #&#123;name&#125;"</code>, <code>'C:\raw\text'</code>, or <code>"""</code> for several lines</p>
+
+A `String` is a piece of text: a name, a message, a line from a file. A `String` never
+changes. Every method on this page gives back a new `String` and leaves the original as it
+was.
+
+There are three ways to write one. Double quotes are the usual way; inside them, `#{...}`
+puts a value into the text, and a backslash starts an escape such as `\n` for a new line or
+`\t` for a tab. Single quotes write the text exactly as it is, which suits Windows paths and
+patterns full of backslashes. Three double quotes on lines of their own hold text that spans
+several lines, with the indentation of the closing quotes removed.
+
+```emerald
+const name = "Ada"
+print("Hello, #{name}!")       # prints Hello, Ada!
+print('C:\Users\ada')          # prints C:\Users\ada
+
+const poem = """
+    Roses are red,
+    Emerald is green.
+    """
+```
+
+A character is what a reader sees as one character: `é` is one character, and so is `👋`,
+however it is stored. `count`, indexing, and every method here count characters that way,
+so text is never cut in the middle of one. `text[0]` is the first character, as its own
+`String`. Finding the character at an index means counting from the start, so it takes
+longer for later characters in very long text.
+
+`String`'s methods take their arguments in order, not by name: `"7".pad_start(3, "0")`.
+
+## At a glance
+
+| Size | |
+| --- | --- |
+| [`count`](#count) | How many characters it has |
+| [`empty?()`](#empty), [`blank?()`](#blank) | Whether it has no characters, or only spaces |
+
+| Characters | |
+| --- | --- |
+| [`chars()`](#chars) | Each character, as a list |
+| [`code_points()`](#code_points), [`bytes()`](#bytes) | How the text is stored, for advanced uses |
+
+| Changing case and spaces | |
+| --- | --- |
+| [`upper()`](#upper), [`lower()`](#lower), [`capitalize()`](#capitalize) | Capital and small letters |
+| [`trim()`](#trim), [`trim_start()`](#trim_start), [`trim_end()`](#trim_end) | Without spaces at the ends |
+
+| Searching | |
+| --- | --- |
+| [`contains?(text)`](#contains) | Whether it contains some text |
+| [`starts_with?(text)`](#starts_with), [`ends_with?(text)`](#ends_with) | Whether it begins or ends with some text |
+| [`index_of(text)`](#index_of) | Where some text first appears |
+
+| Taking it apart | |
+| --- | --- |
+| [`substring(start)`](#substring) | Part of it, by position |
+| [`split(separator)`](#split) | Pieces between a separator |
+| [`lines()`](#lines) | Each line |
+| [`partition(separator)`](#partition) | Before and after the first separator |
+
+| Making new text | |
+| --- | --- |
+| [`replace(old, new)`](#replace) | With some text replaced |
+| [`insert_at(index, text)`](#insert_at) | With text added at a position |
+| [`remove_prefix(text)`](#remove_prefix), [`remove_suffix(text)`](#remove_suffix) | Without a beginning or ending |
+| [`reverse()`](#reverse), [`repeat(times)`](#repeat) | Backwards, or several times over |
+| [`collapse_repeats()`](#collapse_repeats) | With runs of one character shortened to one |
+| [`pad_start(width)`](#pad_start), [`pad_end(width)`](#pad_end), [`pad_center(width)`](#pad_center) | Filled out to a width |
+
+| Converting | |
+| --- | --- |
+| [`to_int()`](#to_int), [`to_float()`](#to_float) | The number the text spells |
+
+## Operators
+
+| Operator | Meaning | Example |
+| --- | --- | --- |
+| `+` | Join two strings | `"Emerald" + " city"` → `"Emerald city"` |
+| `+=` | Add to the end of a variable | `greeting += "!"` |
+| `==` `!=` | Compare | `"cafe\u{301}" == "café"` → `true` |
+| `<` `<=` `>` `>=` | Order | `"apple" < "banana"` → `true` |
+| `text[index]` | One character | `"hé👋"[1]` → `"é"` |
+| `text[start..<end]` | Part of the text | `"Emerald"[0..<3]` → `"Eme"` |
+
+`+` only joins two strings: `"Score: " + 10` is an error. Write `"Score: #{10}"`, or turn
+the number into text with `to_string()` first.
+
+Two strings are equal when they are the same text, even if they were typed differently: an
+`é` typed as one character equals an `e` followed by a combining accent. Order follows
+Unicode's numbering of characters, which puts every capital letter before every small one,
+so `"B" < "a"` is `true`.
+
+Like a list, a `String` can be indexed with a range: `text[start..<end]` stops before
+`end`, and `text[start..end]` includes it. Either end can be left out inside the brackets:
+`"Emerald"[..<3]` is `"Eme"`, and `"Emerald"[4..<]` is `"ald"`.
+
+A `for` loop visits each character:
+
+```emerald
+for character in "hé👋" {
+    print(character)
+}
+# prints h, é, 👋
+```
+
+## Size
+
+<Member name="count" returns="Int">
+
+How many characters the text has.
+
+```emerald
+"héllo 👋".count   # → 7
+```
+
+</Member>
+
+<Member name="empty?" params="" returns="Bool">
+
+Whether the text has no characters at all.
+
+```emerald
+"".empty?()      # → true
+"   ".empty?()   # → false
+```
+
+</Member>
+
+<Member name="blank?" params="" returns="Bool">
+
+Whether the text is empty or has only spaces, tabs, and line breaks.
+
+```emerald
+"   ".blank?()     # → true
+" x ".blank?()     # → false
+```
+
+</Member>
+
+## Characters
+
+<Member name="chars" params="" returns="List[String]">
+
+Each character, in order, as a list of one-character strings.
+
+```emerald
+"hé👋".chars()   # → ["h", "é", "👋"]
+```
+
+</Member>
+
+<Member name="code_points" params="" returns="List[Int]">
+
+The Unicode number of each code point the text is stored as. A character can be stored as
+more than one code point, so for characters, use [`chars()`](#chars) instead.
+
+```emerald
+"é".code_points()   # → [233]
+```
+
+</Member>
+
+<Member name="bytes" params="" returns="List[Int]">
+
+The text's UTF-8 bytes, each from 0 to 255. This is how the text is stored in a file, not
+a list of its characters.
+
+```emerald
+"é".bytes()   # → [195, 169]
+```
+
+</Member>
+
+## Changing case and spaces
+
+<Member name="upper" params="" returns="String">
+
+The text in capital letters.
+
+```emerald
+"Emerald".upper()   # → "EMERALD"
+```
+
+</Member>
+
+<Member name="lower" params="" returns="String">
+
+The text in small letters.
+
+```emerald
+"Emerald".lower()   # → "emerald"
+```
+
+</Member>
+
+<Member name="capitalize" params="" returns="String">
+
+The text with its first character in capitals. The rest is left as it was.
+
+```emerald
+"emerald city".capitalize()   # → "Emerald city"
+```
+
+</Member>
+
+<Member name="trim" params="" returns="String">
+
+The text without spaces, tabs, or line breaks at either end.
+
+```emerald
+"  hi  ".trim()   # → "hi"
+```
+
+</Member>
+
+<Member name="trim_start" params="" returns="String">
+
+The text without spaces at its start.
+
+```emerald
+"  hi  ".trim_start()   # → "hi  "
+```
+
+</Member>
+
+<Member name="trim_end" params="" returns="String">
+
+The text without spaces at its end.
+
+```emerald
+"  hi  ".trim_end()   # → "  hi"
+```
+
+</Member>
+
+## Searching
+
+These look for the exact text they are given: `"a.b".contains?(".")` looks for a dot. To
+search for a pattern, such as any run of digits, use a [`Regex`](../../../library/regex/regex/).
+
+<Member name="contains?" params="text: String" returns="Bool">
+
+Whether `text` appears anywhere in the text. It matches whole characters only, so
+`"café".contains?("e")` is `false`: the `é` is one character, not an `e`.
+
+```emerald
+"a.b".contains?(".")   # → true
+```
+
+</Member>
+
+<Member name="starts_with?" params="text: String" returns="Bool">
+
+Whether the text begins with `text`.
+
+```emerald
+"Emerald".starts_with?("Em")   # → true
+```
+
+</Member>
+
+<Member name="ends_with?" params="text: String" returns="Bool">
+
+Whether the text ends with `text`.
+
+```emerald
+"Emerald".ends_with?("ld")   # → true
+```
+
+</Member>
+
+<Member name="index_of" params="text: String" returns="Int?">
+
+Where `text` first appears, counting characters from 0, or `nothing` when it does not
+appear.
+
+```emerald
+"banana".index_of("an")   # → 1
+"banana".index_of("x")    # → nothing
+```
+
+</Member>
+
+## Taking it apart
+
+<Member name="substring" params="start: Int" returns="String">
+
+The text from position `start` to the end. A `start` equal to `count` gives `""`.
+
+```emerald
+"Emerald".substring(4)   # → "ald"
+```
+
+<Raises>when `start` is negative or past the end.</Raises>
+
+</Member>
+
+<Member name="substring" id="substring-count" params="start: Int, count: Int" returns="String">
+
+`count` characters, beginning at position `start`.
+
+```emerald
+"Emerald".substring(1, 3)   # → "mer"
+```
+
+<Raises>when `start` or `count` is negative, or the part runs past the end.</Raises>
+
+</Member>
+
+<Member name="split" params="separator: String" returns="List[String]">
+
+The pieces of text between each `separator`, in order. Two separators side by side give an
+empty piece between them.
+
+```emerald
+"a,b,,c".split(",")   # → ["a", "b", "", "c"]
+```
+
+<Raises>when `separator` is `""`. To split text into characters, use [`chars()`](#chars).</Raises>
+
+</Member>
+
+<Member name="lines" params="" returns="List[String]">
+
+Each line, without its line break. A line break at the very end does not start another,
+empty line, and a Windows line break (`\r\n`) counts as one.
+
+```emerald
+"one\ntwo\r\nthree\n".lines()   # → ["one", "two", "three"]
+```
+
+</Member>
+
+<Member name="partition" params="separator: String" returns="(String, String, String)">
+
+The text before the first `separator`, the separator itself, and the text after it. When
+the separator does not appear, the whole text comes first and the other two are empty.
+
+```emerald
+"key=value=x".partition("=")   # → ("key", "=", "value=x")
+"none".partition("=")          # → ("none", "", "")
+```
+
+<Raises>when `separator` is `""`.</Raises>
+
+</Member>
+
+## Making new text
+
+<Member name="replace" params="old: String, new: String" returns="String">
+
+The text with every `old` replaced by `new`.
+
+```emerald
+"banana".replace("a", "o")   # → "bonono"
+```
+
+<Raises>when `old` is `""`.</Raises>
+
+</Member>
+
+<Member name="insert_at" params="index: Int, text: String" returns="String">
+
+The text with `text` added before the character at `index`. An `index` equal to `count`
+adds it at the end.
+
+```emerald
+"Emrald".insert_at(2, "e")   # → "Emerald"
+```
+
+<Raises>when `index` is negative or past the end.</Raises>
+
+</Member>
+
+<Member name="remove_prefix" params="text: String" returns="String">
+
+The text without `text` at its start. When it does not start with `text`, it is returned as
+it was.
+
+```emerald
+"Mr. Smith".remove_prefix("Mr. ")   # → "Smith"
+```
+
+</Member>
+
+<Member name="remove_suffix" params="text: String" returns="String">
+
+The text without `text` at its end. When it does not end with `text`, it is returned as it
+was.
+
+```emerald
+"report.txt".remove_suffix(".txt")   # → "report"
+```
+
+</Member>
+
+<Member name="reverse" params="" returns="String">
+
+The characters in the opposite order.
+
+```emerald
+"stressed".reverse()   # → "desserts"
+```
+
+</Member>
+
+<Member name="repeat" params="times: Int" returns="String">
+
+The text, `times` times over.
+
+```emerald
+"ab".repeat(3)   # → "ababab"
+```
+
+</Member>
+
+<Member name="collapse_repeats" params="" returns="String">
+
+The text with every run of the same character shortened to one.
+
+```emerald
+"baallooon".collapse_repeats()   # → "balon"
+```
+
+</Member>
+
+<Member name="pad_start" params={'width: Int, fill: String = " "'} returns="String">
+
+The text with `fill` added at its start until it is `width` characters long. Text already
+that long is returned as it was.
+
+```emerald
+"7".pad_start(3, "0")      # → "007"
+"long text".pad_start(3)   # → "long text"
+```
+
+<Raises>when `width` is negative, or `fill` is not exactly one character.</Raises>
+
+</Member>
+
+<Member name="pad_end" params={'width: Int, fill: String = " "'} returns="String">
+
+The text with `fill` added at its end until it is `width` characters long.
+
+```emerald
+"hi".pad_end(5, ".")   # → "hi..."
+```
+
+<Raises>when `width` is negative, or `fill` is not exactly one character.</Raises>
+
+</Member>
+
+<Member name="pad_center" params={'width: Int, fill: String = " "'} returns="String">
+
+The text with `fill` added on both sides until it is `width` characters long. When the
+sides cannot be even, the extra character goes at the end.
+
+```emerald
+"hi".pad_center(5, "-")   # → "-hi--"
+```
+
+<Raises>when `width` is negative, or `fill` is not exactly one character.</Raises>
+
+</Member>
+
+## Converting
+
+<Member name="to_int" params="" returns="Int">
+
+The whole number the text spells, such as `"42"` or `"-7"`. Spaces around it are allowed.
+
+```emerald
+"42".to_int()   # → 42
+```
+
+<Raises>when the text is not a whole number.</Raises>
+
+</Member>
+
+<Member name="to_int_or" params="fallback: Int" returns="Int">
+
+The whole number the text spells, or `fallback` when it is not one.
+
+```emerald
+"abc".to_int_or(0)   # → 0
+```
+
+</Member>
+
+<Member name="to_int_maybe" params="" returns="Int?">
+
+The whole number the text spells, or `nothing` when it is not one.
+
+```emerald
+"4.5".to_int_maybe()   # → nothing
+```
+
+</Member>
+
+<Member name="to_float" params="" returns="Float">
+
+The number the text spells, which may have a decimal point or an exponent, such as `"3.75"`
+or `"1e3"`.
+
+```emerald
+"3.75".to_float()   # → 3.75
+"1e3".to_float()    # → 1000.0
+```
+
+<Raises>when the text is not a number.</Raises>
+
+</Member>
+
+<Member name="to_float_or" params="fallback: Float" returns="Float">
+
+The number the text spells, or `fallback` when it is not one.
+
+```emerald
+"x".to_float_or(1.5)   # → 1.5
+```
+
+</Member>
+
+<Member name="to_float_maybe" params="" returns="Float?">
+
+The number the text spells, or `nothing` when it is not one.
+
+```emerald
+"x".to_float_maybe()   # → nothing
+```
+
+</Member>

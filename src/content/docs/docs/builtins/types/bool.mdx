@@ -1,0 +1,63 @@
+---
+title: Bool
+description: A value that is either true or false.
+sidebar:
+  order: 1
+---
+
+import Member from '../../../../../components/Member.astro';
+
+<p class="reference-facts">Built-in type · Written <code>true</code> or <code>false</code></p>
+
+A `Bool` is one of two values, `true` or `false`. Comparisons give one, and `if` and
+`while` need one to decide what to do.
+
+```emerald
+const age = 15
+const raining = false
+const teenager = 13 <= age <= 19      # → true
+
+if teenager and not raining {
+    print("Off to the park")
+}
+```
+
+A condition must be a `Bool`. Emerald has no values that count as true or false on their
+own, so `if count` is an error; write what you mean, such as `if count > 0`.
+
+## At a glance
+
+| Showing as text | |
+| --- | --- |
+| [`to_string()`](#to_string) | `"true"` or `"false"` |
+
+## Operators
+
+| Operator | Meaning | Example |
+| --- | --- | --- |
+| `and` | Both are true | `true and false` → `false` |
+| `or` | At least one is true | `true or false` → `true` |
+| `not` | The opposite | `not true` → `false` |
+| `==` `!=` | Compare | `true != false` → `true` |
+
+`and` and `or` stop as soon as the answer is known: in `false and ready()`, `ready()` is
+never called, and in `true or ready()`, it is not called either. Use this to check that
+something is safe before using it, as in `index < items.count and items[index] > 0`.
+
+Emerald writes these operators as words. `!`, `&&`, and `||` are errors that point to
+`not`, `and`, and `or`.
+
+Comparisons give a `Bool`, and they can be chained: `0 <= score <= 100` means
+`0 <= score and score <= 100`. Two `Bool`s cannot be ordered with `<` or `>`.
+
+## Showing as text
+
+<Member name="to_string" params="" returns="String">
+
+`"true"` or `"false"`, exactly as `print` shows it.
+
+```emerald
+true.to_string()   # → "true"
+```
+
+</Member>
