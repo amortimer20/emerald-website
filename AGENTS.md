@@ -18,6 +18,8 @@ retro-futurist Deco of BioShock and The Outer Worlds. The approved mockup is
   font, and code uses JetBrains Mono. The font URL lives in `src/fonts.mjs`.
 - The ornament belongs to the frame of the page, such as rules, labels, and code frames.
   Reference pages stay calm and easy to read (see `src/styles/reference.css`).
+- Code blocks use the Deco syntax themes in `src/themes/`, in the same colours as the landing
+  page's code: gold keywords, jade types, blue functions, peach strings, violet numbers.
 - The landing page, `src/pages/index.astro`, stands outside Starlight's layout and is always
   dark. Its examples were run with the emerald binary, so keep them in step with it.
 

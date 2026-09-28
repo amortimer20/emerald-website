@@ -1,0 +1,94 @@
+{
+	"name": "Emerald Deco Light",
+	"type": "light",
+	"colors": {
+		"editor.background": "#f6efdc",
+		"editor.foreground": "#04201a",
+		"editorGroupHeader.tabsBackground": "#f6efdc",
+		"tab.activeBackground": "#f6efdc",
+		"tab.activeForeground": "#8a6412",
+		"tab.activeBorderTop": "#8a6412",
+		"editor.selectionBackground": "#e6dcbc"
+	},
+	"tokenColors": [
+		{
+			"scope": [
+				"comment",
+				"punctuation.definition.comment"
+			],
+			"settings": {
+				"foreground": "#5f7568"
+			}
+		},
+		{
+			"scope": [
+				"keyword",
+				"storage.type",
+				"storage.modifier",
+				"keyword.operator.word",
+				"variable.language",
+				"punctuation.section.interpolation",
+				"constant.character.escape"
+			],
+			"settings": {
+				"foreground": "#8a6412"
+			}
+		},
+		{
+			"scope": [
+				"keyword.operator",
+				"punctuation"
+			],
+			"settings": {
+				"foreground": "#2a4a3d"
+			}
+		},
+		{
+			"scope": [
+				"entity.name.type",
+				"support.type",
+				"entity.name.namespace",
+				"storage.modifier.annotation",
+				"punctuation.definition.annotation"
+			],
+			"settings": {
+				"foreground": "#0f6b4f"
+			}
+		},
+		{
+			"scope": [
+				"entity.name.function",
+				"support.function"
+			],
+			"settings": {
+				"foreground": "#1f5f99"
+			}
+		},
+		{
+			"scope": [
+				"string",
+				"punctuation.definition.string"
+			],
+			"settings": {
+				"foreground": "#9a4a1c"
+			}
+		},
+		{
+			"scope": [
+				"constant.numeric",
+				"constant.language"
+			],
+			"settings": {
+				"foreground": "#6b3fa0"
+			}
+		},
+		{
+			"scope": [
+				"invalid"
+			],
+			"settings": {
+				"foreground": "#b3261e"
+			}
+		}
+	]
+}

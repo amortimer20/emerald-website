@@ -4,6 +4,11 @@ import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 import { FONTS } from './src/fonts.mjs';
 
+// The Art Deco syntax themes, in the colours of the landing page's code.
+function decoTheme(name) {
+	return JSON.parse(readFileSync(new URL(`./src/themes/${name}.json`, import.meta.url), 'utf8'));
+}
+
 // Written by `npm run sync` (scripts/sync-grammar.mjs) from emerald-vscode.
 function emeraldGrammar() {
 	try {
@@ -27,6 +32,7 @@ export default defineConfig({
 			],
 			customCss: ['./src/styles/theme.css', './src/styles/reference.css'],
 			expressiveCode: {
+				themes: [decoTheme('deco-dark'), decoTheme('deco-light')],
 				shiki: { langs: [emeraldGrammar()] },
 				styleOverrides: { borderRadius: '0.3rem', frames: { frameBoxShadowCssValue: 'none' } },
 			},
