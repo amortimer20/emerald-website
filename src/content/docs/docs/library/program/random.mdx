@@ -1,0 +1,101 @@
+---
+title: Random
+description: A random number generator that gives the same results every time it starts from the same seed.
+sidebar:
+  order: 3
+---
+
+import Member from '../../../../../components/Member.astro';
+import Raises from '../../../../../components/Raises.astro';
+
+<p class="reference-facts">Standard library class · Made with <code>Random(seed)</code></p>
+
+A `Random` makes random choices that you can repeat. Give two of them the same seed, ask them
+the same things in the same order, and they give the same answers. That is what a test needs,
+so its result is the same on every run, and what a game needs to replay a level exactly.
+
+```emerald
+const first = Random(42)
+const second = Random(42)
+print(first.next(1..6) == second.next(1..6))   # → true
+```
+
+For everyday randomness, where each run should differ, you don't need one: use the built-in
+[`random(range)`](../../../builtins/functions/random/), and a list's own
+[`random()`](../../../builtins/types/list/#random) and
+[`shuffle()`](../../../builtins/types/list/#shuffle).
+
+The seed decides the results only within one version of Emerald. A later version may give
+different numbers for the same seed, so don't save them expecting to get the same ones back.
+
+## At a glance
+
+| Making one | |
+| --- | --- |
+| [`Random(seed)`](#random) | A generator starting from `seed` |
+
+| Choosing | |
+| --- | --- |
+| [`next(range)`](#next) | A whole number from a range |
+| [`choose(list)`](#choose) | One item from a list, or `nothing` if it is empty |
+| [`shuffle!(list)`](#shuffle) | Shuffle a list in place |
+
+## Making one
+
+<Member name="Random" id="random" params="seed: Int" returns="Random">
+
+A generator starting from `seed`. Any whole number works; what matters is using the same one
+when you want the same results.
+
+```emerald
+const dice = Random(7)
+```
+
+</Member>
+
+## Choosing
+
+<Member name="next" params="range: Range" returns="Int">
+
+One whole number from `range`, as the built-in `random(range)` chooses, but repeatably. The
+range's ends decide what is possible: `next(1..6)` can give `6`, but `next(0..<10)` can never
+give `10`.
+
+```emerald
+const dice = Random(7)
+const roll = dice.next(1..6)
+print(roll.between?(1, 6))   # → true
+```
+
+<Raises>when `range` is empty.</Raises>
+
+</Member>
+
+<Member name="choose" params="list: List[T]" returns="T?">
+
+One item from `list`, or `nothing` when the list is empty. The result is optional, so give it a
+fallback with `or` or check it before using it.
+
+```emerald
+const picker = Random(1)
+const move = picker.choose(["rock", "paper", "scissors"]).or("rock")
+
+const nobody: List[String] = []
+print(picker.choose(nobody))   # → nothing
+```
+
+</Member>
+
+<Member name="shuffle!" id="shuffle" params="list: List[T]">
+
+Puts the items of `list` in a random order, changing the list itself. Every item stays in it
+exactly as many times as before. The list must be a `var`, since it changes.
+
+```emerald
+const cards = Random(3)
+var deck = [1, 2, 3, 4, 5]
+cards.shuffle!(deck)
+print(deck.count)   # → 5
+```
+
+</Member>
