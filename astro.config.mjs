@@ -51,6 +51,7 @@ export default defineConfig({
 								{ label: 'Regular Expressions', collapsed: true, items: [{ autogenerate: { directory: 'docs/library/regex' } }] },
 								{ label: 'Console', collapsed: true, items: [{ autogenerate: { directory: 'docs/library/console' } }] },
 								{ label: 'JSON', collapsed: true, items: [{ autogenerate: { directory: 'docs/library/json' } }] },
+								{ label: 'HTTP', collapsed: true, items: [{ autogenerate: { directory: 'docs/library/http' } }] },
 							],
 						},
 					],
