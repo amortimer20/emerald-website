@@ -1,0 +1,852 @@
+---
+title: List
+description: Items of one type, kept in order, such as [90, 72, 85].
+sidebar:
+  order: 5
+---
+
+import Member from '../../../../../components/Member.astro';
+import Raises from '../../../../../components/Raises.astro';
+
+<p class="reference-facts">Built-in type · Written <code>[90, 72, 85]</code>, or <code>[]</code> for an empty list</p>
+
+A `List` holds items of one type, in order: the scores in a game, the lines of a file, the
+names in a class. Its type is written with the type of its items, such as `List[Int]` or
+`List[String]`. On this page, `T` stands for that item type.
+
+```emerald
+var scores = [90, 72, 85]
+scores.append(100)
+print(scores[0])          # prints 90
+print(scores.count)       # prints 4
+
+for score in scores {
+    print(score)
+}
+```
+
+An empty list needs its type written out, since there is nothing in it to go by:
+`var names: List[String] = []`.
+
+Positions count from 0, so `scores[0]` is the first item and `scores[scores.count - 1]` the
+last. A position outside the list raises an error rather than giving a wrong answer.
+
+**A list is a value.** Assigning a list to another variable gives that variable its own copy,
+so changing one never changes the other:
+
+```emerald
+var mine = [1, 2, 3]
+var yours = mine
+yours.append(4)
+print(mine.count, yours.count)   # prints 3 4
+```
+
+**Only a `var` list can change.** Methods that change a list are marked on this page: the
+ones that add and remove items, and every method whose name ends in `!`. Such a method changes
+the list and gives back nothing, so `scores.sort!()` sorts `scores` itself, while
+`scores.sort()` leaves it alone and gives back a sorted copy. The same pairs exist for
+`reverse`, `unique`, and `shuffle`.
+
+Many methods take a block, written in braces after the call, which runs for each item:
+`scores.filter { score => score > 80 }`.
+
+## At a glance
+
+| Size and ends | |
+| --- | --- |
+| [`count`](#count) | How many items it has |
+| [`empty?()`](#empty) | Whether it has none |
+| [`first`](#first), [`last`](#last) | The first or last item |
+
+| Adding and removing (changes the list) | |
+| --- | --- |
+| [`append(item)`](#append), [`insert(index, item)`](#insert) | Add an item |
+| [`remove(item)`](#remove), [`remove_all(item)`](#remove_all), [`remove_if { ... }`](#remove_if) | Remove items by value |
+| [`remove_at(index)`](#remove_at), [`remove_first()`](#remove_first), [`remove_last()`](#remove_last) | Remove an item by position |
+| [`clear()`](#clear) | Remove every item |
+
+| Searching | |
+| --- | --- |
+| [`contains?(item)`](#contains) | Whether an item is in it |
+| [`find { ... }`](#find), [`find_index { ... }`](#find_index) | The first item a block accepts, or its position |
+
+| Visiting each item | |
+| --- | --- |
+| [`each { ... }`](#each), [`each_with_index { ... }`](#each_with_index), [`reverse_each { ... }`](#reverse_each) | Run a block for each item |
+
+| Making new lists | |
+| --- | --- |
+| [`map { ... }`](#map) | Each item changed by a block |
+| [`filter { ... }`](#filter), [`reject { ... }`](#reject) | The items a block accepts, or rejects |
+| [`flat_map { ... }`](#flat_map), [`filter_map { ... }`](#filter_map) | Several items, or none, for each item |
+| [`take(count)`](#take), [`drop(count)`](#drop) | The first items, or all but the first |
+| [`take_while { ... }`](#take_while), [`drop_while { ... }`](#drop_while) | Items from the start, while a block accepts them |
+
+| Ordering | |
+| --- | --- |
+| [`sort()`](#sort), [`sort_by { ... }`](#sort_by), [`sort!()`](#sort-1) | Smallest first |
+| [`reverse()`](#reverse), [`reverse!()`](#reverse-1) | Last first |
+| [`shuffle()`](#shuffle), [`shuffle!()`](#shuffle-1), [`random()`](#random) | In a random order, or one item at random |
+
+| Duplicates | |
+| --- | --- |
+| [`unique()`](#unique), [`unique!()`](#unique-1), [`unique_by { ... }`](#unique_by) | Each item once |
+
+| Questions about the items | |
+| --- | --- |
+| [`any? { ... }`](#any), [`all? { ... }`](#all), [`none? { ... }`](#none), [`one? { ... }`](#one) | Whether a block accepts some, all, none, or exactly one |
+| [`count_where { ... }`](#count_where) | How many a block accepts |
+
+| Numbers | |
+| --- | --- |
+| [`sum()`](#sum), [`average()`](#average) | Add them up, or find the mean |
+| [`min()`](#min), [`max()`](#max), [`min_max()`](#min_max) | The smallest and largest |
+| [`min_by { ... }`](#min_by), [`max_by { ... }`](#max_by) | The item with the smallest or largest key |
+
+| Combining and splitting | |
+| --- | --- |
+| [`chain(other)`](#chain), [`zip(other)`](#zip) | Join two lists, or pair them up |
+| [`chunks(size)`](#chunks), [`windows(size)`](#windows), [`pairs()`](#pairs) | Pieces of a list |
+| [`partition { ... }`](#partition) | Split in two by a block |
+
+| Reducing | |
+| --- | --- |
+| [`reduce(initial) { ... }`](#reduce), [`reduce_right(initial) { ... }`](#reduce_right) | Combine every item into one value |
+
+| Converting | |
+| --- | --- |
+| [`to_set()`](#to_set), [`to_dictionary()`](#to_dictionary) | A `Set` or `Dict` of the items |
+| [`frequencies()`](#frequencies), [`group_by { ... }`](#group_by) | Count or group the items |
+| [`associate { ... }`](#associate), [`associate_by { ... }`](#associate_by) | A `Dict` built by a block |
+
+## Operators
+
+| Operator | Meaning | Example |
+| --- | --- | --- |
+| `list[index]` | The item at a position | `[5, 3, 8][1]` → `3` |
+| `list[index] = item` | Change the item at a position | `scores[0] = 95` |
+| `list[start..<end]` | Part of the list | `[5, 3, 8, 1][1..<3]` → `[3, 8]` |
+| `==` `!=` | Compare | `[1, 2] == [1, 2]` → `true` |
+
+`list[start..<end]` stops before `end`, and `list[start..end]` includes it; either end can be
+left out inside the brackets, as in `scores[..<2]`. The part is a new list of its own.
+
+Two lists are equal when they hold equal items in the same order. There is no `+` for lists;
+join two with [`chain`](#chain).
+
+A list prints the way it is written: `[90, 72, 85]`.
+
+## Size and ends
+
+<Member name="count" returns="Int">
+
+How many items the list has.
+
+```emerald
+[90, 72, 85].count   # → 3
+```
+
+</Member>
+
+<Member name="empty?" params="" returns="Bool">
+
+Whether the list has no items.
+
+```emerald
+[90, 72, 85].empty?()   # → false
+```
+
+</Member>
+
+<Member name="first" returns="T?">
+
+The first item, or `nothing` when the list is empty.
+
+```emerald
+[90, 72, 85].first   # → 90
+```
+
+A list can hold `nothing` itself, as a `List[String?]` can, so to tell an empty list apart
+from one whose first item is `nothing`, check [`empty?()`](#empty).
+
+</Member>
+
+<Member name="last" returns="T?">
+
+The last item, or `nothing` when the list is empty.
+
+```emerald
+[90, 72, 85].last   # → 85
+```
+
+</Member>
+
+## Adding and removing
+
+These change the list, so they need a `var` list.
+
+<Member name="append" params="item: T">
+
+Adds `item` at the end.
+
+```emerald
+var scores = [90, 72]
+scores.append(85)
+print(scores)   # prints [90, 72, 85]
+```
+
+</Member>
+
+<Member name="insert" params="index: Int, item: T">
+
+Adds `item` at position `index`, moving the items after it along. An `index` equal to
+`count` adds it at the end.
+
+```emerald
+var letters = ["a", "b", "c"]
+letters.insert(1, "x")
+print(letters)   # prints ["a", "x", "b", "c"]
+```
+
+<Raises>when `index` is negative or greater than `count`.</Raises>
+
+</Member>
+
+<Member name="remove" params="item: T">
+
+Removes the first item equal to `item`. When there is none, nothing happens.
+
+```emerald
+var letters = ["a", "x", "b"]
+letters.remove("x")
+print(letters)   # prints ["a", "b"]
+```
+
+</Member>
+
+<Member name="remove_all" params="item: T">
+
+Removes every item equal to `item`.
+
+```emerald
+var numbers = [1, 2, 1, 3, 1]
+numbers.remove_all(1)
+print(numbers)   # prints [2, 3]
+```
+
+</Member>
+
+<Member name="remove_if" block="item: T => Bool">
+
+Removes every item the block accepts. To get a new list instead, use [`reject`](#reject).
+
+```emerald
+var numbers = [1, 2, 3, 4, 5, 6]
+numbers.remove_if { n => n.odd?() }
+print(numbers)   # prints [2, 4, 6]
+```
+
+</Member>
+
+<Member name="remove_at" params="index: Int" returns="T">
+
+Removes the item at position `index` and gives it back.
+
+```emerald
+var queue = ["a", "b", "c"]
+print(queue.remove_at(1))   # prints b
+print(queue)                # prints ["a", "c"]
+```
+
+<Raises>when there is no item at `index`.</Raises>
+
+</Member>
+
+<Member name="remove_first" params="" returns="T">
+
+Removes the first item and gives it back.
+
+```emerald
+var queue = ["a", "b", "c"]
+print(queue.remove_first())   # prints a
+```
+
+<Raises>when the list is empty.</Raises>
+
+</Member>
+
+<Member name="remove_last" params="" returns="T">
+
+Removes the last item and gives it back.
+
+```emerald
+var stack = ["a", "b", "c"]
+print(stack.remove_last())   # prints c
+```
+
+<Raises>when the list is empty.</Raises>
+
+</Member>
+
+<Member name="clear" params="">
+
+Removes every item.
+
+```emerald
+var scores = [90, 72]
+scores.clear()
+print(scores)   # prints []
+```
+
+</Member>
+
+## Searching
+
+<Member name="contains?" params="item: T" returns="Bool">
+
+Whether an item equal to `item` is in the list.
+
+```emerald
+[1, 2, 3].contains?(2)   # → true
+```
+
+</Member>
+
+<Member name="find" block="item: T => Bool" returns="T?">
+
+The first item the block accepts, or `nothing` when it accepts none.
+
+```emerald
+[4, 7, 10].find { n => n > 5 }    # → 7
+[4, 7].find { n => n > 50 }       # → nothing
+```
+
+</Member>
+
+<Member name="find_index" block="item: T => Bool" returns="Int?">
+
+The position of the first item the block accepts, or `nothing` when it accepts none.
+
+```emerald
+[4, 7, 10].find_index { n => n > 5 }   # → 1
+```
+
+</Member>
+
+## Visiting each item
+
+<Member name="each" block="item: T => ...">
+
+Runs the block once for each item, in order. It is the same as a `for` loop.
+
+```emerald
+["Ada", "Grace"].each { name => print("Hello, #{name}") }
+# prints Hello, Ada, then Hello, Grace
+```
+
+</Member>
+
+<Member name="each_with_index" block="item: T, index: Int => ...">
+
+Runs the block for each item, with its position.
+
+```emerald
+["Ada", "Grace"].each_with_index { name, index => print("#{index}: #{name}") }
+# prints 0: Ada, then 1: Grace
+```
+
+</Member>
+
+<Member name="reverse_each" block="item: T => ...">
+
+Runs the block for each item, from last to first.
+
+```emerald
+[1, 2, 3].reverse_each { n => print(n) }
+# prints 3, 2, 1
+```
+
+</Member>
+
+## Making new lists
+
+These leave the list as it was and give back a new one.
+
+<Member name="map" block="item: T => U" returns="List[U]">
+
+Each item, changed by the block.
+
+```emerald
+[1, 2, 3].map { n => n * 10 }   # → [10, 20, 30]
+```
+
+</Member>
+
+<Member name="filter" block="item: T => Bool" returns="List[T]">
+
+The items the block accepts, in order.
+
+```emerald
+[1, 2, 3, 4].filter { n => n.even?() }   # → [2, 4]
+```
+
+</Member>
+
+<Member name="reject" block="item: T => Bool" returns="List[T]">
+
+The items the block does not accept.
+
+```emerald
+[1, 2, 3, 4].reject { n => n.even?() }   # → [1, 3]
+```
+
+</Member>
+
+<Member name="flat_map" block="item: T => List[U]" returns="List[U]">
+
+The items of every list the block gives, joined into one list.
+
+```emerald
+[1, 2].flat_map { n => [n, n] }   # → [1, 1, 2, 2]
+```
+
+</Member>
+
+<Member name="filter_map" block="item: T => U?" returns="List[U]">
+
+What the block gives for each item, leaving out every `nothing`.
+
+```emerald
+["1", "x", "3"].filter_map { text => text.to_int_maybe() }   # → [1, 3]
+```
+
+</Member>
+
+<Member name="take" params="count: Int" returns="List[T]">
+
+The first `count` items. When the list is shorter, all of it.
+
+```emerald
+[1, 2, 3, 4].take(2)   # → [1, 2]
+[1, 2].take(5)         # → [1, 2]
+```
+
+<Raises>when `count` is negative.</Raises>
+
+</Member>
+
+<Member name="drop" params="count: Int" returns="List[T]">
+
+Everything after the first `count` items.
+
+```emerald
+[1, 2, 3, 4].drop(2)   # → [3, 4]
+```
+
+<Raises>when `count` is negative.</Raises>
+
+</Member>
+
+<Member name="take_while" block="item: T => Bool" returns="List[T]">
+
+Items from the start, up to the first one the block does not accept.
+
+```emerald
+[1, 2, 5, 1].take_while { n => n < 3 }   # → [1, 2]
+```
+
+</Member>
+
+<Member name="drop_while" block="item: T => Bool" returns="List[T]">
+
+Everything from the first item the block does not accept.
+
+```emerald
+[1, 2, 5, 1].drop_while { n => n < 3 }   # → [5, 1]
+```
+
+</Member>
+
+## Ordering
+
+<Member name="sort" params="" returns="List[T]">
+
+The items from smallest to largest. Numbers, text, and structs that adopt
+[`Ordered`](../../traits/ordered/) can be sorted. Equal items keep their order.
+
+```emerald
+[3, 1, 2].sort()   # → [1, 2, 3]
+```
+
+<Raises>when a `Float` in the list is not a number (`Float.nan`).</Raises>
+
+</Member>
+
+<Member name="sort_by" block="item: T => K" returns="List[T]">
+
+The items, ordered by the key the block gives for each, smallest first.
+
+```emerald
+["pear", "fig", "banana"].sort_by { word => word.count }   # → ["fig", "pear", "banana"]
+```
+
+</Member>
+
+<Member name="sort!" id="sort-1" params="">
+
+Sorts the list itself, smallest first.
+
+```emerald
+var order = [3, 1, 2]
+order.sort!()
+print(order)   # prints [1, 2, 3]
+```
+
+</Member>
+
+<Member name="reverse" params="" returns="List[T]">
+
+The items in the opposite order.
+
+```emerald
+[1, 2, 3].reverse()   # → [3, 2, 1]
+```
+
+</Member>
+
+<Member name="reverse!" id="reverse-1" params="">
+
+Reverses the list itself.
+
+</Member>
+
+<Member name="shuffle" params="" returns="List[T]">
+
+The items in a random order.
+
+</Member>
+
+<Member name="shuffle!" id="shuffle-1" params="">
+
+Puts the list itself in a random order.
+
+</Member>
+
+<Member name="random" params="" returns="T?">
+
+One item, chosen at random, or `nothing` when the list is empty.
+
+```emerald
+print(["rock", "paper", "scissors"].random())   # prints one of the three
+```
+
+</Member>
+
+## Duplicates
+
+<Member name="unique" params="" returns="List[T]">
+
+Each item once, keeping the first of each.
+
+```emerald
+[1, 2, 1, 3].unique()   # → [1, 2, 3]
+```
+
+</Member>
+
+<Member name="unique!" id="unique-1" params="">
+
+Removes repeated items from the list itself, keeping the first of each.
+
+</Member>
+
+<Member name="unique_by" block="item: T => K" returns="List[T]">
+
+The first item for each key the block gives.
+
+```emerald
+["apple", "avocado", "banana"].unique_by { word => word[0] }   # → ["apple", "banana"]
+```
+
+</Member>
+
+## Questions about the items
+
+<Member name="any?" block="item: T => Bool" returns="Bool">
+
+Whether the block accepts at least one item. An empty list gives `false`.
+
+```emerald
+[1, 5].any? { n => n > 4 }   # → true
+```
+
+</Member>
+
+<Member name="all?" block="item: T => Bool" returns="Bool">
+
+Whether the block accepts every item. An empty list gives `true`.
+
+```emerald
+[1, 5].all? { n => n > 4 }   # → false
+```
+
+</Member>
+
+<Member name="none?" block="item: T => Bool" returns="Bool">
+
+Whether the block accepts no item. An empty list gives `true`.
+
+```emerald
+[1, 5].none? { n => n > 9 }   # → true
+```
+
+</Member>
+
+<Member name="one?" block="item: T => Bool" returns="Bool">
+
+Whether the block accepts exactly one item.
+
+```emerald
+[1, 5].one? { n => n > 4 }   # → true
+```
+
+</Member>
+
+<Member name="count_where" block="item: T => Bool" returns="Int">
+
+How many items the block accepts.
+
+```emerald
+[1, 5, 8].count_where { n => n > 4 }   # → 2
+```
+
+</Member>
+
+## Numbers
+
+These need a list of numbers, or for `min` and `max`, of anything that can be ordered.
+
+<Member name="sum" params="" returns="T">
+
+All the items added up. An empty list sums to `0`.
+
+```emerald
+[1, 2, 3, 4].sum()   # → 10
+```
+
+<Raises>when the total is too large for an `Int`.</Raises>
+
+</Member>
+
+<Member name="average" params="" returns="Float?">
+
+The mean of the items, or `nothing` when the list is empty.
+
+```emerald
+[1, 2].average()   # → 1.5
+```
+
+</Member>
+
+<Member name="min" params="" returns="T?">
+
+The smallest item, or `nothing` when the list is empty.
+
+```emerald
+[3, 1, 2].min()   # → 1
+```
+
+</Member>
+
+<Member name="max" params="" returns="T?">
+
+The largest item, or `nothing` when the list is empty.
+
+```emerald
+[3, 1, 2].max()   # → 3
+```
+
+</Member>
+
+<Member name="min_max" params="" returns="(T?, T?)">
+
+The smallest and largest items together, found in one pass.
+
+```emerald
+[3, 1, 2].min_max()   # → (1, 3)
+```
+
+</Member>
+
+<Member name="min_by" block="item: T => K" returns="T?">
+
+The item whose key, from the block, is smallest.
+
+```emerald
+["pear", "fig"].min_by { word => word.count }   # → "fig"
+```
+
+</Member>
+
+<Member name="max_by" block="item: T => K" returns="T?">
+
+The item whose key, from the block, is largest.
+
+```emerald
+["pear", "fig"].max_by { word => word.count }   # → "pear"
+```
+
+</Member>
+
+## Combining and splitting
+
+<Member name="chain" params="other: List[T]" returns="List[T]">
+
+This list's items followed by `other`'s.
+
+```emerald
+[1, 2].chain([3, 4])   # → [1, 2, 3, 4]
+```
+
+</Member>
+
+<Member name="zip" params="other: List[U]" returns="List[(T, U)]">
+
+Items paired by position with `other`'s. When one list is longer, its extra items are left
+out.
+
+```emerald
+[1, 2, 3].zip(["a", "b"])   # → [(1, "a"), (2, "b")]
+```
+
+</Member>
+
+<Member name="chunks" params="size: Int" returns="List[List[T]]">
+
+The items in pieces of `size`, in order. The last piece may be smaller.
+
+```emerald
+[1, 2, 3, 4, 5].chunks(2)   # → [[1, 2], [3, 4], [5]]
+```
+
+<Raises>when `size` is less than 1.</Raises>
+
+</Member>
+
+<Member name="windows" params="size: Int" returns="List[List[T]]">
+
+Every run of `size` items side by side, one step apart.
+
+```emerald
+[1, 2, 3, 4].windows(2)   # → [[1, 2], [2, 3], [3, 4]]
+```
+
+<Raises>when `size` is less than 1.</Raises>
+
+</Member>
+
+<Member name="pairs" params="" returns="List[(T, T)]">
+
+Each item paired with the one after it.
+
+```emerald
+[1, 2, 3].pairs()   # → [(1, 2), (2, 3)]
+```
+
+</Member>
+
+<Member name="partition" block="item: T => Bool" returns="(List[T], List[T])">
+
+The items the block accepts, and the ones it does not.
+
+```emerald
+[1, 2, 3, 4, 5].partition { n => n > 2 }   # → ([3, 4, 5], [1, 2])
+```
+
+</Member>
+
+## Reducing
+
+<Member name="reduce" params="initial: A" block="total: A, item: T => A" returns="A">
+
+Combines the items into one value. The block gets the total so far, starting at `initial`,
+and the next item, and gives the new total. An empty list gives `initial`.
+
+```emerald
+[1, 2, 3].reduce(0) { total, n => total + n }   # → 6
+```
+
+</Member>
+
+<Member name="reduce_right" params="initial: A" block="total: A, item: T => A" returns="A">
+
+The same as [`reduce`](#reduce), from the last item to the first.
+
+```emerald
+["a", "b", "c"].reduce_right("") { text, letter => text + letter }   # → "cba"
+```
+
+</Member>
+
+## Converting
+
+<Member name="to_set" params="" returns="Set[T]">
+
+A [`Set`](../set/) of the items, each once.
+
+```emerald
+[3, 1, 3].to_set()   # → {3, 1}
+```
+
+</Member>
+
+<Member name="to_dictionary" params="" returns="Dict[K, V]">
+
+A [`Dict`](../dict/) from a list of `(key, value)` pairs. A later pair with the same key
+replaces the earlier value.
+
+```emerald
+[("Ada", 36), ("Grace", 45)].to_dictionary()   # → ["Ada": 36, "Grace": 45]
+```
+
+</Member>
+
+<Member name="frequencies" params="" returns="Dict[T, Int]">
+
+How many times each item appears.
+
+```emerald
+["a", "b", "a"].frequencies()   # → ["a": 2, "b": 1]
+```
+
+</Member>
+
+<Member name="group_by" block="item: T => K" returns="Dict[K, List[T]]">
+
+The items grouped by the key the block gives for each.
+
+```emerald
+["apple", "avocado", "banana"].group_by { word => word[0] }   # → ["a": ["apple", "avocado"], "b": ["banana"]]
+```
+
+</Member>
+
+<Member name="associate" block="item: T => (K, V)" returns="Dict[K, V]">
+
+A [`Dict`](../dict/) with the key and value the block gives for each item.
+
+```emerald
+["Ada", "Grace"].associate { name => (name, name.count) }   # → ["Ada": 3, "Grace": 5]
+```
+
+</Member>
+
+<Member name="associate_by" block="item: T => K" returns="Dict[K, T]">
+
+A [`Dict`](../dict/) from the key the block gives to each item itself.
+
+```emerald
+["Ada", "Grace"].associate_by { name => name[0] }   # → ["A": "Ada", "G": "Grace"]
+```
+
+</Member>
