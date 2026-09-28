@@ -93,6 +93,11 @@
 	color: var(--deco-gold);
 }
 
+/* The current page keeps Starlight's highlight colours, or gold would sit on gold. */
+.sidebar-content .top-level > li > a.large[aria-current='page'] {
+	color: var(--sl-color-text-invert);
+}
+
 /* The page title is the one display heading on a page. */
 .content-panel h1#_top {
 	font-family: var(--sl-font-display);

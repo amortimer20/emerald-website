@@ -1,0 +1,212 @@
+---
+title: Install Emerald
+description: Install Emerald on Windows, macOS, or Linux with one command.
+---
+
+import { Tabs, TabItem, Steps } from '@astrojs/starlight/components';
+
+Emerald installs with one command. You paste it into a terminal, and it downloads Emerald,
+checks that the download is complete, and sets your computer up to find it. It does not need
+administrator rights, so it works on most school computers too.
+
+<Tabs syncKey="os">
+<TabItem label="Windows">
+
+<Steps>
+
+1. Open **PowerShell**: press the Windows key, type `PowerShell`, and press Enter.
+
+2. Paste this command and press Enter:
+
+   ```powershell wrap
+   irm https://raw.githubusercontent.com/amortimer20/emerald-lang/main/install.ps1 | iex
+   ```
+
+3. When it says **Emerald is ready**, check that it works:
+
+   ```powershell
+   emerald --version
+   ```
+
+   It prints the version you installed, such as `Emerald 0.5.0`.
+
+</Steps>
+
+Emerald works straight away in the window you installed it from. Other windows that were
+already open, and editors such as VS Code, find it once you close and reopen them.
+
+</TabItem>
+<TabItem label="macOS">
+
+<Steps>
+
+1. Open **Terminal**: press Command-Space, type `Terminal`, and press Return.
+
+2. Paste this command and press Return:
+
+   ```bash wrap
+   curl -fsSL https://raw.githubusercontent.com/amortimer20/emerald-lang/main/install.sh | sh
+   ```
+
+3. Close Terminal, open it again, and check that Emerald works:
+
+   ```bash
+   emerald --version
+   ```
+
+   It prints the version you installed, such as `Emerald 0.5.0`.
+
+</Steps>
+
+Emerald runs on Macs with Apple silicon (M1 or later). To check yours, open the Apple menu and
+choose **About This Mac**: the **Chip** line says Apple M1, M2, or later.
+
+</TabItem>
+<TabItem label="Linux">
+
+<Steps>
+
+1. Open a terminal.
+
+2. Paste this command and press Enter:
+
+   ```bash wrap
+   curl -fsSL https://raw.githubusercontent.com/amortimer20/emerald-lang/main/install.sh | sh
+   ```
+
+3. Open a new terminal and check that Emerald works:
+
+   ```bash
+   emerald --version
+   ```
+
+   It prints the version you installed, such as `Emerald 0.5.0`.
+
+</Steps>
+
+Emerald runs on 64-bit Intel and AMD processors (x86-64).
+
+</TabItem>
+</Tabs>
+
+## Your first program
+
+Make a file named `hello.em` containing one line:
+
+```emerald
+print("Hello, world!")
+```
+
+Then run it from the terminal, in the folder where you saved it:
+
+```bash
+emerald run hello.em
+```
+
+It prints `Hello, world!`. The [lessons](/learn/) carry on from here.
+
+## Updating
+
+Run the install command again. It replaces Emerald with the latest release and changes nothing
+else.
+
+## Installing a particular version
+
+A class may ask everyone to use the same version. Name it after `-Version` or `--version`:
+
+<Tabs syncKey="os">
+<TabItem label="Windows">
+
+```powershell wrap
+& ([scriptblock]::Create((irm https://raw.githubusercontent.com/amortimer20/emerald-lang/main/install.ps1))) -Version v0.5.0
+```
+
+</TabItem>
+<TabItem label="macOS">
+
+```bash wrap
+curl -fsSL https://raw.githubusercontent.com/amortimer20/emerald-lang/main/install.sh | sh -s -- --version v0.5.0
+```
+
+</TabItem>
+<TabItem label="Linux">
+
+```bash wrap
+curl -fsSL https://raw.githubusercontent.com/amortimer20/emerald-lang/main/install.sh | sh -s -- --version v0.5.0
+```
+
+</TabItem>
+</Tabs>
+
+Every version is listed on the [releases page](https://github.com/amortimer20/emerald-lang/releases).
+
+## Uninstalling
+
+<Tabs syncKey="os">
+<TabItem label="Windows">
+
+```powershell wrap
+& ([scriptblock]::Create((irm https://raw.githubusercontent.com/amortimer20/emerald-lang/main/install.ps1))) -Uninstall
+```
+
+</TabItem>
+<TabItem label="macOS">
+
+```bash wrap
+curl -fsSL https://raw.githubusercontent.com/amortimer20/emerald-lang/main/install.sh | sh -s -- --uninstall
+```
+
+</TabItem>
+<TabItem label="Linux">
+
+```bash wrap
+curl -fsSL https://raw.githubusercontent.com/amortimer20/emerald-lang/main/install.sh | sh -s -- --uninstall
+```
+
+</TabItem>
+</Tabs>
+
+This removes Emerald and the setting that let your terminal find it. Your programs are not
+touched.
+
+## What the installer does
+
+It is good practice to know what a command from the internet will do before you run it. You
+can [read both scripts](https://github.com/amortimer20/emerald-lang) in Emerald's repository:
+`install.ps1` for Windows and `install.sh` for macOS and Linux. Each one:
+
+- downloads Emerald from its [releases page](https://github.com/amortimer20/emerald-lang/releases)
+  on GitHub;
+- checks the download against the release's list of checksums, so a damaged or altered
+  download is refused;
+- puts Emerald in a folder of your own: `%LOCALAPPDATA%\Programs\Emerald` on Windows, and
+  `~/.emerald/bin` on macOS and Linux;
+- adds that folder to your `PATH`, the list of folders your terminal looks in for commands.
+  On Windows that is your user `PATH`; on macOS and Linux it is one line added to your
+  shell's startup file, such as `~/.zshrc`.
+
+## If something goes wrong
+
+**The terminal says `emerald` is not recognized, or `command not found`.** A terminal reads
+`PATH` when it opens, so one that was open before the install has not seen the change. Close
+it and open a new one. In VS Code, close and reopen the whole editor, not just its terminal.
+
+**PowerShell says running scripts is disabled.** Some school computers block PowerShell
+scripts. Ask whoever looks after the computers, or install Emerald on a computer of your own.
+
+**The Mac installer says this Mac has an Intel processor.** Emerald's Mac release is for Apple
+silicon only, for now.
+
+**The download fails.** Check your internet connection and run the command again. If you named
+a version, check that it is spelled as it is on the releases page, with its `v`.
+
+## Other ways to install
+
+If you already use [Mise](https://mise.jdx.dev/) to manage your tools, it can install Emerald:
+
+```bash
+mise use -g "github:amortimer20/emerald-lang@latest"
+```
+
+You can also [build Emerald from source](https://github.com/amortimer20/emerald-lang#build-from-source),
+which needs the Zig compiler.

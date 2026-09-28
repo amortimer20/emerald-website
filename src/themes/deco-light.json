@@ -8,7 +8,10 @@
 		"tab.activeBackground": "#f6efdc",
 		"tab.activeForeground": "#8a6412",
 		"tab.activeBorderTop": "#8a6412",
-		"editor.selectionBackground": "#e6dcbc"
+		"editor.selectionBackground": "#e6dcbc",
+		"titleBar.activeBackground": "#eee5ca",
+		"titleBar.activeForeground": "#8a6412",
+		"titleBar.border": "#d3c8a4"
 	},
 	"tokenColors": [
 		{
