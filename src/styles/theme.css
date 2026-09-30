@@ -69,9 +69,11 @@
 	--sl-color-hairline-shade: #d3c8a4;
 }
 
-/* The header: a gold rule under a dark band, with the name in Limelight. */
-.header {
-	border-bottom: 1px solid var(--deco-rule);
+/* The header: a gold rule under a dark band, with the name in Limelight. Only the outer
+   <header> gets it: Starlight also names the row inside it `.header`, and giving that row a
+   border too drew a second gold line inside the navbar. */
+header.header {
+	border-bottom-color: var(--deco-rule);
 }
 
 .site-title {
