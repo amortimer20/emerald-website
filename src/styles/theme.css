@@ -69,6 +69,18 @@
 	--sl-color-hairline-shade: #d3c8a4;
 }
 
+/* Code shows every character a reader types. JetBrains Mono joins `>=`, `!=`, `/=`, `=>`, and
+   more into single ligature glyphs, which hides from a beginner that `>=` is two characters. */
+code,
+pre,
+kbd,
+samp,
+.expressive-code pre,
+.expressive-code code {
+	font-variant-ligatures: none;
+	font-feature-settings: 'liga' 0, 'calt' 0;
+}
+
 /* The header: a gold rule under a dark band, with the name in Limelight. Only the outer
    <header> gets it: Starlight also names the row inside it `.header`, and giving that row a
    border too drew a second gold line inside the navbar. */
