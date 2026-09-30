@@ -83,5 +83,5 @@ The short name is only an alias: the value is still a `Pizza.Size`, and prints t
 - The full name is used everywhere, including inside the outer type.
 - `using Short = Outer.Inner` gives a shorter name for the rest of the file.
 
-Next, [errors](../errors/): what happens when something goes wrong while a program runs, and how to
-handle it.
+Next, [operator overloading](../operator-overloading/): letting your own types use `+`, `<`, and
+friends.
