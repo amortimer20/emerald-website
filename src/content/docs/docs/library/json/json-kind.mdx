@@ -1,0 +1,137 @@
+---
+title: Json.Kind
+description: The six kinds of value JSON has, which a Json value reports through its kind.
+sidebar:
+  order: 2
+---
+
+import Member from '../../../../../components/Member.astro';
+
+<p class="reference-facts">Standard library enum · Nested in <code>Json</code></p>
+
+Every JSON value is one of six kinds: `null`, `true` or `false`, a number, text, a list, or an
+object. `Json.Kind` names them, and a [`Json`](../json/) value's [`kind`](../json/#kind)
+says which one it is.
+
+You need it when a program can't know ahead of time what it will find, and has to decide
+what to do by looking. A `case` over the kind handles every possibility, and Emerald checks
+that none is left out:
+
+```emerald
+func describe(value: Json): String {
+    return case value.kind {
+        when Json.Kind.null then "nothing"
+        when Json.Kind.bool then "true or false"
+        when Json.Kind.number then "a number"
+        when Json.Kind.string then "text"
+        when Json.Kind.list then "a list of #{value.count}"
+        when Json.Kind.object then "an object with #{value.count} keys"
+    }
+}
+
+print(describe(Json.parse('["new", "fast"]')))    # → a list of 2
+print(describe(Json.parse("7")))                  # → a number
+```
+
+When you already know what a value should be, you don't need the kind: a conversion such
+as [`string()`](../json/#string) raises an error if the value isn't text, and
+[`string_maybe()`](../json/#string_maybe) gives `nothing`.
+
+Like any [enum](../../../language/enums/), a kind is written with its type's name in front,
+`Json.Kind.list`, and prints the same way. Kinds can be compared with `==` and used as
+dictionary keys. They have no order, so `<` doesn't apply to them.
+
+## At a glance
+
+| Value | JSON text | Read it with |
+| --- | --- | --- |
+| [`Json.Kind.null`](#null) | `null` | [`null?()`](../json/#null-1) |
+| [`Json.Kind.bool`](#bool) | `true`, `false` | [`bool()`](../json/#bool) |
+| [`Json.Kind.number`](#number) | `7`, `2.5`, `-3e8` | [`int()`](../json/#int), [`float()`](../json/#float) |
+| [`Json.Kind.string`](#string) | `"Ada"` | [`string()`](../json/#string) |
+| [`Json.Kind.list`](#list) | `[1, 2, 3]` | [`list()`](../json/#list), [`at(index)`](../json/#at) |
+| [`Json.Kind.object`](#object) | `{"name": "Ada"}` | [`object()`](../json/#object), [`get(key)`](../json/#get) |
+
+## Values
+
+<Member owner="Json.Kind." name="null">
+
+JSON's `null`, which a document uses to say that something has no value. It is still a value
+in the document, unlike a key that isn't there at all.
+
+```emerald
+Json.parse("null").kind    # → Json.Kind.null
+```
+
+</Member>
+
+<Member owner="Json.Kind." name="bool">
+
+`true` or `false`.
+
+```emerald
+Json.parse("true").kind    # → Json.Kind.bool
+```
+
+</Member>
+
+<Member owner="Json.Kind." name="number">
+
+Any number. JSON has only one kind of number, so a whole number and a fraction are both
+`number`. [`int()`](../json/#int) reads a whole one as an `Int`, and
+[`float()`](../json/#float) reads any of them as a `Float`.
+
+```emerald
+Json.parse("7").kind      # → Json.Kind.number
+Json.parse("2.5").kind    # → Json.Kind.number
+```
+
+</Member>
+
+<Member owner="Json.Kind." name="string">
+
+Text, written in double quotes. Text that looks like a number is still text:
+
+```emerald
+Json.parse('"Ada"').kind    # → Json.Kind.string
+Json.parse('"7"').kind      # → Json.Kind.string
+```
+
+</Member>
+
+<Member owner="Json.Kind." name="list">
+
+A list of values in square brackets. The values can be of any kinds, mixed together.
+
+```emerald
+Json.parse('[1, "two", null]').kind    # → Json.Kind.list
+```
+
+</Member>
+
+<Member owner="Json.Kind." name="object">
+
+Keys paired with values, in braces. Each key is text.
+
+```emerald
+Json.parse('{"name": "Ada"}').kind    # → Json.Kind.object
+```
+
+</Member>
+
+## Leaving kinds out
+
+A `case` that produces a value, like `describe` above, must cover all six kinds, or the
+program won't run. A `case` statement that runs blocks may leave some out, but Emerald warns
+about it, so a kind isn't forgotten by accident. Add `else { }` to say that the rest are
+deliberately left alone:
+
+```emerald
+const value = Json.parse("[1, 2]")
+case value.kind {
+    when Json.Kind.list {
+        print("#{value.count} items")
+    }
+    else { }
+}
+```
