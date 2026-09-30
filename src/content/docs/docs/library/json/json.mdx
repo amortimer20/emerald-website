@@ -1,0 +1,586 @@
+---
+title: Json
+description: Reading and writing JSON, the text format programs use to save data and send it over the web.
+sidebar:
+  order: 1
+---
+
+import Member from '../../../../../components/Member.astro';
+import Raises from '../../../../../components/Raises.astro';
+
+<p class="reference-facts">Standard library struct · Always available, with no import</p>
+
+JSON is a way of writing data as text. Settings files, saved games, and the answers web
+services send back are very often JSON. It looks like this:
+
+```json
+{
+  "name": "Ada",
+  "level": 7,
+  "tags": ["new", "fast"],
+  "pet": null
+}
+```
+
+JSON has only a few kinds of value: text in double quotes, numbers, `true` and `false`,
+`null` for "nothing here", lists in square brackets, and objects in braces. An object pairs
+names, called keys, with values.
+
+There are two ways to read JSON, depending on what you know about it ahead of time.
+
+**When you know its shape,** describe it with a struct, and [`Json.decode`](#decode) builds
+one for you. [`Json.encode`](#encode) goes the other way. This is the usual way for a program
+to save its own data and load it again:
+
+```emerald
+struct Score {
+    const name: String
+    const points: Int
+}
+
+const text = Json.encode([Score("Ada", 120), Score("Grace", 95)])
+print(text)                                # → [{"name":"Ada","points":120},{"name":"Grace","points":95}]
+
+const scores = Json.decode(text, as: List[Score])
+print(scores[1].points)                    # → 95
+```
+
+**When you don't,** as with an answer from a web service someone else wrote,
+[`Json.parse`](#parse) reads any JSON into a `Json` value. You then look inside it one step at
+a time:
+
+```emerald
+const player = Json.parse('{"name": "Ada", "level": 7, "tags": ["new", "fast"]}')
+print(player.get("name").string())         # → Ada
+print(player.get("tags").at(1).string())   # → fast
+```
+
+Each step, such as `get("tags")`, gives back another `Json` value. The last step turns it into
+an ordinary Emerald value, such as a `String` with `string()` or an `Int` with `int()`.
+[`Json.Kind`](../json-kind/) names the six kinds a `Json` value can be.
+
+When the text isn't JSON, or isn't what the program expected, the error is a
+[`JsonError`](../jsonerror/). Its message says where the problem is:
+
+```text
+at players[0].score: expected a whole number, found the text "high"
+```
+
+## At a glance
+
+| Reading and writing | |
+| --- | --- |
+| [`Json.parse(text)`](#parse) | Any JSON, as a `Json` value to look inside |
+| [`Json.parse_maybe(text)`](#parse_maybe) | The same, or `nothing` when the text isn't JSON |
+| [`Json.decode(text, as: Type)`](#decode) | JSON read into a type the program declares |
+| [`Json.encode(value)`](#encode) | A value written as JSON text |
+
+| Looking inside | |
+| --- | --- |
+| [`kind`](#kind) | Which kind of JSON value it is |
+| [`null?()`](#null-1) | Whether it is JSON's `null` |
+| [`count`](#count) | How many items a list or object has |
+| [`keys()`](#keys) | An object's keys |
+| [`get(key)`](#get), [`get_maybe(key)`](#get_maybe) | An object's value for a key |
+| [`at(index)`](#at), [`at_maybe(index)`](#at_maybe) | A list's item at a position |
+
+| Converting to Emerald values | |
+| --- | --- |
+| [`string()`](#string), [`string_maybe()`](#string_maybe) | Text, as a `String` |
+| [`int()`](#int), [`int_maybe()`](#int_maybe) | A whole number, as an `Int` |
+| [`float()`](#float), [`float_maybe()`](#float_maybe) | Any number, as a `Float` |
+| [`bool()`](#bool), [`bool_maybe()`](#bool_maybe) | `true` or `false`, as a `Bool` |
+| [`list()`](#list), [`list_maybe()`](#list_maybe) | A list, as a `List[Json]` |
+| [`object()`](#object), [`object_maybe()`](#object_maybe) | An object, as a `Dict[String, Json]` |
+
+| Building values | |
+| --- | --- |
+| [`Json.null`](#null) | JSON's `null` |
+| [`Json.from_string(text)`](#from_string), [`Json.from_int(value)`](#from_int), [`Json.from_float(value)`](#from_float), [`Json.from_bool(value)`](#from_bool) | Text, a number, or `true` or `false` |
+| [`Json.from_list(items)`](#from_list), [`Json.from_object(entries)`](#from_object) | A list or an object |
+
+## Reading and writing
+
+<Member owner="Json." name="parse" params="text: String" returns="Json">
+
+Reads `text` as JSON, whatever its shape. Spaces and line breaks between values don't matter.
+
+```emerald
+Json.parse("[1, 2, 3]").count                  # → 3
+Json.parse('{"ok": true}').get("ok").bool()    # → true
+```
+
+<Raises>a `JsonError` when `text` is not JSON. The message gives the line and column of the
+first problem, such as `line 1, column 7: JSON does not allow a comma before "]"`.</Raises>
+
+</Member>
+
+<Member owner="Json." name="parse_maybe" params="text: String" returns="Json?">
+
+Reads `text` as JSON, like [`parse`](#parse), but gives `nothing` when it isn't JSON instead
+of raising an error. Use it when bad text is expected and the program has something sensible
+to do instead.
+
+```emerald
+Json.parse_maybe("[1, 2]")    # → [1,2]
+Json.parse_maybe("{oops}")    # → nothing
+```
+
+</Member>
+
+<Member owner="Json." name="decode" params="text: String, as: Type" returns="Type">
+
+Reads `text` into the type named after `as:`, and gives back a value of that type. The type
+is written just as in a declaration: `Int`, `List[Score]`, `Dict[String, Int]`, or a struct
+of your own.
+
+```emerald
+struct Settings {
+    const name: String
+    const volume: Int = 5
+    const theme: String?
+}
+
+const settings = Json.decode('{"name": "Emerald", "size": 12}', as: Settings)
+print(settings.name)      # → Emerald
+print(settings.volume)    # → 5
+print(settings.theme)     # → nothing
+```
+
+A struct's fields are matched with an object's keys by name. When the text leaves a field
+out, the field takes its default, or `nothing` if it is optional and has no default. Keys
+with no matching field, like `size` above, are ignored. So a settings file saved by an older
+or newer version of the program still loads.
+
+The type can be `String`, `Int`, `Float`, `Bool`, `Json`, an optional, a `List`, a `Dict`
+with `String` keys, an enum (read from its value's name, such as `"hard"`), a date or time
+(`Date`, `Time`, `DateTime`, or `Instant`), or a struct made of those. Anything else, such as
+a class or a `Set`, is reported before the program runs.
+
+`Json.decode` builds a struct through the constructor Emerald gives it, the one that takes
+each field in turn. So a struct that declares its own `constructor` can't be read from JSON:
+its constructor might check or change the values, and `decode` has no way to call it. A
+private field is never read from the text either; it always takes its default.
+
+`Json.decode` has to be called by that name. It can't be stored in a variable, because
+Emerald checks the type after `as:` at each call.
+
+<Raises>a `JsonError` when the text is not JSON, or doesn't fit the type: a field with no
+default is missing, or a value is the wrong kind. The message says where, such as
+`at [0].points: expected a whole number, found the text "ten"`.</Raises>
+
+</Member>
+
+<Member owner="Json." name="encode" params="value: T, pretty: Bool = false" returns="String">
+
+`value` written as JSON text. Normally it is all on one line, with no spaces. With
+`pretty: true`, each item goes on its own line, indented by two spaces, which suits a file
+that people will read.
+
+```emerald
+Json.encode(["Ava": 12, "Noah": 13])    # → {"Ava":12,"Noah":13}
+Json.encode([1.5, 2.0])                 # → [1.5,2.0]
+```
+
+```emerald
+enum Difficulty {
+    easy
+    hard
+}
+
+struct Settings {
+    const name: String
+    const volume: Int
+    const difficulty: Difficulty
+}
+
+print(Json.encode(Settings("Emerald", 7, Difficulty.hard), pretty: true))
+```
+
+That prints:
+
+```json
+{
+  "name": "Emerald",
+  "volume": 7,
+  "difficulty": "hard"
+}
+```
+
+It writes the same types that [`decode`](#decode) reads. A struct's fields appear in the
+order they are declared, and a dictionary's entries in the order they were added. An enum is
+written as its value's name, a date or time as text such as `"2026-09-30"`, and an absent
+optional as `null`. Private fields are never written. A value JSON can't hold, such as a
+`Set`, a class, or a function, is reported before the program runs.
+
+<Raises>a `JsonError` when a `Float` in `value` is infinity or not a number, which JSON has
+no way to write.</Raises>
+
+</Member>
+
+## Looking inside
+
+<Member name="kind" returns="Json.Kind">
+
+Which of JSON's six kinds of value this is. See [`Json.Kind`](../json-kind/).
+
+```emerald
+Json.parse("[1, 2]").kind                      # → Json.Kind.list
+Json.parse('"hi"').kind == Json.Kind.string    # → true
+```
+
+</Member>
+
+<Member name="null?" id="null-1" params="" returns="Bool">
+
+Whether this is JSON's `null`.
+
+```emerald
+Json.parse('{"pet": null}').get("pet").null?()    # → true
+```
+
+A `null` written in the text is a value that is really there, unlike a key that is missing.
+So `get("pet")` above finds a `Json` whose kind is `null`, while
+[`get_maybe`](#get_maybe) for a key that isn't there gives Emerald's `nothing`.
+
+</Member>
+
+<Member name="count" returns="Int">
+
+How many items this list has, or how many entries this object has.
+
+```emerald
+Json.parse("[10, 20, 30]").count           # → 3
+Json.parse('{"a": 1, "b": 2}').count       # → 2
+```
+
+<Raises>a `JsonError` when this is neither a list nor an object.</Raises>
+
+</Member>
+
+<Member name="keys" params="" returns="List[String]">
+
+This object's keys, in the order the text gives them.
+
+```emerald
+Json.parse('{"name": "Ada", "level": 7}').keys()    # → ["name", "level"]
+```
+
+<Raises>a `JsonError` when this is not an object.</Raises>
+
+</Member>
+
+<Member name="get" params="key: String" returns="Json">
+
+The value for `key` in this object.
+
+```emerald
+const player = Json.parse('{"name": "Ada", "level": 7}')
+print(player.get("level").int())    # → 7
+```
+
+<Raises>a `JsonError` when this is not an object, or has no such key. The message lists the
+keys it does have, such as `the document has no key "player"; its keys are "players" and
+"first name"`.</Raises>
+
+</Member>
+
+<Member name="get_maybe" params="key: String" returns="Json?">
+
+The value for `key` in this object, or `nothing` when there is no such key, or this is not
+an object. Use it for a key that may be left out.
+
+With `?.`, the next step runs only when there is a value, and `or` supplies one when there
+isn't:
+
+```emerald
+const settings = Json.parse('{"volume": 7}')
+print(settings.get_maybe("volume")?.int_maybe().or(5))          # → 7
+print(settings.get_maybe("theme")?.string_maybe().or("dark"))   # → dark
+```
+
+</Member>
+
+<Member name="at" params="index: Int" returns="Json">
+
+The item at `index` in this list, counting from 0.
+
+```emerald
+Json.parse('["red", "green"]').at(1).string()    # → green
+```
+
+<Raises>a `JsonError` when this is not a list, or has no item at `index`.</Raises>
+
+</Member>
+
+<Member name="at_maybe" params="index: Int" returns="Json?">
+
+The item at `index` in this list, or `nothing` when there is no such item, or this is not a
+list.
+
+```emerald
+Json.parse("[1, 2]").at_maybe(5)    # → nothing
+```
+
+</Member>
+
+## Converting to Emerald values
+
+Each of these has two forms. The plain one raises an error when the value is the wrong kind,
+and the `_maybe` one gives `nothing` instead.
+
+<Member name="string" params="" returns="String">
+
+This text, as a `String`.
+
+```emerald
+Json.parse('"Ada"').string()    # → "Ada"
+```
+
+<Raises>a `JsonError` when this is not text.</Raises>
+
+</Member>
+
+<Member name="string_maybe" params="" returns="String?">
+
+This text, or `nothing` when this is not text.
+
+```emerald
+Json.parse("42").string_maybe()    # → nothing
+```
+
+</Member>
+
+<Member name="int" params="" returns="Int">
+
+This whole number, as an `Int`. JSON doesn't tell whole numbers from others, so `7`, `7.0`,
+and `7e0` all count.
+
+```emerald
+Json.parse("7").int()      # → 7
+Json.parse("7.0").int()    # → 7
+```
+
+<Raises>a `JsonError` when this is not a whole number, or is too large for an `Int`.</Raises>
+
+</Member>
+
+<Member name="int_maybe" params="" returns="Int?">
+
+This whole number, or `nothing` when this is not a whole number.
+
+```emerald
+Json.parse("2.5").int_maybe()    # → nothing
+```
+
+</Member>
+
+<Member name="float" params="" returns="Float">
+
+This number, whole or not, as a `Float`.
+
+```emerald
+Json.parse("2.5").float()    # → 2.5
+Json.parse("7").float()      # → 7.0
+```
+
+<Raises>a `JsonError` when this is not a number.</Raises>
+
+</Member>
+
+<Member name="float_maybe" params="" returns="Float?">
+
+This number, or `nothing` when this is not a number. Text that looks like a number is still
+text:
+
+```emerald
+Json.parse('"7"').float_maybe()    # → nothing
+```
+
+</Member>
+
+<Member name="bool" params="" returns="Bool">
+
+This `true` or `false`, as a `Bool`.
+
+```emerald
+Json.parse("true").bool()    # → true
+```
+
+<Raises>a `JsonError` when this is neither `true` nor `false`.</Raises>
+
+</Member>
+
+<Member name="bool_maybe" params="" returns="Bool?">
+
+This `true` or `false`, or `nothing` when it is neither.
+
+```emerald
+Json.parse("null").bool_maybe()    # → nothing
+```
+
+</Member>
+
+<Member name="list" params="" returns="List[Json]">
+
+This list's items. Each item is still a `Json` value, so convert each one:
+
+```emerald
+const tags = Json.parse('["new", "fast"]').list()
+print(tags.map { tag => tag.string() })    # → ["new", "fast"]
+```
+
+<Raises>a `JsonError` when this is not a list.</Raises>
+
+</Member>
+
+<Member name="list_maybe" params="" returns="List[Json]?">
+
+This list's items, or `nothing` when this is not a list.
+
+```emerald
+Json.parse("5").list_maybe()    # → nothing
+```
+
+</Member>
+
+<Member name="object" params="" returns="Dict[String, Json]">
+
+This object's entries, in the order the text gives them. It is the way to visit every entry
+when you don't know the keys ahead of time:
+
+```emerald
+const ages = Json.parse('{"Ava": 12, "Noah": 13}').object()
+for (name, age) in ages {
+    print("#{name} is #{age.int()}")
+}
+```
+
+That prints `Ava is 12`, then `Noah is 13`.
+
+<Raises>a `JsonError` when this is not an object.</Raises>
+
+</Member>
+
+<Member name="object_maybe" params="" returns="Dict[String, Json]?">
+
+This object's entries, or `nothing` when this is not an object.
+
+```emerald
+Json.parse("[1]").object_maybe()    # → nothing
+```
+
+</Member>
+
+## Building values
+
+Most programs make JSON by encoding their own structs with [`Json.encode`](#encode). Building
+`Json` values one at a time is for data whose shape the program only decides while it runs.
+A list or object holds values that are already `Json`, so each part is built first.
+
+<Member owner="Json." name="null" returns="Json">
+
+JSON's `null`.
+
+```emerald
+Json.null              # → null
+Json.null.null?()      # → true
+```
+
+</Member>
+
+<Member owner="Json." name="from_string" params="text: String" returns="Json">
+
+`text` as a JSON value.
+
+```emerald
+Json.from_string("hi")    # → "hi"
+```
+
+</Member>
+
+<Member owner="Json." name="from_int" params="value: Int" returns="Json">
+
+A whole number as a JSON value.
+
+```emerald
+Json.from_int(42)    # → 42
+```
+
+</Member>
+
+<Member owner="Json." name="from_float" params="value: Float" returns="Json">
+
+A number as a JSON value. A whole `Float` keeps its `.0` when written.
+
+```emerald
+Json.from_float(3.0)    # → 3.0
+```
+
+<Raises>a `JsonError` when `value` is infinity or not a number.</Raises>
+
+</Member>
+
+<Member owner="Json." name="from_bool" params="value: Bool" returns="Json">
+
+`true` or `false` as a JSON value.
+
+```emerald
+Json.from_bool(true)    # → true
+```
+
+</Member>
+
+<Member owner="Json." name="from_list" params="items: List[Json]" returns="Json">
+
+A JSON list of `items`.
+
+```emerald
+Json.from_list([Json.from_int(1), Json.from_int(2)])    # → [1,2]
+```
+
+</Member>
+
+<Member owner="Json." name="from_object" params="entries: Dict[String, Json]" returns="Json">
+
+A JSON object of `entries`, with its keys in the order they were added.
+
+```emerald
+const player = Json.from_object([
+    "name": Json.from_string("Ada"),
+    "tags": Json.from_list([Json.from_string("new")]),
+])
+print(player)    # → {"name":"Ada","tags":["new"]}
+```
+
+</Member>
+
+## Printing and comparing
+
+A `Json` value prints as JSON text on one line, so text keeps its double quotes. Two values
+are equal when they hold the same data: the order of an object's keys doesn't matter, and
+neither does how a number is written.
+
+```emerald
+Json.parse('{"a": 1, "b": 2}') == Json.parse('{"b": 2, "a": 1}')    # → true
+Json.parse("3") == Json.parse("3.0")                                # → true
+```
+
+## Common mistakes
+
+**Forgetting the last step.** `player.get("name")` is still a `Json` value, not a `String`.
+Printing it shows `"Ada"` with its quotes, and comparing it with `"Ada"` is an error before the
+program runs. Finish with a conversion: `player.get("name").string() == "Ada"`.
+
+**Writing JSON inside double quotes.** Inside a double-quoted string, every `"` in the JSON
+needs a backslash: `"{\"name\": \"Ada\"}"`. A single-quoted string needs none, so
+`'{"name": "Ada"}'` is easier to read and to get right. For longer text, read it from a
+file with [`File.read`](../../files/file/).
+
+**Expecting JSON to be forgiving.** JSON is strict. It has no comments, no comma after the
+last item, no single quotes, and no keys without quotes. Each of these is an error, and the
+message names it: `JSON object keys need double quotes: write "a"`.
+
+**Using `get` for a key that may be missing.** `get` raises an error when the key isn't there.
+If leaving it out is allowed, use [`get_maybe`](#get_maybe) with a fallback, or decode into a
+struct whose field has a default.
