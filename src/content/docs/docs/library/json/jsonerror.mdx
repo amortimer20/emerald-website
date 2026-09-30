@@ -1,0 +1,174 @@
+---
+title: JsonError
+description: The error raised when text is not valid JSON, or when JSON is not what the program asked for.
+sidebar:
+  order: 3
+---
+
+import Member from '../../../../../components/Member.astro';
+
+<p class="reference-facts">Standard library class · Extends <code>RuntimeError</code></p>
+
+A `JsonError` is what Emerald raises when reading or writing [JSON](../json/) goes wrong. It
+happens in two different ways, and the message tells you which:
+
+- **The text isn't JSON.** A bracket is missing, or there is a comma where JSON doesn't allow
+  one. The message gives the line and column where reading stopped.
+- **The JSON is fine, but it isn't what the program asked for.** The program asked for a whole
+  number and found text, or for a key the document doesn't have. The message gives the place in
+  the document.
+
+```emerald
+try {
+    Json.parse("[1, 2,]")
+}
+catch error: JsonError {
+    print(error.message)     # prints line 1, column 7: JSON does not allow a comma before "]"
+}
+```
+
+<Member name="message" returns="String">
+
+What went wrong, and where, in words.
+
+</Member>
+
+## Reading the message
+
+**A problem in the text** begins with `line` and `column`, counting from 1. The place is
+where reading had to stop, which is sometimes just after the mistake. For a comma left before
+a closing bracket, it is the bracket:
+
+```emerald
+const text = """
+    {
+        "name": "Ada",
+        "level": 7,
+    }
+    """
+
+try {
+    Json.parse(text)
+}
+catch error: JsonError {
+    print(error.message)     # prints line 4, column 1: JSON does not allow a comma before "}"
+}
+```
+
+Line 3 is the one with the extra comma, and the message points at the `}` on line 4 that made
+it wrong. These are the mistakes that come up most, and what the message says for each. Every
+one of them is preceded by the line and column.
+
+| The text has | The message says |
+| --- | --- |
+| A comma after the last item | `JSON does not allow a comma before "]"`, or `"}"` |
+| Single quotes: `{'a': 1}` | `JSON strings use double quotes, not single quotes` |
+| A key without quotes: `{a: 1}` | `JSON object keys need double quotes: write "a"` |
+| Two items with no comma between them, or a closing bracket missing | `expected "," or "]" after this value`, or `"}"` |
+| A key with no colon: `{"a" 1}` | `expected ":" after this key` |
+| A comment | `JSON has no comments` |
+| `NaN` or `Infinity` | `NaN is not a JSON number`, or the same for `Infinity` |
+| A number such as `01` | `a number cannot have a leading zero` |
+| `True` instead of `true` | `"True" is not a JSON value` |
+| The same key twice in one object | `the key "a" is already used in this object` |
+| Nothing at all | `the document is empty` |
+| A second value after the first | `the document has more after this value; JSON allows only one value` |
+
+**A problem with the content** begins with `at` and a path to the value that was wrong. The
+path is written the way you would reach the value in a program:
+
+| The path | Where it is |
+| --- | --- |
+| `players` | The `"players"` entry of the top-level object |
+| `players[2]` | Its item at position 2, counting from 0: the third |
+| `players[2].score` | The `"score"` entry of that item |
+| `["first name"]` | A key that isn't a plain word goes in brackets and quotes |
+| `[1].score` | The same, when the top-level value is itself a list |
+
+When the wrong value is the whole document, the message says `the document` instead.
+
+```emerald
+const document = Json.parse('{"players": [{"name": "Ada", "score": 5}, {"name": "Linus", "score": "high"}]}')
+
+try {
+    print(document.get("players").at(1).get("score").int())
+}
+catch error: JsonError {
+    print(error.message)     # prints at players[1].score: expected a whole number, found the text "high"
+}
+```
+
+The path is what makes an error in a large document findable. It stays attached to a value as
+you step through it with [`get`](../json/#get) and [`at`](../json/#at), and
+[`Json.decode`](../json/#decode) builds the same path while it reads into your types. A
+field the document leaves out, with no default to fall back on, says
+`at score: this value is missing`.
+
+When nothing catches the error, the program stops and shows the message with the line of your
+program that led to it:
+
+```text
+main.em:2:7: JsonError: at players[1].score: expected a whole number, found the text "high"
+```
+
+## Where it is raised
+
+| Reading | |
+| --- | --- |
+| [`Json.parse`](../json/#parse) | The text is not JSON |
+| [`Json.decode`](../json/#decode) | The text is not JSON, or does not fit the type after `as:` |
+
+| Looking inside a `Json` value | |
+| --- | --- |
+| [`get`](../json/#get), [`at`](../json/#at) | The key or position is missing, or the value is the wrong kind to look inside |
+| [`count`](../json/#count), [`keys()`](../json/#keys) | The value is not a list or an object |
+| [`string()`](../json/#string), [`int()`](../json/#int), [`float()`](../json/#float), [`bool()`](../json/#bool), [`list()`](../json/#list), [`object()`](../json/#object) | The value is a different [kind](../json-kind/), or `int()` finds a fraction or a number too large for an `Int` |
+
+| Writing | |
+| --- | --- |
+| [`Json.encode`](../json/#encode), [`Json.from_float`](../json/#from_float) | A `Float` is infinity or not a number, which JSON can't write |
+
+## Handling it
+
+Catch `JsonError` where the program can do something sensible about bad JSON, such as falling
+back to defaults:
+
+```emerald
+struct Settings {
+    const name: String = "Player"
+    const volume: Int = 5
+}
+
+func read_settings(text: String): Settings {
+    try {
+        return Json.decode(text, as: Settings)
+    }
+    catch error: JsonError {
+        print("Using the defaults: #{error.message}")
+        return Settings()
+    }
+}
+
+print(read_settings('{"volume": 9}'))
+print(read_settings('{"volume": "loud"}'))
+```
+
+That prints:
+
+```text
+Settings(name: "Player", volume: 9)
+Using the defaults: at volume: expected a whole number, found the text "loud"
+Settings(name: "Player", volume: 5)
+```
+
+A `JsonError` is a [`RuntimeError`](../../../builtins/errors/runtimeerror/), so
+`catch error: RuntimeError` catches it too, along with every other kind of runtime problem.
+Catching `JsonError` by name lets those others keep going. And it works the other way: a
+catch for another kind, such as [`FileError`](../../files/fileerror/), doesn't catch a
+`JsonError`. When the text comes from a file, a program that wants to survive both a missing
+file and a broken one needs a `catch` for each.
+
+If bad input is an ordinary thing to expect and not an emergency, you can skip the error
+entirely. `Json.parse_maybe`, and the `_maybe` form of each lookup and conversion, such as
+[`get_maybe`](../json/#get_maybe) and [`int_maybe`](../json/#int_maybe), give `nothing`
+instead of raising. `Json.decode` has no such form, so catch its error.
