@@ -5,7 +5,7 @@ An ```emerald block followed directly by a ```text title="Output"``` (or "Termin
 as a program, and everything it prints, errors included, must equal the output block exactly. The
 program is saved under the file name the page's messages use, so a diagnostic's `file:line:col`
 must match too. A "Terminal" block shows typed input on the prompt's line; give that input with
---input.
+--input. A block titled "emerald test" or "emerald check" is run with that command instead.
 
   python3 scripts/check-outputs.py src/content/docs/docs/language/variables-and-constants.md variables.em
 
@@ -28,16 +28,18 @@ emerald = os.environ.get("EMERALD", os.path.expanduser(
     "~/.local/share/mise/installs/github-amortimer20-emerald-lang/0.6.0/emerald"))
 text = open(args.page, encoding="utf-8").read()
 pairs = re.findall(
-    r"```emerald\n((?:(?!```).)*?)```[ \t]*\n\s*```text title=\"(Output|Terminal)\"\n((?:(?!```).)*?)```",
+    r"```emerald\n((?:(?!```).)*?)```[ \t]*\n\s*```text title=\"(Output|Terminal|emerald test|emerald check)\"\n((?:(?!```).)*?)```",
     text, re.S)
 mismatches = 0
 for code, kind, shown in pairs:
     folder = tempfile.mkdtemp()
     with open(os.path.join(folder, args.file_name), "w", encoding="utf-8") as program:
         program.write(code)
-    run = subprocess.run([emerald, "run", args.file_name], cwd=folder, capture_output=True,
+    command = kind.split()[1] if kind.startswith("emerald ") else "run"
+    run = subprocess.run([emerald, command, args.file_name], cwd=folder, stdout=subprocess.PIPE,
+                         stderr=subprocess.STDOUT,
                          text=True, encoding="utf-8", input=args.input)
-    got = run.stdout + run.stderr
+    got = run.stdout
     expected = shown
     if kind == "Terminal":
         # A terminal shows each typed answer, and the Enter after it, on its prompt's line;
