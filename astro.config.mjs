@@ -39,7 +39,6 @@ export default defineConfig({
 			sidebar: [
 				{ label: 'About', slug: 'about' },
 				{ label: 'Install', slug: 'install' },
-				{ label: 'Learn', items: [{ autogenerate: { directory: 'learn' } }] },
 				{
 					label: 'Docs',
 					items: [
