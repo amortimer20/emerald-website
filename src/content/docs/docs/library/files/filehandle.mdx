@@ -76,8 +76,8 @@ Hello, Katherine!
 The next line, without its line break, or `nothing` once there are no more lines. Use it in a loop
 that stops at `nothing`, as above.
 
-It splits lines the same way [`File.read_lines`](../file/#read_lines) does: a blank line comes back
-as `""`, a line break at the very end of the file adds no extra line, and a final line with no line
+It splits lines the same way [`File.read_lines`](../file/#read_lines) does: a Windows line break is
+removed whole, a blank line comes back as `""`, a line break at the very end of the file adds no extra line, and a final line with no line
 break is still returned.
 
 <Raises>a [`FileError`](../fileerror/) when the handle has been closed.</Raises>

@@ -850,3 +850,44 @@ A [`Dict`](../dict/) from the key the block gives to each item itself.
 ```
 
 </Member>
+
+## Callbacks and the list they are used on
+
+A block that a list method calls, such as the one given to `remove_if`, `sort_by`, `min_by`, `unique_by`,
+or `group_by`, may *read* the list the method is working on. It may not *change* it. The block sees the
+list as it was when the method started, never a half-sorted or half-trimmed one, and the method puts its
+finished result in place only after every call has succeeded. If a block raises an error, the list is
+left as it was.
+
+```emerald
+var numbers = [1, 2, 3, 4, 5]
+numbers.remove_if { n => n > numbers.count - 2 }
+print(numbers)
+```
+
+```text title="Output"
+[1, 2, 3]
+```
+
+The block reads `numbers.count`, which is 5 for every item, since it sees the original. Changing the list
+from inside the block is refused with an error you can catch, which names the list and the method:
+
+```emerald
+var numbers = [1, 2, 3, 4]
+numbers.remove_if { n =>
+    numbers.append(9)
+    return n > 2
+}
+```
+
+```text title="Output"
+lists.em:3:5: a callback cannot change `numbers` while `remove_if` is using it
+      numbers.append(9)
+      ^^^^^^^
+A callback cannot change the list it is being called for; copy it first, or collect the changes and apply them after.
+in a block, called at lists.em:2:1
+```
+
+A separate copy of the list is a different value and may be changed freely. Otherwise, collect what you
+want to change and apply it after the method finishes. Ordinary visiting methods such as `each` and
+`reduce` work on a snapshot already, and may change the list they started from.

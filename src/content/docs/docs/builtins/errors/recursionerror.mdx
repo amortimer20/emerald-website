@@ -1,0 +1,64 @@
+---
+title: RecursionError
+description: The error raised when a function calls itself too many times.
+sidebar:
+  order: 6
+---
+
+import Member from '../../../../../components/Member.astro';
+
+<p class="reference-facts">Built-in class · Extends <code>RuntimeError</code></p>
+
+A `RecursionError` is what Emerald raises when functions call each other so deeply that it would run
+out of room to keep track of them, which usually means a function that calls itself and never reaches
+a case that stops. Emerald allows at least 1,000 calls to be active at once, and stops the program
+with this error instead of crashing.
+
+```emerald
+func forever(n: Int): Int {
+    return forever(n + 1)
+}
+
+try {
+    forever(0)
+}
+catch error: RecursionError {
+    print(error.message)
+}
+```
+
+```text title="Output"
+too much recursion calling `forever`
+```
+
+A `RecursionError` is a [`RuntimeError`](../runtimeerror/), so `catch error: RuntimeError` catches it
+too. It is almost always a mistake in the function rather than something to recover from, and the
+usual fix is a case that stops the recursion. See [Functions](../../../language/functions/#a-function-that-calls-itself).
+
+<Member name="message" returns="String">
+
+What went wrong, in words, naming the function that was being called.
+
+</Member>
+
+## When nothing catches it
+
+The program stops and shows the message with the calls that led there. A long run of the same call is
+summarized rather than printed a thousand times:
+
+```emerald
+func forever(n: Int): Int {
+    return forever(n + 1)
+}
+
+print(forever(0))
+```
+
+```text title="Output"
+error.em:2:12: RecursionError: too much recursion calling `forever`
+      return forever(n + 1)
+             ^^^^^^^^^^^^^^
+Emerald supports at least 1,000 active calls. Check that the recursion has a case that stops it.
+in `forever`, called at error.em:2:12 (999 times)
+in `forever`, called at error.em:5:7
+```

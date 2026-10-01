@@ -253,7 +253,8 @@ print(factorial(5))
 
 A recursive function that returns a value must state its return type, since Emerald can't work it
 out from a call to itself. Each call must get closer to a case that stops, here `n <= 1`; without
-one, the calls would go on until Emerald stops them with an error.
+one, the calls would go on until Emerald stops them with a
+[`RecursionError`](../../builtins/errors/recursionerror/).
 
 ## What you've learned
 

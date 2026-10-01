@@ -105,7 +105,18 @@ print(lines)
 ["90", "85", "", "70"]
 ```
 
-Every line break ends a line, so a blank line stays in the list as `""`. A line break at the very
+```emerald
+File.write("windows.txt", "one\r\ntwo\r\n")
+print(File.read_lines("windows.txt"))
+```
+
+```text title="Output"
+["one", "two"]
+```
+
+Every line break ends a line, so a blank line stays in the list as `""`. A Windows line break,
+which is two characters, counts as one and is removed whole, so a file reads the same whichever
+computer wrote it. A line break at the very
 end of the file adds no extra line, and a file with nothing in it gives an empty list.
 
 <Raises>a [`FileError`](../fileerror/) in the same cases as [`read`](#read).</Raises>
