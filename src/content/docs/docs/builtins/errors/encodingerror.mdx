@@ -1,0 +1,49 @@
+---
+title: EncodingError
+description: The error raised when bytes or text can't be converted, as when reading bytes as text or decoding Base64.
+sidebar:
+  order: 4
+---
+
+import Member from '../../../../../components/Member.astro';
+
+<p class="reference-facts">Built-in class · Extends <code>RuntimeError</code></p>
+
+An `EncodingError` is what Emerald raises when text or bytes can't be converted from one form to
+another: bytes that aren't valid UTF-8 read as text, hexadecimal text with a stray character, or
+Base64 text that isn't Base64.
+
+```emerald
+const data = Bytes.from_list([255])
+
+try {
+    print(data.to_string())
+}
+catch error: EncodingError {
+    print(error.message)
+}
+```
+
+```text title="Output"
+these Bytes are not valid UTF-8 text
+```
+
+An `EncodingError` is a [`RuntimeError`](../runtimeerror/), so `catch error: RuntimeError` catches it
+too.
+
+<Member name="message" returns="String">
+
+What went wrong, in words, saying which character or position was at fault where there is one.
+
+</Member>
+
+## Where it is raised
+
+| Conversion | Cause |
+| --- | --- |
+| [`Bytes.to_string`](../../types/bytes/#to_string) | The bytes aren't valid UTF-8 text |
+| [`Bytes.from_hex`](../../types/bytes/#from_hex) | An odd number of digits, or a character that isn't a hexadecimal digit |
+| [`Base64.decode`](../../../library/encoding/base64/#decode) | A character, length, padding, or ending that Base64 doesn't allow |
+
+Each has a `_maybe` form that gives `nothing` instead, for input that may well be wrong, such as text a
+person typed.

@@ -1,0 +1,214 @@
+---
+title: Csv
+description: Read and write comma-separated text, such as a spreadsheet export.
+sidebar:
+  order: 1
+---
+
+import Member from '../../../../../components/Member.astro';
+import Raises from '../../../../../components/Raises.astro';
+
+<p class="reference-facts">Standard library namespace · Always available, with no import</p>
+
+CSV is a simple way to write a table as text: one row to a line, with commas between the cells. It is
+what spreadsheets export and what many small programs save. `Csv` reads it and writes it.
+
+There are two ways to read it, depending on whether you know the columns ahead of time.
+
+**When you know them,** describe a row with a struct, and [`Csv.decode`](#decode) turns the text into a
+list of them. [`Csv.encode`](#encode) goes the other way:
+
+```emerald
+struct Score {
+    const name: String
+    const points: Int
+    const team: String? = nothing
+}
+
+const scores = Csv.decode("name,points,team\nAda,120,red\nGrace,95,", as: List[Score])
+print(scores[0].points + scores[1].points)
+print(Csv.encode(scores))
+```
+
+```text title="Output"
+215
+name,points,team
+Ada,120,red
+Grace,95,
+```
+
+**When you don't,** [`Csv.parse`](#parse) gives every row as a list of text, and
+[`Csv.parse_records`](#parse_records) uses the first row as names for the columns:
+
+```emerald
+const rows = Csv.parse_records("name,age\nAda,36\nGrace,45")
+for row in rows {
+    print("#{row["name"].or("?")} is #{row["age"].or("?")}")
+}
+```
+
+```text title="Output"
+Ada is 36
+Grace is 45
+```
+
+CSV text can have a leading byte-order mark, Unix or Windows line endings, cells in quotes that hold
+commas or line breaks, and a doubled quote (`""`) for a quote inside a quoted cell. All are read
+correctly. Every function takes an optional `separator:`, one character, for files that use `;` or a
+tab instead of a comma.
+
+## At a glance
+
+| Reading | |
+| --- | --- |
+| [`Csv.parse(text, separator:)`](#parse) | Every row, as a list of text |
+| [`Csv.parse_records(text, separator:)`](#parse_records) | Each row as a dictionary, keyed by the header |
+| [`Csv.decode(text, as:, separator:)`](#decode) | Each row as a struct of your own |
+
+| Writing | |
+| --- | --- |
+| [`Csv.format(rows, separator:)`](#format) | Rows of text as CSV |
+| [`Csv.encode(records, separator:)`](#encode) | A list of structs as CSV, with a header |
+
+## Reading
+
+<Member owner="Csv." name="parse" params="text: String, separator: String = &quot;,&quot;" returns="List[List[String]]">
+
+Every row as a list of text cells, including a header row if the text has one. Rows can have different
+lengths, since `parse` gives no meaning to columns. An empty text gives an empty list, and a line break
+at the very end doesn't add an empty row.
+
+```emerald
+print(Csv.parse("a,b\n1,2\n"))
+print(Csv.parse("a;b\n1;2", ";"))
+print(Csv.parse("\"x, y\",\"say \"\"hi\"\"\"\n\"two\nlines\",z"))
+```
+
+```text title="Output"
+[["a", "b"], ["1", "2"]]
+[["a", "b"], ["1", "2"]]
+[["x, y", "say \"hi\""], ["two\nlines", "z"]]
+```
+
+<Raises>a [`CsvError`](../csverror/) for a quoted cell that never closes, or a separator that isn't one
+character.</Raises>
+
+</Member>
+
+<Member owner="Csv." name="parse_records" params="text: String, separator: String = &quot;,&quot;" returns="List[Dict[String, String]]">
+
+Uses the first row as the names of the columns, and gives each later row as a dictionary from those
+names to its cells, which are text. The dictionaries keep the columns in their order in the text.
+
+```emerald
+const people = Csv.parse_records("name,age\nAda,36\nGrace,45")
+print(people)
+print(people[1]["name"])
+```
+
+```text title="Output"
+[["name": "Ada", "age": "36"], ["name": "Grace", "age": "45"]]
+Grace
+```
+
+An empty text has no records.
+
+<Raises>a [`CsvError`](../csverror/) when a header name is blank or repeated, or a row doesn't have as
+many cells as the header.</Raises>
+
+</Member>
+
+<Member owner="Csv." name="decode" params="text: String, as: Type, separator: String = &quot;,&quot;" returns="Type">
+
+Reads rows into a list of your own struct, such as `as: List[Score]`. The first row names the columns,
+and each name is matched to a field of the struct. Columns the struct doesn't have are ignored.
+
+A field can be a `String`, `Int`, `Float`, `Bool`, an enum, a `Date`, `Time`, `DateTime`, or `Instant`, or
+an optional of one of those. A `Bool` can be `true` or `false` in any capitals.
+
+```emerald
+enum Color {
+    red, blue
+}
+
+struct Row {
+    const day: Date
+    const color: Color
+    const active: Bool
+    const ratio: Float
+}
+
+const rows = Csv.decode("day,color,active,ratio\n2026-09-25,red,TRUE,2\n", as: List[Row])
+print(rows)
+```
+
+```text title="Output"
+[Row(day: 2026-09-25, color: Color.red, active: true, ratio: 2.0)]
+```
+
+An empty cell is `""` for a `String`, `nothing` for an optional, and the field's default when it has one.
+An empty cell for any other field is an error, and so is a column the struct needs and the text lacks,
+unless the field has a default or is optional. Private fields are never read, so they need defaults.
+
+`as:` takes a type written out in the program, not a value, so `decode` must be written as
+`Csv.decode(...)`, and can't be stored in a name or passed along as a function.
+
+<Raises>a [`CsvError`](../csverror/) for a missing required column, or a cell that can't become its
+field's type. The message names the line and the column.</Raises>
+
+</Member>
+
+## Writing
+
+<Member owner="Csv." name="format" params="rows: List[List[String]], separator: String = &quot;,&quot;" returns="String">
+
+Rows of text written as CSV, with a line break between rows and none at the end. A cell is put in
+quotes only when it has to be, to keep its meaning: when it contains the separator, a quote, or a line
+break, or starts or ends with a space.
+
+```emerald
+const rows = [["a", "b"], ["x, y", "say \"hi\""], [" pad", ""]]
+print(Csv.format(rows))
+print(Csv.format([["a", "b"], ["1", "2"]], ";"))
+```
+
+```text title="Output"
+a,b
+"x, y","say ""hi"""
+" pad",
+a;b
+1;2
+```
+
+</Member>
+
+<Member owner="Csv." name="encode" params="records: List[Record], separator: String = &quot;,&quot;" returns="String">
+
+A list of structs written as CSV: a first row of the fields' names, in the order they are declared, then
+a row for each struct. An empty list still gives the header. Private fields are never written.
+
+The fields can be the same kinds `decode` reads. An optional that is `nothing` is an empty cell, an enum
+is written as its value's name, dates and times as they print, and a `Float` as Emerald shows it, so
+`2.0` stays `2.0`.
+
+```emerald
+struct Score {
+    const name: String
+    const points: Int
+    const team: String? = nothing
+}
+
+const none: List[Score] = []
+print(Csv.encode([Score("Ada", 120)]))
+print(Csv.encode(none))
+```
+
+```text title="Output"
+name,points,team
+Ada,120,
+name,points,team
+```
+
+A struct with a field CSV can't hold, such as a `List`, is caught before the program runs.
+
+</Member>

@@ -63,6 +63,8 @@ export default defineConfig({
 								{ label: 'Regular Expressions', collapsed: true, items: [{ autogenerate: { directory: 'docs/library/regex' } }] },
 								{ label: 'Console', collapsed: true, items: [{ autogenerate: { directory: 'docs/library/console' } }] },
 								{ label: 'JSON', collapsed: true, items: [{ autogenerate: { directory: 'docs/library/json' } }] },
+								{ label: 'CSV', collapsed: true, items: [{ autogenerate: { directory: 'docs/library/csv' } }] },
+								{ label: 'Base64 and Digest', collapsed: true, items: [{ autogenerate: { directory: 'docs/library/encoding' } }] },
 								{ label: 'HTTP', collapsed: true, items: [{ autogenerate: { directory: 'docs/library/http' } }] },
 							],
 						},

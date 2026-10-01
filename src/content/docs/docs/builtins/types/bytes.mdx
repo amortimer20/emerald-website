@@ -30,6 +30,8 @@ can never garble the terminal.
 | --- | --- |
 | [`Bytes.from_list(numbers)`](#from_list) | Bytes from whole numbers |
 | [`to_string()`](#to_string), [`to_string_maybe()`](#to_string_maybe) | The bytes read as text |
+| [`to_hex()`](#to_hex) | The bytes written as hexadecimal digits |
+| [`Bytes.from_hex(text)`](#from_hex), [`Bytes.from_hex_maybe(text)`](#from_hex_maybe) | Bytes read from hexadecimal digits |
 
 | Reading | |
 | --- | --- |
@@ -57,7 +59,7 @@ Bytes made from a list of whole numbers, each from 0 to 255.
 Bytes.from_list([72, 105])   # → Bytes[2: 48 69]
 ```
 
-<Raises>when a number is not from 0 to 255.</Raises>
+<Raises>a `RuntimeError` when a number is not from 0 to 255.</Raises>
 
 </Member>
 
@@ -69,7 +71,7 @@ The bytes read as UTF-8 text.
 "Hi".to_bytes().to_string()   # → "Hi"
 ```
 
-<Raises>when the bytes are not valid UTF-8 text.</Raises>
+<Raises>an [`EncodingError`](../../errors/encodingerror/) when the bytes are not valid UTF-8 text.</Raises>
 
 </Member>
 
@@ -79,6 +81,55 @@ The bytes read as UTF-8 text, or `nothing` when they are not valid text.
 
 ```emerald
 Bytes.from_list([255]).to_string_maybe()   # → nothing
+```
+
+</Member>
+
+<Member name="to_hex" params="" returns="String">
+
+The bytes written as hexadecimal, two lowercase digits for each byte. It is the usual way to show a
+checksum, such as the result of [`Digest.sha256`](../../../library/encoding/digest/#sha256).
+
+```emerald
+print(Bytes.from_list([72, 105, 0, 255]).to_hex())
+```
+
+```text title="Output"
+486900ff
+```
+
+</Member>
+
+<Member owner="Bytes." name="from_hex" id="from_hex" params="text: String" returns="Bytes">
+
+Bytes read from hexadecimal digits, two for each byte, in upper or lower case. It is the opposite of
+`to_hex`.
+
+```emerald
+print(Bytes.from_hex("48690fFF"))
+```
+
+```text title="Output"
+Bytes[4: 48 69 0f ff]
+```
+
+<Raises>an [`EncodingError`](../../errors/encodingerror/) when there is an odd number of digits, or a
+character that isn't a hexadecimal digit.</Raises>
+
+</Member>
+
+<Member owner="Bytes." name="from_hex_maybe" id="from_hex_maybe" params="text: String" returns="Bytes?">
+
+Like `from_hex`, but gives `nothing` instead of raising an error.
+
+```emerald
+print(Bytes.from_hex_maybe("abc"))
+print(Bytes.from_hex_maybe("4869"))
+```
+
+```text title="Output"
+nothing
+Bytes[2: 48 69]
 ```
 
 </Member>

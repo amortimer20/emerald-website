@@ -21,6 +21,10 @@ when a program starts.
 - **[Console](console/console/):** `Console` and `Console.Color`, for styled output, tables,
   and prompts.
 - **[JSON](json/json/):** `Json`, `Json.Kind`, and `JsonError`, to read and write JSON text.
+- **[CSV](csv/csv/):** `Csv` and `CsvError`, to read and write comma-separated tables.
+- **[Base64 and Digest](encoding/base64/):** `Base64` to write binary data as text, and `Digest` for
+  SHA-256 and HMAC-SHA256 fingerprints. Their errors are an
+  [`EncodingError`](../builtins/errors/encodingerror/).
 - **[HTTP](http/http/):** `Http` and `Http.Response`, to make web requests, and `HttpError`.
 
 A name that a program declares itself always wins over one of these, so a program with its own

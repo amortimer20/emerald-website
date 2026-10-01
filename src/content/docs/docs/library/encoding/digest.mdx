@@ -1,0 +1,81 @@
+---
+title: Digest
+description: Fixed-size fingerprints of data, for checking that it hasn't changed.
+sidebar:
+  order: 2
+---
+
+import Member from '../../../../../components/Member.astro';
+
+<p class="reference-facts">Standard library namespace · Always available, with no import</p>
+
+A digest is a short fingerprint of some data. The same data always gives the same digest, and the
+smallest change to it gives a completely different one, so comparing digests is a quick way to check
+that a file or message has not changed. `Digest` makes two kinds: SHA-256, and HMAC-SHA256, which also
+uses a secret key.
+
+```emerald
+const fingerprint = Digest.sha256("abc".to_bytes())
+print(fingerprint.count)
+print(fingerprint.to_hex())
+```
+
+```text title="Output"
+32
+ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad
+```
+
+A digest is [`Bytes`](../../../builtins/types/bytes/), 32 of them. To show or compare one the usual way,
+as hexadecimal text, use `to_hex()`.
+
+These digests never change between versions or computers, so they are safe to save and to compare
+later. That is different from a value's own hash, used by dictionaries and sets, which is an
+internal detail and must not be saved.
+
+Neither function is a way to store passwords. Storing passwords needs a scheme made for the job, which
+is not part of this library.
+
+## At a glance
+
+| Digests | |
+| --- | --- |
+| [`Digest.sha256(bytes)`](#sha256) | The SHA-256 digest of some bytes |
+| [`Digest.hmac_sha256(bytes, key)`](#hmac_sha256) | The HMAC-SHA256 digest of some bytes with a key |
+
+## Digests
+
+<Member owner="Digest." name="sha256" params="bytes: Bytes" returns="Bytes">
+
+The 32-byte SHA-256 digest of `bytes`. To take the digest of text, turn it into bytes first with
+`to_bytes()`.
+
+```emerald
+print(Digest.sha256("".to_bytes()).to_hex())
+```
+
+```text title="Output"
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+```
+
+To check a file, read its bytes with [`File.read_binary`](../../files/file/#read_binary) and take
+their digest.
+
+</Member>
+
+<Member owner="Digest." name="hmac_sha256" params="bytes: Bytes, key: Bytes" returns="Bytes">
+
+The 32-byte HMAC-SHA256 digest of `bytes`, made with a secret `key`. Only someone who knows the key can
+make the digest for a given message, so it shows both that the message is unchanged and that it came
+from someone with the key. Web services often use it to sign what they send.
+
+```emerald
+const message = "what do ya want for nothing?".to_bytes()
+const key = "Jefe".to_bytes()
+print(Digest.hmac_sha256(message, key).to_hex())
+```
+
+```text title="Output"
+5bdcc146bf60754e6a042426089575c75a003f089d2739839dec58b964ec3843
+```
+
+</Member>

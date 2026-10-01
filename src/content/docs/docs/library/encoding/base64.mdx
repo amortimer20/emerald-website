@@ -1,0 +1,114 @@
+---
+title: Base64
+description: Write binary data as text, and read it back.
+sidebar:
+  order: 1
+---
+
+import Member from '../../../../../components/Member.astro';
+import Raises from '../../../../../components/Raises.astro';
+
+<p class="reference-facts">Standard library namespace · Always available, with no import</p>
+
+Base64 writes binary data using only letters, digits, and a few symbols, so it can travel where text
+can: in an email, a web address, or a JSON file. `Base64` converts [`Bytes`](../../../builtins/types/bytes/)
+to that text and back.
+
+```emerald
+const text = Base64.encode("Hello, world!".to_bytes())
+print(text)
+print(Base64.decode(text).to_string())
+```
+
+```text title="Output"
+SGVsbG8sIHdvcmxkIQ==
+Hello, world!
+```
+
+Base64 is a way of writing data, not of protecting it: anyone can decode it. For a checksum, see
+[`Digest`](../digest/).
+
+## At a glance
+
+| Converting | |
+| --- | --- |
+| [`Base64.encode(bytes, url_safe:)`](#encode) | Bytes written as Base64 text |
+| [`Base64.decode(text, url_safe:)`](#decode), [`Base64.decode_maybe(text, url_safe:)`](#decode_maybe) | Base64 text read back into bytes |
+
+## Converting
+
+<Member owner="Base64." name="encode" params="bytes: Bytes, url_safe: Bool = false" returns="String">
+
+The bytes written as Base64. Normally that uses the letters, the digits, `+`, and `/`, and ends with
+`=` signs to fill out the last group. With `url_safe: true`, it uses `-` and `_` in place of `+` and `/`,
+and leaves off the `=` signs, so the result can go in a web address.
+
+```emerald
+const data = Bytes.from_list([251, 255, 254])
+print(Base64.encode(data))
+print(Base64.encode(data, url_safe: true))
+print(Base64.encode("H".to_bytes()))
+print(Base64.encode("H".to_bytes(), url_safe: true))
+```
+
+```text title="Output"
++//+
+-__-
+SA==
+SA
+```
+
+</Member>
+
+<Member owner="Base64." name="decode" params="text: String, url_safe: Bool = false" returns="Bytes">
+
+The bytes that Base64 text stands for. It accepts the text with or without its `=` signs, and ignores
+spaces, tabs, and line breaks, so text wrapped over several lines reads as one.
+
+```emerald
+print(Base64.decode("SGVs bG8=\n").to_string())
+print(Base64.decode("SGVsbG8").to_string())
+```
+
+```text title="Output"
+Hello
+Hello
+```
+
+Say which alphabet to expect. Text that uses the other one is an error, and the message says which to
+choose:
+
+```emerald
+try {
+    Base64.decode("-_-_")
+}
+catch error: EncodingError {
+    print(error.message)
+}
+```
+
+```text title="Output"
+Base64 text has `-` at index 0, which belongs to URL-safe Base64
+```
+
+<Raises>an [`EncodingError`](../../../builtins/errors/encodingerror/) for a character that isn't in the
+alphabet, a length that can't be right, or an ending that doesn't match the data. The message gives the
+position of the problem.</Raises>
+
+</Member>
+
+<Member owner="Base64." name="decode_maybe" params="text: String, url_safe: Bool = false" returns="Bytes?">
+
+Like `decode`, but gives `nothing` instead of raising an error. It suits text a person typed.
+
+```emerald
+print(Base64.decode_maybe("not base64!"))
+print(Base64.decode_maybe("SGk=").or("?".to_bytes()).to_string())
+```
+
+```text title="Output"
+nothing
+Hi
+```
+
+</Member>

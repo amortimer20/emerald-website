@@ -1,0 +1,82 @@
+---
+title: CsvError
+description: The error raised when CSV text is malformed, or doesn't fit what the program asked for.
+sidebar:
+  order: 2
+---
+
+import Member from '../../../../../components/Member.astro';
+
+<p class="reference-facts">Standard library class · Extends <code>RuntimeError</code></p>
+
+A `CsvError` is what Emerald raises when CSV text can't be read: a quoted cell that never closes, a
+header that names a column twice, a row with the wrong number of cells, or a cell that can't become the
+kind of value the program asked for. The message says where the problem is.
+
+```emerald
+struct Score {
+    const name: String
+    const points: Int
+}
+
+try {
+    print(Csv.decode("name,points\nAda,twelve", as: List[Score]))
+}
+catch error: CsvError {
+    print(error.message)
+    print(error.line)
+}
+```
+
+```text title="Output"
+line 2, column "points": expected a whole number, found "twelve"
+2
+```
+
+A `CsvError` is a [`RuntimeError`](../../../builtins/errors/runtimeerror/), so
+`catch error: RuntimeError` catches it too.
+
+<Member name="message" returns="String">
+
+What went wrong, in words, naming the line, and the column where there is one.
+
+</Member>
+
+<Member name="line" returns="Int?">
+
+The line of the text where the problem is, counting from 1, or `nothing` when it isn't about one line,
+such as a column the text lacks altogether.
+
+</Member>
+
+## What the messages say
+
+| Message | When |
+| --- | --- |
+| ``line 2, column "points": expected a whole number, found "twelve"`` | A cell that can't become its field's type |
+| ``line 3, column "points": this cell is empty`` | An empty cell for a field that needs a value |
+| ``there is no column "points"; the columns are "name"`` | A column the struct needs that the text lacks |
+| `line 2 has 3 fields, but the header has 2` | A row with the wrong number of cells, for `decode` and `parse_records` |
+| `the header names the column "name" twice` | A header with a repeated or blank name |
+| `line 1: a quoted field that starts here never closes` | A quote with no closing quote |
+| `a separator must be one character, not "ab"` | A `separator:` that isn't a single character |
+
+## Avoiding the error
+
+A CSV file usually comes from somewhere else, so mistakes in it are to be expected. Catch the error
+around the one call that reads it, and say what is wrong, using `line` to point the person to it:
+
+```emerald
+const text = "name,points\nAda,12\nGrace"
+
+try {
+    print(Csv.parse_records(text))
+}
+catch error: CsvError {
+    print("The file has a problem. #{error.message}")
+}
+```
+
+```text title="Output"
+The file has a problem. line 3 has 1 fields, but the header has 2
+```
