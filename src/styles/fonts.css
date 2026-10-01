@@ -1,0 +1,19 @@
+/* JetBrains Mono is served from this site, in full. Google Fonts' copy leaves out the box-drawing
+   characters (U+2500 to U+257F, used by Console tables and panels) and some arrows, so a browser
+   drew those from another font whose width and height did not match, and tables broke apart.
+   JetBrains Mono is licensed under the SIL Open Font License 1.1. */
+@font-face {
+	font-family: 'JetBrains Mono';
+	font-style: normal;
+	font-weight: 400;
+	font-display: swap;
+	src: url('/fonts/JetBrainsMono-Regular.woff2') format('woff2');
+}
+
+@font-face {
+	font-family: 'JetBrains Mono';
+	font-style: normal;
+	font-weight: 600;
+	font-display: swap;
+	src: url('/fonts/JetBrainsMono-SemiBold.woff2') format('woff2');
+}

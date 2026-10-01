@@ -78,3 +78,29 @@
 	font-size: var(--sl-text-sm);
 	color: var(--sl-color-gray-2);
 }
+
+/* Console tables and panels are drawn with box characters. JetBrains Mono's lines join from one row
+   to the next only when the line height equals the font's own (1.32), so a block that holds them
+   uses that, instead of the roomier height of other code. See src/plugins/box-art.mjs. */
+.expressive-code .box-art {
+	--ec-codeLineHt: 1.32;
+}
+
+/* The "At a glance" tables on a reference page have a blank second heading. Stacked one above
+   another, each sized itself to its own text, so their columns never lined up. They share one
+   width and one split instead. */
+.sl-markdown-content table:has(thead th:nth-child(2):empty) {
+	display: table;
+	width: 100%;
+	table-layout: fixed;
+}
+
+.sl-markdown-content table:has(thead th:nth-child(2):empty) th:first-child,
+.sl-markdown-content table:has(thead th:nth-child(2):empty) td:first-child {
+	width: 56%;
+}
+
+.sl-markdown-content table:has(thead th:nth-child(2):empty) td,
+.sl-markdown-content table:has(thead th:nth-child(2):empty) td code {
+	overflow-wrap: anywhere;
+}

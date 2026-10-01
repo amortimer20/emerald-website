@@ -219,19 +219,8 @@ print(Console.table([Order("Tea", 12, 3.5), Order("Biscuits", 1200, 12.25)]))
 └──────────┴──────────┴───────┘
 ```
 
-Columns are as wide as their widest cell, measured as they appear on screen, so wide characters
-such as `日本` and emoji line up, and styling takes no room:
-
-```emerald
-print(Console.table([["日本", "x"], ["a", "bb"]]))
-```
-
-```text title="Output"
-┌──────┬────┐
-│ 日本 │ x  │
-│ a    │ bb │
-└──────┴────┘
-```
+Columns are as wide as their widest cell, measured in terminal columns, so wide characters such as
+`日本` and emoji, which take two columns each, still line up in a terminal, and styling takes no room.
 
 An empty list gives an empty string, or only the header when there is one:
 

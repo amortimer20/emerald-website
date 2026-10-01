@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 import { FONTS } from './src/fonts.mjs';
+import { pluginBoxArt } from './src/plugins/box-art.mjs';
 
 // The Art Deco syntax themes, in the colours of the landing page's code.
 function decoTheme(name) {
@@ -30,10 +31,11 @@ export default defineConfig({
 				{ tag: 'link', attrs: { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: true } },
 				{ tag: 'link', attrs: { rel: 'stylesheet', href: FONTS } },
 			],
-			customCss: ['./src/styles/theme.css', './src/styles/reference.css'],
+			customCss: ['./src/styles/fonts.css', './src/styles/theme.css', './src/styles/reference.css'],
 			expressiveCode: {
 				themes: [decoTheme('deco-dark'), decoTheme('deco-light')],
 				shiki: { langs: [emeraldGrammar()] },
+				plugins: [pluginBoxArt()],
 				styleOverrides: { borderRadius: '0.3rem', frames: { frameBoxShadowCssValue: 'none' } },
 			},
 			sidebar: [
