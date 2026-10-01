@@ -172,8 +172,8 @@ Math.arc_tan2(-1, -1).to_degrees()   # → -135.0
 
 <Member owner="Math." name="natural_log" params="value: Float" returns="Float">
 
-The logarithm with base e: the power e must be raised to to give `value`. A negative `value`
-gives `NaN`, and `0` gives `-Infinity`.
+The natural logarithm: the power that e must be raised to in order to get `value`. A negative
+`value` gives `NaN`, and `0` gives `-Infinity`.
 
 ```emerald
 Math.natural_log(Math.e)   # → 1.0
@@ -196,8 +196,8 @@ Math.log10(1000)   # → 3.0
 
 <Member owner="Math." name="log" params="value: Float, base: Float" returns="Float">
 
-The logarithm with any `base`: the power `base` must be raised to to give `value`. A negative
-`value`, or a `base` that is zero, negative, or `1`, gives `NaN`.
+The logarithm with any `base`: the power that `base` must be raised to in order to get `value`.
+A negative `value`, or a `base` that is zero, negative, or `1`, gives `NaN`.
 
 ```emerald
 Math.log(8, 2)    # → 3.0
