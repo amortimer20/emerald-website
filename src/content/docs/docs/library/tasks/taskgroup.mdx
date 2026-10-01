@@ -1,0 +1,114 @@
+---
+title: TaskGroup
+description: The group a task is started in, and the rules for what a task may use.
+sidebar:
+  order: 2
+---
+
+import Member from '../../../../../components/Member.astro';
+import Raises from '../../../../../components/Raises.astro';
+
+<p class="reference-facts">Standard library class · Given to the block of <code>Tasks.run</code></p>
+
+A `TaskGroup` is where tasks are started. A program never makes one itself: [`Tasks.run`](../tasks/#run)
+makes it, and hands it to the block. The group stays in charge of its tasks, and `Tasks.run` doesn't
+finish until they all have.
+
+```emerald
+Tasks.run { tasks =>
+    const greeting = tasks.start { => "hello" }
+    const number = tasks.start { => 6 * 7 }
+    print(greeting.result(), number.result())
+}
+```
+
+```text title="Output"
+hello 42
+```
+
+A group can start work only while its `Tasks.run` is still going; starting a task after the block has
+finished is an error.
+
+## At a glance
+
+| Starting | |
+| --- | --- |
+| [`start { ... }`](#start) | Begin a task, and get a [`Task`](../task/) for its result |
+
+## Starting
+
+<Member name="start" params="" block="=> ..." returns="Task[T]">
+
+Starts a task that runs the block, and gives back a [`Task`](../task/) for its result. The type of the
+task follows from the block: `{ => 42 }` makes a `Task[Int]`, `{ => "text" }` a `Task[String]`, and a block
+with no result makes a `Task[Nothing]`.
+
+The block doesn't run at once. It waits its turn, and starts when the code that started it waits, or
+calls [`Tasks.yield`](../tasks/#yield):
+
+```emerald
+Tasks.run { tasks =>
+    tasks.start { =>
+        print("the task runs")
+    }
+    print("the group block carries on")
+}
+print("done")
+```
+
+```text title="Output"
+the group block carries on
+the task runs
+done
+```
+
+**What a task block may use.** A task has to be written right where it starts, as a block with `=>`. It
+can't be a named function or a lambda kept in a name. Inside it, you can use any `const` or parameter from
+the code around it, but not a `var`. A `var` could be changed by two tasks at once, and sharing one is
+the mistake tasks are built to avoid. Emerald refuses it, and says what to do:
+
+```emerald
+var count = 0
+
+Tasks.run { tasks =>
+    tasks.start { =>
+        count += 1
+    }
+}
+```
+
+```text title="Output"
+tasks.em:5:9: a task block cannot capture the variable `count`
+          count += 1
+          ^^^^^
+Return a value from the task or use a channel to share `count`.
+```
+
+A `var` declared inside the task is fine, since only that task can reach it. To get a value out of a task,
+return it and read it with `result()`, or send it down a [`Channel`](../channel/).
+
+A task can also start more tasks of its own through a group it makes with `Tasks.run`.
+
+**The limit.** No more than 64 tasks can be live at one time. Tasks that have finished don't count,
+so wait for a task's result before starting more when there are many:
+
+```emerald
+Tasks.run { tasks =>
+    for n in 1..70 {
+        tasks.start { => Program.sleep(Duration(seconds: 1)) }
+    }
+}
+```
+
+```text title="Output"
+tasks.em:3:9: Tasks.run cannot start more than 64 tasks at once
+          tasks.start { => Program.sleep(Duration(seconds: 1)) }
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Wait for a task's result before starting more tasks.
+in a block, called at tasks.em:1:1
+```
+
+<Raises>a `RuntimeError` when more than 64 tasks would be live, or when the group's `Tasks.run` has
+already finished.</Raises>
+
+</Member>

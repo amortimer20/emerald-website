@@ -1,0 +1,154 @@
+---
+title: Task
+description: A piece of work running in a group, whose result can be waited for.
+sidebar:
+  order: 3
+---
+
+import Member from '../../../../../components/Member.astro';
+import Raises from '../../../../../components/Raises.astro';
+
+<p class="reference-facts">Standard library class · Made by <code>TaskGroup.start</code></p>
+
+A `Task[T]` is a piece of work started in a [`TaskGroup`](../taskgroup/), which will produce a result of
+type `T`. It is the program's handle on that work: wait for the result, check whether it has finished,
+or ask it to stop.
+
+```emerald
+Tasks.run { tasks =>
+    const job = tasks.start { =>
+        Program.sleep(Duration(milliseconds: 50))
+        return "finished"
+    }
+    print(job.done?())
+    print(job.result())
+    print(job.done?())
+}
+```
+
+```text title="Output"
+false
+finished
+true
+```
+
+## At a glance
+
+| Results | |
+| --- | --- |
+| [`result()`](#result) | Wait for the task, and give its result |
+| [`wait(timeout)`](#wait) | Wait for the task, but only so long |
+| [`done?()`](#done) | Whether the task has finished |
+
+| Stopping | |
+| --- | --- |
+| [`cancel()`](#cancel) | Ask the task to stop |
+
+## Results
+
+<Member name="result" params="" returns="T">
+
+Waits for the task to finish, and gives what its block returned. If the task failed, it raises the
+task's error instead. Once the task has finished, `result()` can be called again, and from outside the
+group, and gives the same answer.
+
+```emerald
+const job = Tasks.run { tasks =>
+    return tasks.start { => 42 }
+}
+print(job.result())
+print(job.result())
+```
+
+```text title="Output"
+42
+42
+```
+
+A task's result is an ordinary value. Lists, dictionaries, strings, and structs are copied as they
+always are, while an object of a class is shared.
+
+<Raises>the task's own error, when it failed, or [`CancelledError`](../cancellederror/) when it was
+cancelled.</Raises>
+
+</Member>
+
+<Member name="wait" params="timeout: Duration" returns="Bool">
+
+Waits for the task to finish, but for no longer than `timeout`. It gives `true` if the task finished in
+time, which includes a task that finished by failing, and `false` if it is still running, in which case
+it carries on. Call `result()` afterwards to get the value or the error.
+
+```emerald
+Tasks.run { tasks =>
+    const slow = tasks.start { =>
+        Program.sleep(Duration(milliseconds: 300))
+        return "done"
+    }
+    print(slow.wait(Duration(milliseconds: 20)))
+    print(slow.wait(Duration(seconds: 2)))
+    print(slow.result())
+}
+```
+
+```text title="Output"
+false
+true
+done
+```
+
+A timeout of zero checks without waiting.
+
+<Raises>a `RuntimeError` for a negative timeout.</Raises>
+
+</Member>
+
+<Member name="done?" id="done" params="" returns="Bool">
+
+Whether the task has finished, without waiting to find out. A task that failed or was cancelled counts as
+finished.
+
+</Member>
+
+<Member name="cancel" params="">
+
+Asks the task to stop. It doesn't wait for the task to do so, and doesn't stop it at once: the task notices
+at the next place it waits, such as `Program.sleep`, a channel, or a file, and then raises
+[`CancelledError`](../cancellederror/) there. Its `finally` blocks run first.
+
+```emerald
+Tasks.run { tasks =>
+    const sleeper = tasks.start { =>
+        try {
+            Program.sleep(Duration(seconds: 5))
+            print("not reached")
+        }
+        finally {
+            print("cleaning up")
+        }
+    }
+    print(sleeper.wait(Duration(milliseconds: 50)))
+    sleeper.cancel()
+    print(sleeper.wait(Duration(seconds: 1)))
+    try {
+        sleeper.result()
+    }
+    catch error: CancelledError {
+        print("result raised: #{error.message}")
+    }
+}
+print("group ok")
+```
+
+```text title="Output"
+false
+cleaning up
+true
+result raised: this task was cancelled
+group ok
+```
+
+Cancelling a task that has already finished does nothing. A task that was cancelled on purpose doesn't
+make its group fail, though asking for its `result()` still raises the cancellation.
+
+</Member>

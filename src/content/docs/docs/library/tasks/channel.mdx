@@ -1,0 +1,204 @@
+---
+title: Channel
+description: A queue that one task sends values into and another receives from.
+sidebar:
+  order: 4
+---
+
+import Member from '../../../../../components/Member.astro';
+import Raises from '../../../../../components/Raises.astro';
+
+<p class="reference-facts">Standard library class · Written <code>Channel[Int](capacity: 2)</code>, with its type in an annotation</p>
+
+A `Channel` carries values from one task to another. One task `send`s into it and another `receive`s from
+it, and each waits for the other when it has to. It is how tasks hand work on without sharing a `var`.
+
+```emerald
+Tasks.run { tasks =>
+    const numbers: Channel[Int] = Channel(capacity: 2)
+
+    tasks.start { =>
+        for n in 1..5 {
+            numbers.send(n)
+        }
+        numbers.close()
+    }
+
+    var total = 0
+    for n in numbers {
+        total += n
+    }
+    print("total: #{total}")
+}
+```
+
+```text title="Output"
+total: 15
+```
+
+One task sends the numbers 1 to 5 and then closes the channel to say there are no more. The group's own
+block receives with a `for` loop, which keeps going until the channel is closed and empty.
+
+A channel has a type for what it carries, and every value sent must match it. The type is written in an
+annotation on the name, as `Channel[Int]` above, because there is nothing in `Channel(capacity: 2)` to
+say what will be sent. Messages go through in the order they were sent, and a value that is sent is the
+same kind of copy as anywhere else in Emerald: lists, dictionaries, strings, and structs are copied, and
+an object of a class is shared.
+
+A channel is shared by every task that names it, not copied.
+
+## At a glance
+
+| Making one | |
+| --- | --- |
+| [`Channel(capacity:)`](#channel) | A channel, with room for some waiting messages |
+
+| Passing values | |
+| --- | --- |
+| [`send(value)`](#send) | Put a value in, waiting for room if needed |
+| [`receive()`](#receive) | Take the next value, or `nothing` once the channel is finished |
+| [`for item in channel`](#receive) | Take every value until the channel is finished |
+
+| Finishing | |
+| --- | --- |
+| [`close()`](#close) | Say that nothing more will be sent |
+
+## Making one
+
+<Member name="Channel" id="channel" params="capacity: Int = 0" returns="Channel[T]">
+
+A channel for values of type `T`. `capacity` is how many messages can wait in it. With the default of
+zero, a `send` waits until a task is ready to receive, so sender and receiver meet:
+
+```emerald
+Tasks.run { tasks =>
+    const words: Channel[String] = Channel()
+    tasks.start { =>
+        print("sending")
+        words.send("hello")
+        print("sent")
+    }
+    print("receiving")
+    print(words.receive())
+}
+```
+
+```text title="Output"
+receiving
+sending
+sent
+hello
+```
+
+With a positive capacity, a sender can put that many messages in and carry on, and then waits for a
+receiver to make room. Senders wait in the order they arrived, and so do receivers. A small capacity keeps
+a fast sender from running far ahead of a slow receiver.
+
+The values a channel carries can't themselves be optional, because `nothing` is how `receive` says the
+channel is finished. To send something that might be missing, put it in a field of a struct:
+
+```emerald
+struct Reading {
+    const sensor: String
+    const value: Int?
+}
+
+const readings: Channel[Reading] = Channel(capacity: 4)
+```
+
+A `Channel[Int?]` is refused before the program runs, with the advice to wrap the value in a struct.
+
+<Raises>a `RuntimeError` for a negative capacity.</Raises>
+
+</Member>
+
+## Passing values
+
+<Member name="send" params="value: T">
+
+Puts a value into the channel. If the channel has no room, it waits, until a receiver takes a message or
+makes room.
+
+```emerald
+const queue: Channel[String] = Channel(capacity: 1)
+queue.close()
+
+try {
+    queue.send("too late")
+}
+catch error: RuntimeError {
+    print(error.message)
+}
+```
+
+```text title="Output"
+cannot send to a closed channel
+```
+
+<Raises>a `RuntimeError` when the channel is closed. A message that was already handed over stays
+delivered. It can also raise [`CancelledError`](../cancellederror/) while waiting, and
+[`DeadlockError`](../deadlockerror/) when nothing could ever take the message.</Raises>
+
+</Member>
+
+<Member name="receive" params="" returns="T?">
+
+Takes the next message, waiting for one if there is none yet. When the channel has been closed and
+nothing is left in it, it gives `nothing`, so a loop can tell that the sending is over.
+
+```emerald
+Tasks.run { tasks =>
+    const words: Channel[String] = Channel(capacity: 2)
+    tasks.start { =>
+        words.send("one")
+        words.send("two")
+        words.close()
+    }
+
+    var word = words.receive()
+    while word != nothing {
+        print(word)
+        word = words.receive()
+    }
+    print("channel finished")
+}
+```
+
+```text title="Output"
+one
+two
+channel finished
+```
+
+A `for` loop does exactly this for you: `for item in channel { ... }` receives until the channel is
+closed and empty. It is usually the clearest way to read a channel.
+
+<Raises>[`CancelledError`](../cancellederror/) while waiting, if the task is cancelled, and
+[`DeadlockError`](../deadlockerror/) when nothing could ever send.</Raises>
+
+</Member>
+
+## Finishing
+
+<Member name="close" params="">
+
+Says that nothing more will be sent. Messages already in the channel can still be received, and every
+task waiting to receive wakes up and gets `nothing`. Closing a channel that is already closed does
+nothing, so it is safe to close one twice.
+
+```emerald
+const queue: Channel[Int] = Channel(capacity: 1)
+queue.send(7)
+queue.close()
+print(queue.receive())
+print(queue.receive())
+```
+
+```text title="Output"
+7
+nothing
+```
+
+Close a channel from the side that sends, once it is done, so that the receivers know to stop.
+
+</Member>

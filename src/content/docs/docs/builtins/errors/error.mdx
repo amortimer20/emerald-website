@@ -46,4 +46,8 @@ What went wrong, in words.
 </Member>
 
 Emerald's own errors are [`RuntimeError`](../runtimeerror/), for a problem found while the
-program runs, and [`AssertionError`](../assertionerror/), for a failed `assert`.
+program runs, and [`AssertionError`](../assertionerror/), for a failed `assert`. Two kinds of
+`RuntimeError` come up in everyday programs: [`EncodingError`](../encodingerror/), for bytes or text
+that can't be converted, and [`InputError`](../inputerror/), for input that ends or isn't text. The
+standard library adds its own, and [`CancelledError`](../../../library/tasks/cancellederror/) extends
+`Error` directly, so catching `RuntimeError` doesn't catch a cancelled task.

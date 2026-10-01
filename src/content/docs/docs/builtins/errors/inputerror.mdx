@@ -1,0 +1,53 @@
+---
+title: InputError
+description: The error raised when input ends before a program gets its answer, or isn't valid text.
+sidebar:
+  order: 5
+---
+
+import Member from '../../../../../components/Member.astro';
+
+<p class="reference-facts">Built-in class · Extends <code>RuntimeError</code></p>
+
+An `InputError` is what Emerald raises when a program asks for a line of input and can't get one:
+the input has ended, as when it comes from a file that ran out, or the line isn't valid text. It comes
+from [`input`](../../functions/input/) and from the questions [`Console`](../../../library/console/console/)
+asks.
+
+```emerald input="-"
+try {
+    const name = input("What is your name? ")
+    print("Hello, #{name}!")
+}
+catch error: InputError {
+    print("No answer came: #{error.message}")
+}
+```
+
+```text title="Output"
+What is your name? No answer came: `input` reached the end of the input
+```
+
+When someone is typing at a keyboard, input doesn't end until they close it, so the usual place to meet
+this error is a program whose input is a file or another program's output. To read until the input
+runs out without an error, use [`input_maybe`](../../functions/input/#input_maybe), which gives
+`nothing` at the end.
+
+An `InputError` is a [`RuntimeError`](../runtimeerror/), so `catch error: RuntimeError` catches it
+too.
+
+<Member name="message" returns="String">
+
+What went wrong, in words, naming the function that was reading.
+
+</Member>
+
+## What the messages say
+
+| Message | When |
+| --- | --- |
+| `` `input` reached the end of the input `` | There is no more input to read |
+| `the line read by `input` is not valid UTF-8 text` | The line holds bytes that aren't text; this is raised by `input_maybe` too |
+
+The questions `Console` asks name themselves in the first message, as in
+`` `Console.ask` reached the end of the input ``.

@@ -241,7 +241,7 @@ it says so and asks again, so the program gets a usable answer. Any message of t
 when styling is on.
 
 If the input ends before an answer arrives, as when a program's input comes from a file that ran out,
-the error is an `InputError` that names the question. To handle that, use [`input_maybe`](../../../builtins/functions/input/#input_maybe)
+the error is an [`InputError`](../../../builtins/errors/inputerror/) that names the question. To handle that, use [`input_maybe`](../../../builtins/functions/input/#input_maybe)
 instead.
 
 <Member owner="Console." name="ask" params="question: String, default: String? = nothing" returns="String">

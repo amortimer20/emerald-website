@@ -1,0 +1,47 @@
+---
+title: DeadlockError
+description: The error raised when every task is waiting and nothing can ever wake one.
+sidebar:
+  order: 6
+---
+
+import Member from '../../../../../components/Member.astro';
+
+<p class="reference-facts">Standard library class · Extends <code>RuntimeError</code></p>
+
+A `DeadlockError` is what Emerald raises when every task is waiting for something, and nothing is going to
+happen that could end any of the waits. Instead of leaving the program hanging forever, Emerald stops it
+and says what each task was waiting for, and where.
+
+```emerald
+Tasks.run { tasks =>
+    const numbers: Channel[Int] = Channel()
+    print(numbers.receive())
+}
+```
+
+```text title="Output"
+tasks.em:3:11: DeadlockError: these tasks are waiting for each other
+      print(numbers.receive())
+            ^^^^^^^^^^^^^^^^^
+At `tasks.em:3`, the group is waiting to receive from channel 1.
+Check the task results they wait for.
+in a block, called at tasks.em:1:1
+```
+
+Here nothing will ever send into the channel, so waiting for a message can never end. The message names
+the place each task is stuck, which is usually enough to see what is missing: a `send` that was never
+written, a channel that was never closed, or two tasks each waiting for the other's result.
+
+A `DeadlockError` is a [`RuntimeError`](../../../builtins/errors/runtimeerror/), so `catch error: RuntimeError`
+catches it too. It is a mistake in the program's design rather than a problem to recover from, so it is
+usually better to fix the waiting than to catch the error.
+
+A program that is waiting for a timer, a file, a web request, or input isn't deadlocked, since those can
+still end the wait. Emerald raises this error only when nothing outside the program could wake it either.
+
+<Member name="message" returns="String">
+
+What went wrong, in words.
+
+</Member>

@@ -1,0 +1,61 @@
+---
+title: CancelledError
+description: The error raised inside a task that has been cancelled.
+sidebar:
+  order: 5
+---
+
+import Member from '../../../../../components/Member.astro';
+
+<p class="reference-facts">Standard library class · Extends <code>Error</code></p>
+
+A `CancelledError` is what is raised inside a task that has been asked to stop, at the next place the task
+waits. It is also what [`result()`](../task/#result) raises when asked for the result of a task that was
+cancelled. It is how a cancelled task unwinds: it runs its cleanup and ends.
+
+```emerald
+Tasks.run { tasks =>
+    const sleeper = tasks.start { =>
+        Program.sleep(Duration(seconds: 5))
+    }
+    sleeper.cancel()
+    try {
+        sleeper.result()
+    }
+    catch error: CancelledError {
+        print(error.message)
+    }
+}
+```
+
+```text title="Output"
+this task was cancelled
+```
+
+A `CancelledError` extends `Error` directly, **not** [`RuntimeError`](../../../builtins/errors/runtimeerror/).
+That is deliberate: a program's `catch error: RuntimeError`, written to handle something that went wrong,
+doesn't swallow a cancellation. A task that catches every error with a plain `catch error` should raise
+the error again, since swallowing a cancellation would leave a task that was meant to stop running on.
+
+<Member name="message" returns="String">
+
+What happened, in words.
+
+</Member>
+
+## Cleanup always runs
+
+A `finally` block runs when a task is cancelled, and it is protected from cancellation, even when the
+cleanup itself has to wait. Closing a file, releasing something, or telling another task can be done there
+and will always complete. See the example under [`Task.cancel`](../task/#cancel).
+
+A cancelled group cancels and finishes its inner groups before its own cleanup ends, and a program that
+calls `exit()` cancels and waits for its running tasks first.
+
+## What can be cancelled
+
+A task is cancelled at the next place it waits for something: `Program.sleep`, a channel's `send` or
+`receive`, another task's `result`, a web request, or a wait for input. Files are the exception: a file
+operation finishes first, and the cancellation arrives right after. That is nearly always immediate, but
+a file that is really a slow device can delay it. A task that only calculates, and never waits, can't be
+cancelled until it does; calling [`Tasks.yield`](../tasks/#yield) in a long loop gives it a place.

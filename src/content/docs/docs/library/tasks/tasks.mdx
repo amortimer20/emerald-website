@@ -1,0 +1,193 @@
+---
+title: Tasks
+description: Start a group of tasks, and let other tasks run.
+sidebar:
+  order: 1
+---
+
+import Member from '../../../../../components/Member.astro';
+import Raises from '../../../../../components/Raises.astro';
+
+<p class="reference-facts">Standard library namespace · Always available, with no import</p>
+
+`Tasks` has the two things a program does with tasks as a whole: make a group of them with
+`Tasks.run`, and let the others run with `Tasks.yield`. The tasks themselves are started from the group,
+with [`TaskGroup.start`](../taskgroup/#start), and read with [`Task`](../task/). The
+[overview](../) explains what tasks are for.
+
+```emerald
+Tasks.run { tasks =>
+    const first = tasks.start { => 10 }
+    const second = tasks.start { => 20 }
+    print(first.result(), second.result())
+}
+```
+
+```text title="Output"
+10 20
+```
+
+## At a glance
+
+| Groups | |
+| --- | --- |
+| [`Tasks.run(body)`](#run) | Run a block with a group of tasks, and wait for them all |
+
+| Taking turns | |
+| --- | --- |
+| [`Tasks.yield()`](#yield) | Let the other ready tasks run |
+
+## Groups
+
+<Member owner="Tasks." name="run" params="" block="tasks: TaskGroup => ..." returns="the block's result">
+
+Runs the block, giving it a [`TaskGroup`](../taskgroup/) to start tasks from. Then it waits for every
+task started through that group, including any those tasks started in turn, and returns what the block
+returned.
+
+```emerald
+const total = Tasks.run { tasks =>
+    const a = tasks.start { => 1 + 2 }
+    const b = tasks.start { => 3 + 4 }
+    return a.result() + b.result()
+}
+print(total)
+```
+
+```text title="Output"
+10
+```
+
+No task outlives its group. Groups can be nested, and an inner group finishes before the task that
+started it does:
+
+```emerald
+Tasks.run { outer =>
+    outer.start { =>
+        Tasks.run { inner =>
+            const answer = inner.start { => 5 }
+            print("inner result #{answer.result()}")
+        }
+    }
+}
+print("all done")
+```
+
+```text title="Output"
+inner result 5
+all done
+```
+
+**When something fails.** If the block, or any task in the group, raises an error, the remaining tasks
+are cancelled, their cleanup code runs, and all of them are finished with before the first error is
+raised from `Tasks.run`:
+
+```emerald
+class Oops extends Error {
+}
+
+try {
+    Tasks.run { tasks =>
+        tasks.start { =>
+            raise Oops("it broke")
+        }
+        tasks.start { =>
+            try {
+                Program.sleep(Duration(seconds: 5))
+                print("finished the long wait")
+            }
+            finally {
+                print("long task cleaning up")
+            }
+        }
+        print("started both")
+    }
+}
+catch error: Oops {
+    print("caught: #{error.message}")
+}
+```
+
+```text title="Output"
+started both
+long task cleaning up
+caught: it broke
+```
+
+The long task never finished its five-second wait: it was cancelled, ran its `finally`, and only then did
+the error come out. A program that asks for a task's `result()` and catches the error there has dealt
+with it, and the group doesn't raise it again:
+
+```emerald
+class Oops extends Error {
+}
+
+Tasks.run { tasks =>
+    const risky = tasks.start { =>
+        raise Oops("handled")
+    }
+    try {
+        risky.result()
+    }
+    catch error: Oops {
+        print("owner saw: #{error.message}")
+    }
+}
+print("group finished normally")
+```
+
+```text title="Output"
+owner saw: handled
+group finished normally
+```
+
+Print results in the order you want from the group's own block, as above, rather than from inside tasks
+that wait on files, the network, or input. Those can finish in either order, so output printed inside
+them can come out differently from run to run.
+
+<Raises>the first error from the block or a task, once everything in the group has been cancelled and
+finished.</Raises>
+
+</Member>
+
+## Taking turns
+
+<Member owner="Tasks." name="yield" params="">
+
+Lets the other tasks that are ready run, and carries on when this one's turn comes round again.
+
+Tasks take turns only when one waits, which a calculation never does by itself, so a task doing a long
+calculation holds up the rest. Calling `yield` now and then in its loop lets the others make progress:
+
+```emerald
+Tasks.run { tasks =>
+    tasks.start { =>
+        for step in 1..3 {
+            print("a#{step}")
+            Tasks.yield()
+        }
+    }
+    tasks.start { =>
+        for step in 1..3 {
+            print("b#{step}")
+            Tasks.yield()
+        }
+    }
+}
+```
+
+```text title="Output"
+a1
+b1
+a2
+b2
+a3
+b3
+```
+
+For the same program and input, tasks that wait on each other, on `yield`, or on a channel always take
+their turns in the order they became ready. Tasks that wait on the clock take turns in the order their
+waits end, so only clearly different lengths are reliably ordered. Tasks that wait on files, the
+network, or input take their turns in the order the answers arrive, which can vary.
+
+</Member>

@@ -6,7 +6,7 @@ as a program, and everything it prints, errors included, must equal the output b
 program is saved under the file name the page's messages use, so a diagnostic's `file:line:col`
 must match too. A "Terminal" block shows typed input on the prompt's line; give that input with
 --input, or give one example its own answers with ```emerald input="Ada|30"``` (`|` separates
-lines). A block titled "emerald test" or "emerald check" is run with that command instead.
+lines, and `-` means no input at all). A block titled "emerald test" or "emerald check" is run with that command instead.
 
   python3 scripts/check-outputs.py src/content/docs/docs/language/variables-and-constants.md variables.em
 
@@ -45,7 +45,10 @@ for own_input, code, kind, shown in pairs:
     if fixture:
         code = code.replace(site, fixture)
         shown = shown.replace(site, fixture)
-    typed = own_input.replace("|", "\n") + "\n" if own_input else args.input
+    if own_input == "-":
+        typed = ""
+    else:
+        typed = own_input.replace("|", "\n") + "\n" if own_input else args.input
     folder = tempfile.mkdtemp()
     with open(os.path.join(folder, args.file_name), "w", encoding="utf-8") as program:
         program.write(code)

@@ -12,7 +12,8 @@ values compare and display, and the errors a program raises. They need no import
 - **[Functions](functions/print/):** `print`, `write`, `input`, `random`, `exit`, and `assert`.
 - **[Traits](traits/equatable/):** `Equatable`, `Hashable`, `Ordered`, and `Textual`, which a
   type adopts to choose how its values compare, sort, and display.
-- **[Errors](errors/error/):** `Error`, and Emerald's own `RuntimeError` and `AssertionError`.
+- **[Errors](errors/error/):** `Error`, and Emerald's own `RuntimeError`, `AssertionError`,
+  `EncodingError`, and `InputError`.
 
 The [Standard Library](../library/) holds the tools that come with Emerald, such as files,
 dates and times, and JSON.

@@ -66,6 +66,7 @@ export default defineConfig({
 								{ label: 'CSV', collapsed: true, items: [{ autogenerate: { directory: 'docs/library/csv' } }] },
 								{ label: 'Base64 and Digest', collapsed: true, items: [{ autogenerate: { directory: 'docs/library/encoding' } }] },
 								{ label: 'HTTP', collapsed: true, items: [{ autogenerate: { directory: 'docs/library/http' } }] },
+								{ label: 'Tasks and Channels', collapsed: true, items: [{ autogenerate: { directory: 'docs/library/tasks' } }] },
 							],
 						},
 					],

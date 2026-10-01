@@ -27,8 +27,9 @@ a number.
 Shows `prompt`, if there is one, without starting a new line, then reads one line. The line
 comes back without its line break; pressing Enter on its own gives `""`.
 
-<Raises>when there is no more input to read, as when a program reads from a file that has
-ended. Use [`input_maybe`](#input_maybe) to handle that instead.</Raises>
+<Raises>an [`InputError`](../../errors/inputerror/) when there is no more input to read, as when a
+program reads from a file that has ended, or when the line isn't valid text. Use
+[`input_maybe`](#input_maybe) to handle the first of those instead.</Raises>
 
 </Member>
 

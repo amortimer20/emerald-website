@@ -26,6 +26,8 @@ when a program starts.
   SHA-256 and HMAC-SHA256 fingerprints. Their errors are an
   [`EncodingError`](../builtins/errors/encodingerror/).
 - **[HTTP](http/http/):** `Http` and `Http.Response`, to make web requests, and `HttpError`.
+- **[Tasks and Channels](tasks/):** `Tasks`, `Task`, `TaskGroup`, and `Channel`, to let several pieces
+  of work wait at once and pass values between them, with `CancelledError` and `DeadlockError`.
 
 A name that a program declares itself always wins over one of these, so a program with its own
 `File` still works. The library's version stays reachable as `Emerald.File`; see
