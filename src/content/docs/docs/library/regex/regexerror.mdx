@@ -1,0 +1,86 @@
+---
+title: RegexError
+description: The error raised for a pattern that isn't valid, or a group a match doesn't have.
+sidebar:
+  order: 3
+---
+
+import Member from '../../../../../components/Member.astro';
+
+<p class="reference-facts">Standard library class · Extends <code>RuntimeError</code></p>
+
+A `RegexError` is what Emerald raises in two situations: when a [`Regex`](../regex/) is built from a
+pattern that isn't valid, and when a [`Regex.Match`](../regex-match/) is asked for a group it doesn't
+have, or one that took no part in the match.
+
+```emerald
+try {
+    const group = Regex('(a)|(b)').find("b")
+    print(group?.group(1))
+}
+catch error: RegexError {
+    print(error.message)
+}
+```
+
+```text title="Output"
+group 1 of the pattern "(a)|(b)" took no part in this match; use group_maybe(1) to get nothing instead
+```
+
+A `RegexError` is a [`RuntimeError`](../../../builtins/errors/runtimeerror/), so
+`catch error: RuntimeError` catches it too.
+
+<Member name="message" returns="String">
+
+What went wrong, in words. It quotes the pattern, and for a bad pattern says where the problem is,
+counting characters from 0.
+
+</Member>
+
+## Invalid patterns
+
+When a pattern is written as a string literal, Emerald checks it before the program runs, and points at
+the character in the literal that is wrong. That works in `emerald check` and in an editor too, so the
+mistake shows up as you type:
+
+```emerald
+const pattern = Regex('[z-a]')
+```
+
+```text title="Output"
+regex.em:1:25: this pattern is not valid: this range runs backwards; put the smaller character first
+  const pattern = Regex('[z-a]')
+                          ^
+Correct the pattern; left as it is, `Regex` raises RegexError here when the program runs.
+```
+
+A pattern that isn't known until the program runs, such as one a person typed, raises a `RegexError`
+instead, which a program can catch:
+
+```emerald
+const typed = "("
+try {
+    print(Regex(typed))
+}
+catch error: RegexError {
+    print(error.message)
+}
+```
+
+```text title="Output"
+the pattern "(" at position 0: a "(" here has no matching ")"
+```
+
+Every message says what to write instead. The things Emerald's patterns don't have, because they can
+make matching slow, are named as such: backreferences such as `\1`, and lookahead and lookbehind such
+as `(?=...)`. See [the differences from other languages](../regex/#differences-from-other-languages).
+
+## Groups that aren't there
+
+A match can have a group missing in two ways, and the message says which:
+
+| Message | When |
+| --- | --- |
+| ``group 1 of the pattern "(a)\|(b)" took no part in this match; use group_maybe(1) …`` | The group is in the pattern, but its branch wasn't used. Use [`group_maybe`](../regex-match/#group_maybe) or [`named_maybe`](../regex-match/#named_maybe) when that is expected. |
+| ``the pattern "(a)" has no group 5: its groups are numbered 0 to 1, where 0 is the whole match`` | The pattern has no group with that number. This is always a mistake, so even the `_maybe` forms raise. |
+| ``the pattern "(?<n>a)" has no group named "zz": its one named group is "n"`` | The same, for a name. |

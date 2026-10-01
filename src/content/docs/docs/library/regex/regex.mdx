@@ -1,0 +1,376 @@
+---
+title: Regex
+description: A pattern for finding, replacing, and splitting text.
+sidebar:
+  order: 1
+---
+
+import Member from '../../../../../components/Member.astro';
+import Raises from '../../../../../components/Raises.astro';
+
+<p class="reference-facts">Standard library struct · Written <code>Regex('\d+')</code></p>
+
+A `Regex`, short for regular expression, is a pattern that describes text: `Regex('\d+')` stands for
+one or more digits. With one you can ask whether text fits a pattern, find the parts of it that do,
+replace them, or split the text at them.
+
+```emerald
+const numbers = Regex('\d+').find_all("3 apples, 12 pears").map { found => found.text.to_int() }
+print(numbers.sum())
+print(Regex('[,\s]+').split("red, green,blue"))
+print(Regex('\s+').replace_all("too    many   spaces", " "))
+```
+
+```text title="Output"
+15
+["red", "green", "blue"]
+too many spaces
+```
+
+Write patterns in single quotes. A single-quoted string keeps every backslash as it is, so `'\d'` is
+the two characters `\` and `d`, which is what the pattern needs. In double quotes you would have to
+write `"\\d"`.
+
+A pattern is checked when it is built, and a pattern written as a literal is checked before the
+program even runs, with the mistake pointed out at the exact character:
+
+```emerald
+const pattern = Regex('(abc')
+```
+
+```text title="Output"
+regex.em:1:24: this pattern is not valid: a "(" here has no matching ")"
+  const pattern = Regex('(abc')
+                         ^
+Correct the pattern; left as it is, `Regex` raises RegexError here when the program runs.
+```
+
+## A pattern can't hang a program
+
+Matching takes time in proportion to the pattern times the text, whatever the pattern. That is why
+Emerald's patterns have no backreferences or lookaround, which other languages' engines pay for by
+sometimes taking a very long time on certain patterns and texts. Each of those is refused with a
+message saying so, rather than silently treated as ordinary text.
+
+## Characters, as everywhere in Emerald
+
+A character in a pattern is a character as a reader sees it, as in the rest of the language. `.` matches
+`é`, an emoji, or a flag as a whole, however many parts it is made of, and the positions a match reports
+count characters, as indexing does. Text is compared the way `==` compares it, so `Regex('é')` matches
+`é` whether it was typed as one character or as `e` followed by an accent.
+
+## At a glance
+
+| Making one | |
+| --- | --- |
+| [`Regex(pattern, ignore_case:, multiline:)`](#regex) | A pattern |
+| [`Regex.escape(text)`](#escape) | A pattern that matches some text exactly |
+
+| Asking | |
+| --- | --- |
+| [`matches?(text)`](#matches) | Whether the whole text fits |
+| [`contains_match?(text)`](#contains_match) | Whether some part of it fits |
+
+| Finding | |
+| --- | --- |
+| [`find(text)`](#find) | The first match, or `nothing` |
+| [`find_all(text)`](#find_all) | Every match |
+
+| Changing | |
+| --- | --- |
+| [`replace(text, replacement)`](#replace) | Replace the first match |
+| [`replace_all(text, replacement)`](#replace_all) | Replace every match |
+| [`replace_each(text) { ... }`](#replace_each) | Replace each match with what a block makes |
+| [`split(text)`](#split) | The pieces between matches |
+
+| Reading back | |
+| --- | --- |
+| [`pattern`](#properties), [`ignore_case`](#properties), [`multiline`](#properties) | What the regex was built from |
+
+## Making one
+
+<Member name="Regex" id="regex" params="pattern: String, ignore_case: Bool = false, multiline: Bool = false" returns="Regex">
+
+A regex from a pattern. `ignore_case: true` compares letters without regard to capitals. `multiline:
+true` makes `^` and `$` match at the start and end of every line, rather than only of the whole text.
+
+```emerald
+print(Regex('hello', ignore_case: true).matches?("HeLLo"))
+print(Regex('^a', multiline: true).find_all("a\nb\na").count)
+print(Regex('^a').find_all("a\nb\na").count)
+```
+
+```text title="Output"
+true
+2
+1
+```
+
+<Raises>a [`RegexError`](../regexerror/) for a pattern that isn't valid. The message quotes the pattern,
+says where the problem is, counting characters from 0, and says what to write instead.</Raises>
+
+</Member>
+
+<Member owner="Regex." name="escape" params="text: String" returns="String">
+
+A pattern that matches `text` exactly, with a backslash before every character that has a meaning in
+patterns. Use it when text from somewhere else goes into a pattern, so that `$` and `.` mean themselves.
+
+```emerald
+const price = "$4.99"
+print(Regex.escape(price))
+print(Regex(Regex.escape(price)).contains_match?("costs $4.99"))
+```
+
+```text title="Output"
+\$4\.99
+true
+```
+
+</Member>
+
+## Asking
+
+<Member name="matches?" id="matches" params="text: String" returns="Bool">
+
+Whether the whole of `text` fits the pattern.
+
+```emerald
+print(Regex('\d+').matches?("42"))
+print(Regex('\d+').matches?("42 cats"))
+```
+
+```text title="Output"
+true
+false
+```
+
+</Member>
+
+<Member name="contains_match?" id="contains_match" params="text: String" returns="Bool">
+
+Whether some part of `text` fits the pattern.
+
+```emerald
+print(Regex('\d+').contains_match?("42 cats"))
+```
+
+```text title="Output"
+true
+```
+
+</Member>
+
+## Finding
+
+<Member name="find" params="text: String" returns="Regex.Match?">
+
+The first match, as a [`Regex.Match`](../regex-match/), or `nothing` when there is none.
+
+```emerald
+const found = Regex('\d+').find("room 42, floor 7")
+print(found?.text)
+print(found?.start)
+print(Regex('\d+').find("no digits"))
+```
+
+```text title="Output"
+42
+5
+nothing
+```
+
+Where several matches could start at the same place, the pattern's own preferences decide.
+Repetition (`*`, `+`, `?`, `{2,5}`) takes as much as it can, or as little as it can when followed by
+`?`, and the first choice of `x|y` that fits wins:
+
+```emerald
+print(Regex('a+').find("aaa")?.text)
+print(Regex('a+?').find("aaa")?.text)
+print(Regex('a|ab').find("ab")?.text)
+```
+
+```text title="Output"
+aaa
+a
+a
+```
+
+</Member>
+
+<Member name="find_all" params="text: String" returns="List[Regex.Match]">
+
+Every match, from left to right, with none overlapping.
+
+```emerald
+for found in Regex('\d+').find_all("a1 b22") {
+    print("#{found.text} at #{found.start}..<#{found.end}")
+}
+```
+
+```text title="Output"
+1 at 1..<2
+22 at 4..<6
+```
+
+A pattern that can match nothing, such as `x*`, matches the empty text at each position, and the search
+moves on a character after each one:
+
+```emerald
+print(Regex('x*').find_all("ab").count)
+```
+
+```text title="Output"
+3
+```
+
+</Member>
+
+## Changing
+
+<Member name="replace" params="text: String, replacement: String" returns="String">
+
+`text` with its first match replaced. The replacement is used exactly as written, so `"$1"` is a dollar
+sign and a one, and never a group from the pattern. To use what a match contains, use
+[`replace_each`](#replace_each).
+
+```emerald
+print(Regex('\d+').replace("1 and 2", "#"))
+print(Regex('(\d+)').replace("1 and 2", "$1"))
+```
+
+```text title="Output"
+# and 2
+$1 and 2
+```
+
+</Member>
+
+<Member name="replace_all" params="text: String, replacement: String" returns="String">
+
+`text` with every match replaced, as `find_all` finds them.
+
+```emerald
+print(Regex('\d+').replace_all("1 and 2", "#"))
+print(Regex('[aeiou]').replace_all("education", "*"))
+print(Regex('^\s+|\s+$').replace_all("  trim me  ", ""))
+```
+
+```text title="Output"
+# and #
+*d*c*t**n
+trim me
+```
+
+</Member>
+
+<Member name="replace_each" params="text: String" block="found: Regex.Match => String" returns="String">
+
+`text` with each match replaced by what the block returns for it. The block gets the
+[`Regex.Match`](../regex-match/), so the replacement can be worked out from what was found.
+
+```emerald
+const doubled = Regex('\d+').replace_each("3 apples and 4 pears") { found => (found.text.to_int() * 2).to_string() }
+print(doubled)
+```
+
+```text title="Output"
+6 apples and 8 pears
+```
+
+</Member>
+
+<Member name="split" params="text: String" returns="List[String]">
+
+The pieces of `text` between matches. Empty pieces are kept, as [`String.split`](../../../builtins/types/string/#split)
+keeps them.
+
+```emerald
+print(Regex(',').split(",a,,b"))
+print(Regex('\s*;\s*').split("one ; two;three"))
+```
+
+```text title="Output"
+["", "a", "", "b"]
+["one", "two", "three"]
+```
+
+A match of nothing at the very start or end of the text splits nothing off, so a pattern that matches
+nothing splits between every character:
+
+```emerald
+print(Regex('').split("abc"))
+```
+
+```text title="Output"
+["a", "b", "c"]
+```
+
+</Member>
+
+## Reading back
+
+<Member name="pattern" id="properties" returns="String">
+
+What the regex was built from: `pattern`, `ignore_case`, and `multiline`. Each is read without
+parentheses. A `Regex` prints as its pattern, and two are equal when their patterns and options are, so
+a `Regex` can be a `const` or a dictionary key.
+
+```emerald
+const digits = Regex('\d+')
+print(digits)
+print(digits == Regex('\d+'))
+print(digits.pattern)
+```
+
+```text title="Output"
+\d+
+true
+\d+
+```
+
+</Member>
+
+## Patterns
+
+| Pattern | Matches |
+| --- | --- |
+| `a`, `\.`, `\\`, `\n`, `\t`, `\u{1F600}` | That character; punctuation after a backslash always means itself |
+| `.` | Any one character except a line break |
+| `[abc]`, `[a-z]`, `[^0-9]`, `[\w-]` | One character in the set, or with `^`, not in it |
+| `\d` `\D` | A digit from 0 to 9, and anything but |
+| `\w` `\W` | A word character, and anything but: a letter, accent mark, or digit in any script, or `_` |
+| `\s` `\S` | White space, and anything but |
+| `^` `$` | The start and end of the text, or of each line with `multiline: true` |
+| `\b` `\B` | A boundary between a word character and anything else, and the absence of one |
+| `x*` `x+` `x?` `x{3}` `x{2,}` `x{2,5}` | Repetition, as many as possible; a count can be at most 1000 |
+| `x*?` `x+?` `x??` `x{2,5}?` | Repetition, as few as possible |
+| `x\|y` | Either one, preferring the first |
+| `(x)` `(?<name>x)` `(?:x)` | A numbered group, a named group, and a group that captures nothing |
+
+A set holds a character as it appears, so `[a-z]` does not match `é`, which is a letter with an accent,
+while `[é]` does. A range such as `[a-z]` runs through the characters' code numbers.
+
+## Differences from other languages
+
+Most patterns written for JavaScript, Python, Java, Go, or Rust work unchanged. These differences are
+on purpose:
+
+- **No backreferences, lookahead, lookbehind, atomic groups, or possessive repetition** (`\1`, `(?=`,
+  `(?<=`, `(?>`, `a++`), because they are what can make matching slow. Each is refused with a message
+  that says so.
+- **Options are named arguments,** not inline flags. Write `Regex('abc', ignore_case: true)`, not
+  `(?i)abc`. Named groups are `(?<name>...)`, not `(?P<name>...)`, and `^` and `$` stand in for `\A` and
+  `\z`. Unicode property classes such as `\p{L}` aren't supported yet; use `\w` or a set.
+- **`.` and sets see whole characters,** and text compares as `==` compares it. Positions count
+  characters, as indexing does.
+- **`\d` is only 0 to 9,** so what it matches can always be converted with `to_int`. `\w` covers every
+  script's letters and digits.
+- **`$` matches only at the very end** of the text, or of a line with `multiline: true`, and not also
+  before a final line break as in Python and Perl.
+- **Replacement text is literal:** `$1` and `\1` mean themselves. Work out a replacement with
+  `replace_each`.
+- **A repeated group never takes an empty round:** `(a|)*` on `"b"` leaves group 1 without a value,
+  where Python and Perl give it as `""`.
+- **`find_all` and `split` follow Go and Rust** for empty matches: none just where the last match
+  ended, and none that split off the start or end of the text.

@@ -1,0 +1,151 @@
+---
+title: Regex.Match
+description: One match found by a regex, with its text, its position, and its groups.
+sidebar:
+  order: 2
+---
+
+import Member from '../../../../../components/Member.astro';
+import Raises from '../../../../../components/Raises.astro';
+
+<p class="reference-facts">Standard library struct · Nested in <code>Regex</code>, made by <code>find</code> and <code>find_all</code></p>
+
+A `Regex.Match` is one piece of text that a [`Regex`](../regex/) found: what it found, where, and, if
+the pattern has groups, what each group caught. A program doesn't make one itself; it comes from
+`find`, `find_all`, or the block of `replace_each`.
+
+```emerald
+const found = Regex('\d+').find("room 42, floor 7")
+print(found)
+print(found?.text)
+print(found?.start)
+print(found?.end)
+```
+
+```text title="Output"
+Regex.Match("42" at 5..<7)
+42
+5
+7
+```
+
+A match prints with its text and where it is, as above. Positions count characters, as indexing does,
+so `text[found.start..<found.end]` is `found.text`.
+
+## At a glance
+
+| Where | |
+| --- | --- |
+| [`text`](#text), [`start`](#text), [`end`](#text) | What was found, and where |
+
+| Groups | |
+| --- | --- |
+| [`group(number)`](#group), [`group_maybe(number)`](#group_maybe) | A group by its number |
+| [`named(name)`](#named), [`named_maybe(name)`](#named_maybe) | A group by its name |
+
+## Where
+
+<Member name="text" returns="String">
+
+The text that matched, and where it is: `start` is the position of its first character, and `end` is the
+position just after its last. Each is read without parentheses.
+
+```emerald
+const found = Regex('[a-z]+').find("123 abc 456")
+print(found?.text)
+print(found?.start, found?.end)
+```
+
+```text title="Output"
+abc
+4 7
+```
+
+</Member>
+
+## Groups
+
+A *group* is part of a pattern in parentheses, which remembers the text it matched. Groups are
+numbered from the left by their opening parenthesis. Group 0 is always the whole match, so in
+`((\w+)@(\w+))`, group 1 is the whole address and groups 2 and 3 are its two parts.
+
+<Member name="group" params="number: Int" returns="String">
+
+The text a group matched.
+
+```emerald
+const found = Regex('(\w+)@(\w+)').find("mail ada@example now")
+print(found?.group(0))
+print(found?.group(1))
+print(found?.group(2))
+```
+
+```text title="Output"
+ada@example
+ada
+example
+```
+
+A group repeated with `*` or `+` holds what it matched the last time round.
+
+<Raises>a [`RegexError`](../regexerror/) when the group took no part in the match, such as `(x)?` with no
+`x` to match, or the branch not taken in `(a)|(b)`. It is also raised when the pattern has no such group;
+the message says which groups it does have.</Raises>
+
+</Member>
+
+<Member name="group_maybe" params="number: Int" returns="String?">
+
+Like `group`, but gives `nothing` for a group that took no part in the match. Asking for a group the
+pattern doesn't have still raises an error, since that is always a mistake.
+
+```emerald
+const found = Regex('(a)|(b)').find("b")
+print(found?.group_maybe(1))
+print(found?.group_maybe(2))
+```
+
+```text title="Output"
+nothing
+b
+```
+
+</Member>
+
+<Member name="named" params="name: String" returns="String">
+
+The text of the group written `(?<name>...)`. Naming groups makes a pattern easier to read, and the code
+that uses it too.
+
+```emerald
+const date = Regex('(?<year>\d{4})-(?<month>\d{2})-(?<day>\d{2})').find("on 2026-09-25.")
+print(date?.named("year"))
+print(date?.named("month"))
+print(date?.named("day"))
+```
+
+```text title="Output"
+2026
+09
+25
+```
+
+<Raises>a [`RegexError`](../regexerror/) in the same cases as `group`, naming the groups the pattern
+has.</Raises>
+
+</Member>
+
+<Member name="named_maybe" params="name: String" returns="String?">
+
+Like `named`, but gives `nothing` for a group that took no part in the match.
+
+```emerald
+const found = Regex('(?<unit>cm)?\d+').find("42")
+print(found?.named_maybe("unit"))
+```
+
+```text title="Output"
+nothing
+```
+
+</Member>
