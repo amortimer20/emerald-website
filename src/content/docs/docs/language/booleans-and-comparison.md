@@ -173,5 +173,5 @@ The `?` is part of the name, and it is how you can tell at a glance that the ans
 - A condition must be a real `Bool`, and only values of the same type can be compared.
 - A method ending in `?` answers a yes-or-no question.
 
-Next, [operators](../operators/) gathers every operator in one place, with the order they are
-worked out in.
+Next, [operators](../operators/): every operator in one place, and the order they are worked
+out in.

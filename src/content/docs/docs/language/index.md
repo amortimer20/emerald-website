@@ -26,8 +26,8 @@ example in and running it teaches more than reading it.
 - **Functions:** declaring functions, and passing blocks of code to them.
 - **Values that might be missing:** optionals.
 - **Collections:** lists, dictionaries, sets, tuples, and ranges.
-- **Your own types:** structs, classes, properties, inheritance, traits, enums, and types nested
-  inside other types.
+- **Your own types:** structs, classes, properties, inheritance, traits, enums, types nested
+  inside other types, and operator overloading.
 - **Larger programs:** errors, tests, projects and namespaces, and annotations.
 
 The types and functions that come with Emerald, such as `String`, `List`, `print`, and `Math`,

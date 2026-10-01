@@ -180,4 +180,4 @@ whether it is correct so far.
 - Emerald checks the whole program first, and its messages say what is wrong, where, and what to
   try.
 
-Next, [comments](../comments/) let you leave notes in a program for the people who read it.
+Next, [comments](../comments/): leaving notes in a program for the people who read it.

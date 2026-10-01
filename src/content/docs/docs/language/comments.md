@@ -128,4 +128,4 @@ text can use Markdown, such as `code` in backticks.
 - `##` documents the declaration below it.
 - Commenting out a line turns it off without deleting it.
 
-Next, [variables and constants](../variables-and-constants/) give values names.
+Next, [variables and constants](../variables-and-constants/): giving values names.
