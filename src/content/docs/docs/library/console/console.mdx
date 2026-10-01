@@ -194,12 +194,80 @@ print(Console.table([Player("Ada", 120), Player("Grace", 95, "Hopper")]))
 └───────┴───────┴──────────┘
 ```
 
-Columns are as wide as their widest cell, measured as they appear on screen, so wide characters
-such as `日本` and emoji line up, and styling takes no room. An empty list gives an empty string, or
-only the header when there is one.
+Only a struct's public fields become columns. A field whose name starts with `_` is private, and is
+left out. The other cells show as `print` would show them, so an enum value is `Choice.yes`, and a
+`Bool` is `true`. A numeric column, with its header, lines up at the right edge, so a long number
+stays under its heading:
 
-<Raises>a `RuntimeError` when the rows don't all have the same number of cells, or a cell contains a
-line break. The message names the row and column.</Raises>
+```emerald
+struct Order {
+    const item: String
+    const quantity: Int
+    const price: Float
+    const _internal_note: String = "not shown"
+}
+
+print(Console.table([Order("Tea", 12, 3.5), Order("Biscuits", 1200, 12.25)]))
+```
+
+```text title="Output"
+┌──────────┬──────────┬───────┐
+│ item     │ quantity │ price │
+├──────────┼──────────┼───────┤
+│ Tea      │       12 │   3.5 │
+│ Biscuits │     1200 │ 12.25 │
+└──────────┴──────────┴───────┘
+```
+
+Columns are as wide as their widest cell, measured as they appear on screen, so wide characters
+such as `日本` and emoji line up, and styling takes no room:
+
+```emerald
+print(Console.table([["日本", "x"], ["a", "bb"]]))
+```
+
+```text title="Output"
+┌──────┬────┐
+│ 日本 │ x  │
+│ a    │ bb │
+└──────┴────┘
+```
+
+An empty list gives an empty string, or only the header when there is one:
+
+```emerald
+print(Console.table([], header: ["name", "points"]))
+```
+
+```text title="Output"
+┌──────┬────────┐
+│ name │ points │
+├──────┼────────┤
+└──────┴────────┘
+```
+
+Two things are refused. The rows, and a `header:` if there is one, must all have the same number of
+cells, and a cell can't contain a line break, since a table row is one line. A tab takes up no width on
+screen, so replace a tab with spaces first. And a table of structs takes its header from the field
+names, so `header:` isn't accepted with one:
+
+```emerald
+struct Row {
+    const a: Int
+}
+
+print(Console.table([Row(1)], header: ["x"]))
+```
+
+```text title="Output"
+tables.em:5:39: `header:` cannot be given with struct rows
+  print(Console.table([Row(1)], header: ["x"]))
+                                        ^^^^^
+A struct table takes its header from the public field names.
+```
+
+<Raises>a `RuntimeError` when the rows, with the header counted as the first row, don't all have the
+same number of cells, or when a cell contains a line break. The message names the row and column.</Raises>
 
 </Member>
 
@@ -216,6 +284,21 @@ print(Console.panel("All systems go", title: "Status"))
 ┌─ Status ───────┐
 │ All systems go │
 └────────────────┘
+```
+
+The box is as wide as the widest line of text, measured as it appears on screen, plus one space of
+padding each side. A title wider than the text makes the box wider. A line break at the very end of the
+text doesn't add an empty row:
+
+```emerald
+print(Console.panel("one\ntwo\n", title: "A longer title"))
+```
+
+```text title="Output"
+┌─ A longer title ┐
+│ one             │
+│ two             │
+└─────────────────┘
 ```
 
 A panel is a `String`, so panels and tables can go inside one another:
