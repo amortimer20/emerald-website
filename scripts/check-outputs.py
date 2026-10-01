@@ -5,7 +5,8 @@ An ```emerald block followed directly by a ```text title="Output"``` (or "Termin
 as a program, and everything it prints, errors included, must equal the output block exactly. The
 program is saved under the file name the page's messages use, so a diagnostic's `file:line:col`
 must match too. A "Terminal" block shows typed input on the prompt's line; give that input with
---input. A block titled "emerald test" or "emerald check" is run with that command instead.
+--input, or give one example its own answers with ```emerald input="Ada|30"``` (`|` separates
+lines). A block titled "emerald test" or "emerald check" is run with that command instead.
 
   python3 scripts/check-outputs.py src/content/docs/docs/language/variables-and-constants.md variables.em
 
@@ -28,23 +29,24 @@ emerald = os.environ.get("EMERALD", os.path.expanduser(
     "~/.local/share/mise/installs/github-amortimer20-emerald-lang/0.6.0/emerald"))
 text = open(args.page, encoding="utf-8").read()
 pairs = re.findall(
-    r"```emerald\n((?:(?!```).)*?)```[ \t]*\n\s*```text title=\"(Output|Terminal|emerald test|emerald check)\"\n((?:(?!```).)*?)```",
+    r"```emerald(?: input=\"([^\"]*)\")?\n((?:(?!```).)*?)```[ \t]*\n\s*```text title=\"(Output|Terminal|emerald test|emerald check)\"\n((?:(?!```).)*?)```",
     text, re.S)
 mismatches = 0
-for code, kind, shown in pairs:
+for own_input, code, kind, shown in pairs:
+    typed = own_input.replace("|", "\n") + "\n" if own_input else args.input
     folder = tempfile.mkdtemp()
     with open(os.path.join(folder, args.file_name), "w", encoding="utf-8") as program:
         program.write(code)
     command = kind.split()[1] if kind.startswith("emerald ") else "run"
     run = subprocess.run([emerald, command, args.file_name], cwd=folder, stdout=subprocess.PIPE,
                          stderr=subprocess.STDOUT,
-                         text=True, encoding="utf-8", input=args.input)
+                         text=True, encoding="utf-8", input=typed)
     got = run.stdout
     expected = shown
     if kind == "Terminal":
         # A terminal shows each typed answer, and the Enter after it, on its prompt's line;
         # the program's own output has neither. Remove them in order before comparing.
-        for answer in args.input.splitlines():
+        for answer in typed.splitlines():
             expected = expected.replace(answer + "\n", "", 1)
     if got.strip() != expected.strip():
         mismatches += 1
