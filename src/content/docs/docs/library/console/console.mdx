@@ -1,7 +1,380 @@
 ---
-title: "Console"
+title: Console
+description: Color and style text, lay out tables and panels, and ask the person at the keyboard questions.
 sidebar:
   order: 1
 ---
 
-This page is being written.
+import Member from '../../../../../components/Member.astro';
+import Raises from '../../../../../components/Raises.astro';
+
+<p class="reference-facts">Standard library namespace · Always available, with no import</p>
+
+`Console` is for programs that talk to the person running them in a terminal. It colors and styles
+text, lays out tables and boxes, and asks questions that keep asking until the answer makes sense.
+
+```emerald
+const name = Console.ask("What is your name?")
+print("Hello, #{Console.green(name)}!")
+```
+
+```text title="Terminal"
+What is your name? Ada
+Hello, Ada!
+```
+
+On a terminal, `Ada` in the second line is green. Everything `Console` makes is an ordinary
+`String`, so `print`, interpolation, and `+` work on it as on any other text.
+
+## Style text when you print it
+
+A styled string is the original text with invisible codes around it that tell the terminal how to
+show it. The codes count as characters, so `Console.red("danger").count` is more than 6. Style a
+value at the moment you print it, rather than before storing it, so the codes don't end up in
+comparisons, slices, or files:
+
+```emerald
+const status = "ready"
+print("Status: #{Console.bold(Console.green(status))}")
+```
+
+```text title="Output"
+Status: ready
+```
+
+Here the program's output is not on a terminal, so there is no styling. Styling appears only when it
+can be seen; see [When styling appears](#when-styling-appears) below.
+
+## At a glance
+
+| Color and style | |
+| --- | --- |
+| [`Console.red(text)`](#colors) and the other seven colors | Color the text |
+| [`Console.bold(text)`](#styles), [`dim`](#styles), [`italic`](#styles), [`underline`](#styles) | Change how the text looks |
+| [`Console.style(text, ...)`](#style) | Any combination, including background and bright colors |
+| [`Console.plain(text)`](#plain) | The text with Console's styling removed |
+
+| Layout | |
+| --- | --- |
+| [`Console.table(rows, header:)`](#table) | Rows of cells, or a list of structs, as a table |
+| [`Console.panel(text, title:, color:)`](#panel) | A box around some text |
+
+| Asking | |
+| --- | --- |
+| [`Console.ask(question, default:)`](#ask) | Some text |
+| [`Console.ask_int(question, minimum:, maximum:)`](#ask_int) | A whole number |
+| [`Console.ask_float(question, minimum:, maximum:)`](#ask_float) | A number with a fraction |
+| [`Console.confirm(question, default:)`](#confirm) | Yes or no |
+| [`Console.choose(question, options)`](#choose) | One of a list |
+| [`Console.choose_many(question, options)`](#choose_many) | Any of a list |
+
+## Color and style
+
+<Member owner="Console." name="red" id="colors" params="text: String" returns="String">
+
+The text in a color. There are eight: `black`, `red`, `green`, `yellow`, `blue`, `magenta`, `cyan`,
+and `white`, and each is a function of its own, written the same way.
+
+```emerald
+print(Console.red("Stop"))
+print(Console.green("Go"))
+```
+
+Each call styles exactly the text it is given, and nothing after it. There is no color to switch on
+and later off.
+
+</Member>
+
+<Member owner="Console." name="bold" id="styles" params="text: String" returns="String">
+
+The text in a style. There are four: `bold`, `dim`, `italic`, and `underline`, each written the same
+way. Styles and colors nest, so a bold green word is `Console.bold(Console.green("word"))`.
+
+```emerald
+print("Total: #{Console.bold("42")}")
+```
+
+Whatever is inside keeps its own styling, and the outer style carries on around it.
+
+</Member>
+
+<Member owner="Console." name="style" params="text: String, foreground: Console.Color? = nothing, background: Console.Color? = nothing, bold: Bool = false, dim: Bool = false, italic: Bool = false, underline: Bool = false" returns="String">
+
+Styles text with any combination of options at once. This is the only way to set a background color,
+or to use the bright colors, which [`Console.Color`](../console-color/) names.
+
+```emerald
+const warning = Console.style(" WARNING ", foreground: Console.Color.black, background: Console.Color.yellow, bold: true)
+print("#{warning} disk almost full")
+```
+
+```text title="Output"
+ WARNING  disk almost full
+```
+
+A color left out is the terminal's own. `Console.style(text)` with no options returns `text`
+unchanged.
+
+</Member>
+
+<Member owner="Console." name="plain" params="text: String" returns="String">
+
+The text with the styling Console added taken out, so it can be compared, measured, or saved as
+plain text, whether or not styling is on.
+
+```emerald
+const loud = Console.red("danger")
+print(Console.plain(loud) == "danger")
+```
+
+```text title="Output"
+true
+```
+
+It removes the codes that `Console` makes, not every control code a terminal understands, so it is not
+a way to make untrusted text safe to print.
+
+</Member>
+
+## When styling appears
+
+Escape codes in a file or a log are noise, so styling is off unless the output is a terminal that can
+show it. A program doesn't decide this; the person running it does. In order of priority:
+
+1. `emerald run --color=always` turns styling on, and `--color=never` turns it off.
+2. Otherwise, a `NO_COLOR` setting that isn't empty turns it off.
+3. Otherwise, a `FORCE_COLOR` setting that isn't empty or `0` turns it on, which is useful for logs
+   that are shown in color later.
+4. Otherwise, it is on only when the output is a terminal that supports it.
+
+With styling off, every function above gives back its text unchanged, so a program never needs to
+check. The setting can't change while a program runs, so a message is never half styled.
+
+## Layout
+
+<Member owner="Console." name="table" params="rows: List[List[String]], header: List[String] = []" returns="String">
+
+A table of text rows, drawn with box characters. Each cell is left-aligned. Add `header:` to put a
+heading row above a rule.
+
+```emerald
+const rows = [["Ada", "36"], ["Grace", "45"]]
+print(Console.table(rows, header: ["Name", "Age"]))
+```
+
+```text title="Output"
+┌───────┬─────┐
+│ Name  │ Age │
+├───────┼─────┤
+│ Ada   │ 36  │
+│ Grace │ 45  │
+└───────┴─────┘
+```
+
+A list of structs makes a table too. Their public fields become the header, in the order they are
+declared, and numbers are right-aligned. A `nothing` is an empty cell. Give no `header:` here, since
+the fields already provide one.
+
+```emerald
+struct Player {
+    const name: String
+    const score: Int
+    const nickname: String? = nothing
+}
+
+print(Console.table([Player("Ada", 120), Player("Grace", 95, "Hopper")]))
+```
+
+```text title="Output"
+┌───────┬───────┬──────────┐
+│ name  │ score │ nickname │
+├───────┼───────┼──────────┤
+│ Ada   │   120 │          │
+│ Grace │    95 │ Hopper   │
+└───────┴───────┴──────────┘
+```
+
+Columns are as wide as their widest cell, measured as they appear on screen, so wide characters
+such as `日本` and emoji line up, and styling takes no room. An empty list gives an empty string, or
+only the header when there is one.
+
+<Raises>a `RuntimeError` when the rows don't all have the same number of cells, or a cell contains a
+line break. The message names the row and column.</Raises>
+
+</Member>
+
+<Member owner="Console." name="panel" params="text: String, title: String? = nothing, color: Console.Color? = nothing" returns="String">
+
+A box around one or more lines of text. A `title` is set into the top edge, and `color` colors the
+border and title, but not the text inside.
+
+```emerald
+print(Console.panel("All systems go", title: "Status"))
+```
+
+```text title="Output"
+┌─ Status ───────┐
+│ All systems go │
+└────────────────┘
+```
+
+A panel is a `String`, so panels and tables can go inside one another:
+
+```emerald
+print(Console.panel(Console.table([["x", "1"]]), title: "Nested"))
+```
+
+```text title="Output"
+┌─ Nested ──┐
+│ ┌───┬───┐ │
+│ │ x │ 1 │ │
+│ └───┴───┘ │
+└───────────┘
+```
+
+</Member>
+
+## Asking
+
+Each of these writes a question, waits for a line, and checks it. When the answer isn't acceptable,
+it says so and asks again, so the program gets a usable answer. Any message of this kind is yellow
+when styling is on.
+
+If the input ends before an answer arrives, as when a program's input comes from a file that ran out,
+the error is an `InputError` that names the question. To handle that, use [`input_maybe`](../../../builtins/functions/input/#input_maybe)
+instead.
+
+<Member owner="Console." name="ask" params="question: String, default: String? = nothing" returns="String">
+
+Asks a question and gives back the answer without the spaces around it. An empty answer asks again.
+With a `default`, it is shown in brackets, and an empty answer chooses it.
+
+```emerald input="|Ada"
+const name = Console.ask("What is your name?")
+print("Hello, #{name}!")
+```
+
+```text title="Terminal"
+What is your name? 
+Please enter an answer.
+What is your name? Ada
+Hello, Ada!
+```
+
+</Member>
+
+<Member owner="Console." name="ask_int" params="question: String, minimum: Int? = nothing, maximum: Int? = nothing" returns="Int">
+
+Asks for a whole number. Something that isn't one, or is outside the limits, asks again and says what
+is needed. `minimum` and `maximum` are both allowed answers.
+
+```emerald input="abc|200|30"
+const age = Console.ask_int("How old are you?", minimum: 0, maximum: 120)
+print("Next year you will be #{age + 1}.")
+```
+
+```text title="Terminal"
+How old are you? abc
+Please enter a whole number.
+How old are you? 200
+Please enter a whole number from 0 to 120.
+How old are you? 30
+Next year you will be 31.
+```
+
+<Raises>a `RuntimeError` when `minimum` is greater than `maximum`, before asking anything.</Raises>
+
+</Member>
+
+<Member owner="Console." name="ask_float" params="question: String, minimum: Float? = nothing, maximum: Float? = nothing" returns="Float">
+
+The same as `ask_int`, for a number that can have a fraction. `NaN` and the infinities aren't accepted.
+
+```emerald input="0.1|1.8"
+const height = Console.ask_float("Height in metres?", minimum: 0.5)
+print(height)
+```
+
+```text title="Terminal"
+Height in metres? 0.1
+Please enter a number at least 0.5.
+Height in metres? 1.8
+1.8
+```
+
+<Raises>a `RuntimeError` when `minimum` is greater than `maximum`, before asking anything.</Raises>
+
+</Member>
+
+<Member owner="Console." name="confirm" params="question: String, default: Bool? = nothing" returns="Bool">
+
+Asks a yes-or-no question. `y`, `yes`, `n`, and `no` are accepted in any capitals; anything else asks
+again. The prompt shows `(y/n)`; with a `default`, it shows which answer Enter gives, as `(Y/n)` or
+`(y/N)`, and an empty answer chooses it.
+
+```emerald input="maybe|yes"
+if Console.confirm("Delete everything?") {
+    print("Deleted.")
+}
+else {
+    print("Kept.")
+}
+```
+
+```text title="Terminal"
+Delete everything? (y/n) maybe
+Please answer y or n.
+Delete everything? (y/n) yes
+Deleted.
+```
+
+</Member>
+
+<Member owner="Console." name="choose" params="question: String, options: List[String]" returns="String">
+
+Shows the options as a numbered list and asks for a number. It gives back the text of the option
+chosen. A number that isn't in the list asks again, without showing the list a second time.
+
+```emerald input="9|2"
+const colour = Console.choose("Favourite colour?", ["Red", "Green", "Blue"])
+print("You chose #{colour}.")
+```
+
+```text title="Terminal"
+Favourite colour?
+  1. Red
+  2. Green
+  3. Blue
+Choose 1-3: 9
+Please enter a number from 1 to 3.
+Choose 1-3: 2
+You chose Green.
+```
+
+<Raises>a `RuntimeError` when `options` is empty, before showing anything.</Raises>
+
+</Member>
+
+<Member owner="Console." name="choose_many" params="question: String, options: List[String]" returns="List[String]">
+
+Like `choose`, but any number of options can be picked, typed as numbers separated by commas or
+spaces. Pressing Enter on its own picks none. The result follows the order of the list, not the order
+typed, and a number typed twice counts once.
+
+```emerald input="3, 1 1"
+const toppings = Console.choose_many("Toppings?", ["Cheese", "Ham", "Olives"])
+print(toppings)
+```
+
+```text title="Terminal"
+Toppings?
+  1. Cheese
+  2. Ham
+  3. Olives
+Choose any of 1-3, separated by commas, or press Enter for none: 3, 1 1
+["Cheese", "Olives"]
+```
+
+<Raises>a `RuntimeError` when `options` is empty, before showing anything.</Raises>
+
+</Member>

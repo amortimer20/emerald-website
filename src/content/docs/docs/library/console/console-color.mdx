@@ -1,7 +1,65 @@
 ---
-title: "Console.Color"
+title: Console.Color
+description: The sixteen terminal colors that Console can use for text and backgrounds.
 sidebar:
   order: 2
 ---
 
-This page is being written.
+<p class="reference-facts">Standard library enum · Nested in <code>Console</code></p>
+
+`Console.Color` names the sixteen colors a terminal can show. Pass one to
+[`Console.style`](../console/#style) for the color of the text or of its background, or to
+[`Console.panel`](../console/#panel) for the color of its border. Like any
+[enum](../../../language/enums/), a color is written with its type's name in front, so it can't be
+confused with anything else:
+
+```emerald
+const alert = Console.style(" ERROR ", foreground: Console.Color.white, background: Console.Color.red)
+print("#{alert} the file is missing")
+```
+
+```text title="Output"
+ ERROR  the file is missing
+```
+
+On a terminal, the first word is white on a red background. Where there is no terminal, the output is
+the same text without styling, as above.
+
+The colors are the terminal's own, so exactly what `blue` looks like depends on the terminal and the
+theme its owner chose. Leave a color out, or give `nothing`, to use the terminal's default.
+
+A color prints as its full name, can be compared with `==`, and can be a dictionary key:
+
+```emerald
+const color: Console.Color = Console.Color.bright_red
+print(color)
+print(color == Console.Color.red)
+```
+
+```text title="Output"
+Console.Color.bright_red
+false
+```
+
+## The colors
+
+| Standard | Bright |
+| --- | --- |
+| `Console.Color.black` | `Console.Color.bright_black` |
+| `Console.Color.red` | `Console.Color.bright_red` |
+| `Console.Color.green` | `Console.Color.bright_green` |
+| `Console.Color.yellow` | `Console.Color.bright_yellow` |
+| `Console.Color.blue` | `Console.Color.bright_blue` |
+| `Console.Color.magenta` | `Console.Color.bright_magenta` |
+| `Console.Color.cyan` | `Console.Color.bright_cyan` |
+| `Console.Color.white` | `Console.Color.bright_white` |
+
+The functions [`Console.red`](../console/#colors), `green`, and the rest give the eight standard colors
+as text. The bright colors, and every background color, are reached only through `Console.style`.
+`bright_black` is what many terminals show as gray.
+
+## Choosing colors
+
+Color is best for a small number of things that deserve notice, such as errors in red or successes in
+green. Don't rely on it alone: the same text may reach someone who can't see it, or end up in a log
+file, so say `ERROR` in words too, as in the example above.
