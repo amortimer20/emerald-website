@@ -57,9 +57,9 @@ For a file too large to hold in memory, or one you want to read a line at a time
 | --- | --- |
 | [`File.read(path)`](#read) | The whole file as a `String` |
 | [`File.read_lines(path)`](#read_lines) | The file as a `List[String]`, one item per line |
-| [`File.write(path, text)`](#write) | Create the file, or replace what it holds |
+| [`File.write(path, contents)`](#write) | Create the file, or replace what it holds |
 | [`File.write_lines(path, lines)`](#write_lines) | Write a list of lines, each followed by a line break |
-| [`File.append(path, text)`](#append) | Add text to the end of the file |
+| [`File.append(path, contents)`](#append) | Add text to the end of the file |
 
 | Whole files as bytes | |
 | --- | --- |
@@ -123,9 +123,9 @@ end of the file adds no extra line, and a file with nothing in it gives an empty
 
 </Member>
 
-<Member owner="File." name="write" params="path: String, text: String">
+<Member owner="File." name="write" params="path: String, contents: String">
 
-Puts `text` in the file, creating it if it isn't there. If the file already holds something, it
+Puts `contents` in the file, creating it if it isn't there. If the file already holds something, it
 is replaced, so use [`append`](#append) to keep what is there.
 
 ```emerald
@@ -166,9 +166,9 @@ print(File.read_lines("todo.txt"))
 
 </Member>
 
-<Member owner="File." name="append" params="path: String, text: String">
+<Member owner="File." name="append" params="path: String, contents: String">
 
-Adds `text` to the end of the file, creating the file if it isn't there. Nothing is added between
+Adds `contents` to the end of the file, creating the file if it isn't there. Nothing is added between
 the old text and the new, so include a line break when you want one.
 
 ```emerald
