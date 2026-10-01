@@ -1,0 +1,102 @@
+---
+title: HttpError
+description: The error raised when a web request fails, or the server answers with an error.
+sidebar:
+  order: 3
+---
+
+import Member from '../../../../../components/Member.astro';
+
+<p class="reference-facts">Standard library class · Extends <code>RuntimeError</code></p>
+
+An `HttpError` is what Emerald raises when a web request doesn't work: the server can't be reached or
+doesn't answer in time, the address isn't valid, the server's certificate can't be trusted, or the
+server answers with an error status such as `404` or `500`. It can also be raised later, when
+[`text`](../http-response/#text) is asked of a response that isn't text.
+
+```emerald
+try {
+    Http.get("https://api.example.com/users/404")
+}
+catch error: HttpError {
+    print(error.message)
+    if error.status == 404 {
+        print("That user does not exist.")
+    }
+}
+```
+
+```text title="Output"
+the server answered 404 Not Found for `https://api.example.com/users/404`
+That user does not exist.
+```
+
+An `HttpError` is a [`RuntimeError`](../../../builtins/errors/runtimeerror/), so
+`catch error: RuntimeError` catches it too. Catch it when the program can recover from a server that is
+down, slow, or unhappy with the request.
+
+<Member name="message" returns="String">
+
+What went wrong, in words, naming the address involved.
+
+</Member>
+
+<Member name="status" returns="Int?">
+
+The server's status number when it answered with an error status, and `nothing` for every other
+failure. Check it to tell "not found" from "the server is broken":
+
+```emerald
+try {
+    Http.get("https://api.example.com/boom")
+}
+catch error: HttpError {
+    print(error.status)
+}
+```
+
+```text title="Output"
+500
+```
+
+</Member>
+
+## What the messages say
+
+| Message | When | `status` |
+| --- | --- | --- |
+| ``the server answered 404 Not Found for `…` `` | A 4xx or 5xx answer, with `strict: true` | The number |
+| ``` `…` did not answer before its timeout ``` | The server was too slow for the request's `timeout:` | `nothing` |
+| ``could not reach the server for `…` `` | The connection failed | `nothing` |
+| ``could not find the server in `…`; check the spelling of the address`` | The server's name doesn't exist | `nothing` |
+| ``Http can only use http:// and https:// addresses, not `…` `` | Another kind of address, such as `ftp://` | `nothing` |
+| ``` `…` is not a web address; write the whole address, … ``` | Text that isn't an address | `nothing` |
+| ``could not verify the identity of the server for `…`; its certificate is not trusted`` | An expired, self-signed, or wrong certificate | `nothing` |
+| ``` `…` redirected more than 5 times ``` | A `get` or `delete` that was sent in circles | `nothing` |
+| ``the response from `…` is larger than 64 MB`` | A body past the limit | `nothing` |
+| ``the response from `…` is not UTF-8 text; read it with `.bytes` instead`` | [`text`](../http-response/#text) of a body that isn't text | `nothing` |
+| `pass only one of body:, json:, and bytes:` | A request given more than one kind of body | `nothing` |
+
+Emerald never turns off certificate checking, and has no option to. The same message covers every kind
+of certificate problem, so it says the identity of the server could not be verified rather than guess
+which one it was.
+
+## Timeouts
+
+A request that gets no answer within its `timeout:` raises an `HttpError`, which a program can catch to
+try again or give up:
+
+```emerald
+try {
+    Http.get("https://api.example.com/slow", timeout: Duration(milliseconds: 300))
+}
+catch error: HttpError {
+    print(error.message)
+    print(error.status)
+}
+```
+
+```text title="Output"
+`https://api.example.com/slow` did not answer before its timeout
+nothing
+```

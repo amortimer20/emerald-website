@@ -10,6 +10,9 @@ lines). A block titled "emerald test" or "emerald check" is run with that comman
 
   python3 scripts/check-outputs.py src/content/docs/docs/language/variables-and-constants.md variables.em
 
+A page whose examples talk to https://api.example.com needs scripts/http-fixture.py running, with
+HTTP_FIXTURE=http://127.0.0.1:8765 set; its examples are skipped, with a note, when it isn't.
+
 EMERALD names the binary (default: the 0.6.0 release installed by mise).
 """
 
@@ -31,8 +34,17 @@ text = open(args.page, encoding="utf-8").read()
 pairs = re.findall(
     r"```emerald(?: input=\"([^\"]*)\")?\n((?:(?!```).)*?)```[ \t]*\n\s*```text title=\"(Output|Terminal|emerald test|emerald check)\"\n((?:(?!```).)*?)```",
     text, re.S)
+fixture = os.environ.get("HTTP_FIXTURE")
+site = "https://api.example.com"
+skipped = 0
 mismatches = 0
 for own_input, code, kind, shown in pairs:
+    if site in code and not fixture:
+        skipped += 1
+        continue
+    if fixture:
+        code = code.replace(site, fixture)
+        shown = shown.replace(site, fixture)
     typed = own_input.replace("|", "\n") + "\n" if own_input else args.input
     folder = tempfile.mkdtemp()
     with open(os.path.join(folder, args.file_name), "w", encoding="utf-8") as program:
@@ -51,5 +63,6 @@ for own_input, code, kind, shown in pairs:
     if got.strip() != expected.strip():
         mismatches += 1
         print(f"MISMATCH:\n{code}--- page shows:\n{shown}--- emerald prints:\n{got}")
-print(f"{args.page}: {len(pairs)} examples with output, {mismatches} mismatches")
+note = f", {skipped} skipped (no HTTP_FIXTURE)" if skipped else ""
+print(f"{args.page}: {len(pairs)} examples with output, {mismatches} mismatches{note}")
 raise SystemExit(1 if mismatches else 0)

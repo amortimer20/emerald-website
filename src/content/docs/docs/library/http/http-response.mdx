@@ -1,0 +1,197 @@
+---
+title: Http.Response
+description: The server's answer to a web request: its status, headers, and body.
+sidebar:
+  order: 2
+---
+
+import Member from '../../../../../components/Member.astro';
+import Raises from '../../../../../components/Raises.astro';
+
+<p class="reference-facts">Standard library struct · Nested in <code>Http</code>, returned by every request</p>
+
+An `Http.Response` is a server's finished answer to a request made with [`Http`](../http/). A program
+doesn't make one itself; each request gives one back. It holds the status, the headers, and the body,
+which can be read as text, as JSON, or as raw bytes.
+
+```emerald
+const response = Http.get("https://api.example.com/hello")
+print(response.status, response.reason)
+print(response.ok?())
+print(response.text)
+```
+
+```text title="Output"
+200 OK
+true
+Hello from the server
+```
+
+## At a glance
+
+| Status | |
+| --- | --- |
+| [`status`](#status), [`reason`](#status) | The server's status number and its words |
+| [`ok?()`](#ok) | Whether the status is a success |
+| [`url`](#url) | The address the answer came from |
+
+| Headers | |
+| --- | --- |
+| [`header(name)`](#header) | One header's value, or `nothing` |
+| [`headers`](#headers) | All the headers |
+
+| Body | |
+| --- | --- |
+| [`text`](#text) | The body as text |
+| [`json()`](#json) | The body read as [`Json`](../../json/json/) |
+| [`bytes`](#bytes) | The body as raw [`Bytes`](../../../builtins/types/bytes/) |
+
+## Status
+
+<Member name="status" returns="Int">
+
+The server's status number, and `reason`, the words that go with it. `200` is `"OK"`, `404` is
+`"Not Found"`. Neither needs parentheses.
+
+```emerald
+const response = Http.get("https://api.example.com/users/404", strict: false)
+print(response.status)
+print(response.reason)
+```
+
+```text title="Output"
+404
+Not Found
+```
+
+By default a request with a `404` or other error status raises an [`HttpError`](../httperror/) instead
+of returning, so you only see one of these with `strict: false`.
+
+</Member>
+
+<Member name="ok?" id="ok" params="" returns="Bool">
+
+Whether the status is a success, from 200 through 299.
+
+```emerald
+print(Http.get("https://api.example.com/hello").ok?())
+print(Http.get("https://api.example.com/users/404", strict: false).ok?())
+```
+
+```text title="Output"
+true
+false
+```
+
+</Member>
+
+<Member name="url" returns="String">
+
+The address the answer came from. When the request was redirected, it is the final address, not the
+one you asked for.
+
+```emerald
+print(Http.get("https://api.example.com/old").url)
+```
+
+```text title="Output"
+https://api.example.com/hello
+```
+
+</Member>
+
+## Headers
+
+<Member name="header" params="name: String" returns="String?">
+
+The value of one header, or `nothing` when the server didn't send it. The name can be written in any
+capitals.
+
+```emerald
+const response = Http.get("https://api.example.com/headers")
+print(response.header("X-Request-Id"))
+print(response.header("x-request-id"))
+print(response.header("x-missing"))
+```
+
+```text title="Output"
+abc123
+abc123
+nothing
+```
+
+</Member>
+
+<Member name="headers" returns="Dict[String, String]">
+
+All the headers, as a dictionary whose names are all lowercase. When the server sent the same header
+more than once, the values are joined with `", "`, except for `set-cookie`, whose values are joined
+with a line break.
+
+```emerald
+const response = Http.get("https://api.example.com/headers")
+print(response.headers["x-request-id"])
+print(response.headers["set-cookie"])
+```
+
+```text title="Output"
+abc123
+a=1
+b=2
+```
+
+</Member>
+
+## Body
+
+<Member name="text" returns="String">
+
+The body as text, read as UTF-8.
+
+<Raises>an [`HttpError`](../httperror/) when the body isn't valid UTF-8 text, such as an image. Use
+`bytes` for that.</Raises>
+
+</Member>
+
+<Member name="json" params="" returns="Json">
+
+The body read as JSON, for an answer whose shape is only known as it arrives. The result is a
+[`Json`](../../json/json/) value to look inside, one step at a time.
+
+```emerald
+const response = Http.get("https://api.example.com/weather", query: ["city": "Oslo"])
+const weather = response.json()
+print(weather.get("city").string())
+print(weather.get("current").get("temperature").float())
+```
+
+```text title="Output"
+Oslo
+21.5
+```
+
+When you know the shape, [`Json.decode`](../../json/json/#decode) can read `response.text` straight
+into a struct of your own.
+
+<Raises>a [`JsonError`](../../json/jsonerror/) when the body isn't JSON. Its message includes the
+address the response came from.</Raises>
+
+</Member>
+
+<Member name="bytes" returns="Bytes">
+
+The body as raw bytes, with no conversion to text. Ordinary compression, such as gzip, is undone first.
+Use it for images, downloads, and anything that isn't text.
+
+```emerald
+const response = Http.get("https://api.example.com/binary")
+print(response.bytes.count)
+print(response.bytes)
+```
+
+```text title="Output"
+3
+Bytes[3: ff fe 00]
+```
+
+</Member>

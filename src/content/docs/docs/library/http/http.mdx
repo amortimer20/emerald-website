@@ -1,0 +1,214 @@
+---
+title: Http
+description: Make web requests and read the answers.
+sidebar:
+  order: 1
+---
+
+import Member from '../../../../../components/Member.astro';
+import Raises from '../../../../../components/Raises.astro';
+
+<p class="reference-facts">Standard library namespace · Always available, with no import</p>
+
+`Http` makes a web request and gives back the server's answer. There is nothing to set up or close:
+`Http.get` waits until the server has answered, then returns an
+[`Http.Response`](../http-response/) to read.
+
+```emerald
+const response = Http.get("https://api.example.com/weather", query: ["city": "São Paulo"])
+print(response.status)
+print(response.json().get("current").get("temperature").float())
+```
+
+```text title="Output"
+200
+21.5
+```
+
+The examples on these pages talk to `api.example.com`, a made-up server, to show what a request and
+its answer look like. Swap in a real address to try them.
+
+Every request waits for its answer, so the program does nothing else until it arrives. A request:
+
+- gives up after 30 seconds, unless you give a different `timeout:`;
+- accepts only `http://` and `https://` addresses;
+- checks an `https://` server's certificate, and cannot be told not to;
+- reads at most 64 MB of response.
+
+Emerald follows the computer's `HTTP_PROXY` and `HTTPS_PROXY` settings if they are set. A program can't
+read or change them.
+
+## At a glance
+
+| Requests | |
+| --- | --- |
+| [`Http.get(url, ...)`](#get) | Fetch something |
+| [`Http.delete(url, ...)`](#delete) | Ask for something to be removed |
+| [`Http.post(url, body:, ...)`](#post) | Send something new |
+| [`Http.put(url, body:, ...)`](#post) | Send something to replace what is there |
+| [`Http.patch(url, body:, ...)`](#post) | Send a change to what is there |
+
+| Helpers | |
+| --- | --- |
+| [`Http.encode_component(text)`](#encode_component) | Text made safe for one part of an address |
+
+## Requests
+
+Every request takes the same options, all of them optional except the address:
+
+| Option | Means |
+| --- | --- |
+| `query:` | A dictionary of names and values to add to the address |
+| `headers:` | A dictionary of extra headers to send |
+| `timeout:` | A [`Duration`](../../dates-and-times/duration/) to wait, 30 seconds unless given |
+| `strict:` | Whether an error answer raises an error, `true` unless given |
+
+<Member owner="Http." name="get" params="url: String, query: Dict[String, String] = [], headers: Dict[String, String] = [], timeout: Duration = Duration(seconds: 30), strict: Bool = true" returns="Http.Response">
+
+Fetches the address and gives back the answer.
+
+`query:` adds names and values to the end of the address, after any it already has, in the order the
+dictionary holds them. Each is encoded for you, so spaces and accents are safe:
+
+```emerald
+const response = Http.get("https://api.example.com/weather?units=metric", query: ["city": "Oslo", "lang": "nb"])
+print(response.url)
+```
+
+```text title="Output"
+https://api.example.com/weather?units=metric&city=Oslo&lang=nb
+```
+
+`headers:` sends its names and values as they are. Emerald adds a `User-Agent` header saying which
+version made the request, unless `headers:` gives one.
+
+A `get` follows up to five redirects, and the answer's `url` is the address it ended up at:
+
+```emerald
+const response = Http.get("https://api.example.com/old")
+print(response.url)
+print(response.text)
+```
+
+```text title="Output"
+https://api.example.com/hello
+Hello from the server
+```
+
+<Raises>an [`HttpError`](../httperror/) when the request fails, or, unless `strict: false`, when the
+server answers with an error status.</Raises>
+
+</Member>
+
+<Member owner="Http." name="delete" params="url: String, query: Dict[String, String] = [], headers: Dict[String, String] = [], timeout: Duration = Duration(seconds: 30), strict: Bool = true" returns="Http.Response">
+
+Asks the server to remove what is at the address. It takes the same options as `get`, and follows
+redirects the same way.
+
+```emerald
+print(Http.delete("https://api.example.com/scores/7").text)
+```
+
+```text title="Output"
+deleted
+```
+
+<Raises>an [`HttpError`](../httperror/) in the same cases as `get`.</Raises>
+
+</Member>
+
+<Member owner="Http." name="post" params="url: String, body: String? = nothing, json: String? = nothing, bytes: Bytes? = nothing, query: Dict[String, String] = [], headers: Dict[String, String] = [], timeout: Duration = Duration(seconds: 30), strict: Bool = true" returns="Http.Response">
+
+Sends data to the server. `put` and `patch` take the same options, and are written the same way: `post`
+for something new, `put` to replace what is at the address, and `patch` to change part of it.
+
+Give the data in one of three ways, and no more than one:
+
+- `body:` is text, sent as UTF-8 with the content type `text/plain; charset=utf-8`.
+- `json:` is JSON that is already text, sent with the content type `application/json`. To send an
+  ordinary Emerald value, write `json: Json.encode(value)`.
+- `bytes:` is [`Bytes`](../../../builtins/types/bytes/), sent as they are, with no content type chosen.
+
+```emerald
+struct Score {
+    const name: String
+    const points: Int
+}
+
+const saved = Http.post("https://api.example.com/scores", json: Json.encode(Score("Ada", 120)))
+print(saved.status)
+```
+
+```text title="Output"
+201
+```
+
+A `Content-Type` in `headers:` is used in place of the one a body would choose.
+
+A request with a body isn't sent again to a new address, because the server may have acted on it.
+If the server answers with a redirect, that answer is what you get back, or an error in strict mode.
+
+<Raises>an [`HttpError`](../httperror/) in the same cases as `get`, and when more than one of `body:`,
+`json:`, and `bytes:` is given.</Raises>
+
+</Member>
+
+## Errors in the answer
+
+A server can answer successfully in the sense that it replied, while saying the request failed: `404`
+for something that isn't there, or `500` for a fault of its own. By default, `strict: true`, such an
+answer raises an [`HttpError`](../httperror/), so a program can't carry on as if the request worked:
+
+```emerald
+try {
+    Http.get("https://api.example.com/users/404")
+}
+catch error: HttpError {
+    print(error.message)
+    print(error.status)
+}
+```
+
+```text title="Output"
+the server answered 404 Not Found for `https://api.example.com/users/404`
+404
+```
+
+With `strict: false`, every answer that completes is returned, whatever its status, and the program
+looks at it itself. [`ok?()`](../http-response/#ok) says whether the status is a success:
+
+```emerald
+const response = Http.get("https://api.example.com/users/404", strict: false)
+print(response.status)
+print(response.ok?())
+print(response.text)
+```
+
+```text title="Output"
+404
+false
+no such user
+```
+
+Failures to get an answer at all, such as a server that can't be reached, a timeout, or a certificate
+that can't be trusted, raise an error in both modes.
+
+## Helpers
+
+<Member owner="Http." name="encode_component" params="text: String" returns="String">
+
+Makes text safe to put in one part of an address, by encoding every character that has a meaning there,
+including `/`, `?`, and `&`.
+
+```emerald
+print(Http.encode_component("São Paulo/a?b"))
+```
+
+```text title="Output"
+S%C3%A3o%20Paulo%2Fa%3Fb
+```
+
+You don't need it for `query:`, which encodes for you. It is for building the path of an address
+yourself.
+
+</Member>
