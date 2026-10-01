@@ -1,0 +1,119 @@
+---
+title: FileWriter
+description: A text file being written a piece at a time.
+sidebar:
+  order: 3
+---
+
+import Member from '../../../../../components/Member.astro';
+import Raises from '../../../../../components/Raises.astro';
+
+<p class="reference-facts">Standard library class · Made with <code>File.create</code></p>
+
+A `FileWriter` is a file that is open for writing. [`File.write`](../file/#write) puts a whole
+text in a file in one go; a writer lets a program add to the file as it goes, such as a line for
+each result of a long calculation, without holding all of it in memory first.
+
+```emerald
+const writer = File.create("squares.txt")
+for n in 1..4 {
+    writer.write("#{n} squared is #{n * n}\n")
+}
+writer.close()
+
+print(File.read("squares.txt"))
+```
+
+```text title="Output"
+1 squared is 1
+2 squared is 4
+3 squared is 9
+4 squared is 16
+
+```
+
+`File.create` makes the file, or empties it if it was already there. Each `write` adds to the end of
+what has been written so far. Nothing is added between writes, so end a line with `\n` yourself.
+
+A writer only writes. To read a file a piece at a time, use a [`FileHandle`](../filehandle/); to add
+to a file that already has content, use [`File.append`](../file/#append).
+
+Close the writer when you are done, so everything reaches the file. [`File.with_writer`](../file/#with_writer)
+does that for you, even if something goes wrong partway:
+
+```emerald
+File.with_writer("squares.txt", { writer =>
+    for n in 1..4 {
+        writer.write("#{n * n}\n")
+    }
+})
+print(File.read_lines("squares.txt"))
+```
+
+```text title="Output"
+["1", "4", "9", "16"]
+```
+
+## At a glance
+
+| Writing | |
+| --- | --- |
+| [`write(text)`](#write) | Add text to the file |
+| [`write_bytes(bytes)`](#write_bytes) | Add raw bytes to the file |
+
+| Finishing | |
+| --- | --- |
+| [`close()`](#close) | Finish the file and let go of it |
+
+## Writing
+
+<Member name="write" params="text: String">
+
+Adds `text` to the end of the file, as UTF-8.
+
+<Raises>a [`FileError`](../fileerror/) when the text can't be written, or when the writer has been
+closed.</Raises>
+
+</Member>
+
+<Member name="write_bytes" params="bytes: Bytes">
+
+Adds [`Bytes`](../../../builtins/types/bytes/) to the end of the file exactly as they are.
+
+```emerald
+const writer = File.create("hi.bin")
+writer.write_bytes(Bytes.from_list([72, 105]))
+writer.close()
+print(File.read("hi.bin"))
+```
+
+```text title="Output"
+Hi
+```
+
+<Raises>a [`FileError`](../fileerror/) when the bytes can't be written, or when the writer has been
+closed.</Raises>
+
+</Member>
+
+## Finishing
+
+<Member name="close" params="">
+
+Finishes the file and lets go of it. Closing a writer that is already closed does nothing, so it is
+safe to close one twice. Writing to a closed writer is an error:
+
+```emerald
+const writer = File.create("note.txt")
+writer.close()
+writer.write("too late")
+```
+
+```text title="Output"
+note.em:3:1: FileError: cannot write to a closed file
+  writer.write("too late")
+  ^^^^^^^^^^^^^^^^^^^^^^^^
+Check that the path exists and that this program may access it.
+```
+
+</Member>

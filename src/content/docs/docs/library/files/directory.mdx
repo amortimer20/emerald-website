@@ -1,0 +1,130 @@
+---
+title: Directory
+description: Create, list, and remove folders.
+sidebar:
+  order: 4
+---
+
+import Member from '../../../../../components/Member.astro';
+import Raises from '../../../../../components/Raises.astro';
+
+<p class="reference-facts">Standard library namespace · Always available, with no import</p>
+
+`Directory` works with folders: making them, seeing what is inside, and removing them. What is
+inside a folder is read and written with [`File`](../file/).
+
+```emerald
+Directory.create("reports/2026")
+File.write("reports/2026/summary.txt", "All good")
+File.write("reports/overview.txt", "See 2026")
+
+for path in Directory.list("reports").sort() {
+    print(path)
+}
+```
+
+```text title="Output"
+reports/2026
+reports/overview.txt
+```
+
+A path is a `String`, and a relative one is looked up from the folder the program was run in.
+When an operation fails, it raises a [`FileError`](../fileerror/).
+
+## At a glance
+
+| Looking | |
+| --- | --- |
+| [`Directory.exists?(path)`](#exists) | Whether there is a folder at the path |
+| [`Directory.list(path)`](#list) | The paths inside a folder |
+
+| Changing | |
+| --- | --- |
+| [`Directory.create(path)`](#create) | Make a folder, and any it needs |
+| [`Directory.delete(path)`](#delete) | Remove an empty folder |
+| [`Directory.delete_recursive(path)`](#delete_recursive) | Remove a folder and everything in it |
+
+## Looking
+
+<Member owner="Directory." name="exists?" id="exists" params="path: String" returns="Bool">
+
+Whether there is a folder at `path`. A file is not a folder, so for a file this is `false`; ask
+[`File.exists?`](../file/#exists) instead.
+
+</Member>
+
+<Member owner="Directory." name="list" params="path: String" returns="List[String]">
+
+The full path of everything directly inside the folder, files and folders alike. Each path starts
+with the path you gave, so it can be passed straight to `File.read` or to `Directory.list` again.
+It does not look inside the folders it finds.
+
+The order is not specified, and can differ between computers, so sort the list when the order
+matters, as above.
+
+<Raises>a [`FileError`](../fileerror/) when there is no folder at `path`.</Raises>
+
+</Member>
+
+## Changing
+
+<Member owner="Directory." name="create" params="path: String">
+
+Makes the folder, along with any folders above it that are missing, so `Directory.create("a/b/c")`
+works even when `a` doesn't exist yet. If the folder is already there, nothing happens.
+
+<Raises>a [`FileError`](../fileerror/) when the folder can't be made, such as when a file already
+has that name.</Raises>
+
+</Member>
+
+<Member owner="Directory." name="delete" params="path: String">
+
+Removes a folder, but only an empty one. A folder with something in it is left alone, and the
+error says so:
+
+```emerald
+Directory.create("old")
+File.write("old/keep.txt", "keep me")
+
+try {
+    Directory.delete("old")
+}
+catch error: FileError {
+    print(error.message)
+}
+```
+
+```text title="Output"
+`old` is not empty, so it cannot be deleted
+```
+
+<Raises>a [`FileError`](../fileerror/) when the folder isn't empty, doesn't exist, or can't be
+removed.</Raises>
+
+</Member>
+
+<Member owner="Directory." name="delete_recursive" params="path: String">
+
+Removes a folder and everything inside it, folders and files alike. There is no way to undo it,
+so be sure of the path.
+
+If the folder is already gone, nothing happens, so it is safe to call twice, and a program can use
+it to clear out a folder without checking first.
+
+```emerald
+Directory.create("scratch/deep")
+File.write("scratch/deep/file.txt", "temporary")
+
+Directory.delete_recursive("scratch")
+Directory.delete_recursive("scratch")
+print(Directory.exists?("scratch"))
+```
+
+```text title="Output"
+false
+```
+
+<Raises>a [`FileError`](../fileerror/) when something inside can't be removed.</Raises>
+
+</Member>

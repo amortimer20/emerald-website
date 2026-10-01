@@ -1,0 +1,320 @@
+---
+title: File
+description: Read, write, copy, move, and delete files.
+sidebar:
+  order: 1
+---
+
+import Member from '../../../../../components/Member.astro';
+import Raises from '../../../../../components/Raises.astro';
+
+<p class="reference-facts">Standard library namespace · Always available, with no import</p>
+
+`File` reads and writes files. Most programs need only a few things: read a whole file as text,
+write text to one, and ask whether one exists.
+
+```emerald
+File.write("notes.txt", "Buy milk\nCall Ada\n")
+print(File.read("notes.txt"))
+print(File.read_lines("notes.txt"))
+```
+
+```text title="Output"
+Buy milk
+Call Ada
+
+["Buy milk", "Call Ada"]
+```
+
+A path is a `String`. A relative one, such as `"notes.txt"`, is looked up from the folder the
+program was run in. Text files are read and written as UTF-8, and a file that isn't valid UTF-8
+is an error rather than garbled text; read it as [`Bytes`](#read_binary) instead.
+
+When a file operation fails, because the file isn't there or can't be written, it raises a
+[`FileError`](../fileerror/). Use [`File.exists?`](#exists) first when a missing file is
+something the program expects:
+
+```emerald
+if File.exists?("settings.txt") {
+    print(File.read("settings.txt"))
+}
+else {
+    print("No settings yet.")
+}
+```
+
+```text title="Output"
+No settings yet.
+```
+
+For a file too large to hold in memory, or one you want to read a line at a time, open it with
+[`open`](#open) or [`create`](#create). To work with folders, see
+[`Directory`](../directory/), and for file names, [`Path`](../path/).
+
+## At a glance
+
+| Whole files as text | |
+| --- | --- |
+| [`File.read(path)`](#read) | The whole file as a `String` |
+| [`File.read_lines(path)`](#read_lines) | The file as a `List[String]`, one item per line |
+| [`File.write(path, text)`](#write) | Create the file, or replace what it holds |
+| [`File.write_lines(path, lines)`](#write_lines) | Write a list of lines, each followed by a line break |
+| [`File.append(path, text)`](#append) | Add text to the end of the file |
+
+| Whole files as bytes | |
+| --- | --- |
+| [`File.read_binary(path)`](#read_binary) | The whole file as [`Bytes`](../../../builtins/types/bytes/) |
+| [`File.write_binary(path, bytes)`](#write_binary) | Create the file, or replace what it holds |
+
+| Managing files | |
+| --- | --- |
+| [`File.exists?(path)`](#exists) | Whether there is a file at the path |
+| [`File.copy(source, destination)`](#copy) | Make a copy of a file |
+| [`File.move(source, destination)`](#move) | Move or rename a file |
+| [`File.delete(path)`](#delete) | Remove a file |
+
+| Streaming | |
+| --- | --- |
+| [`File.open(path)`](#open), [`File.with_open(path)`](#with_open) | Read a file piece by piece |
+| [`File.create(path)`](#create), [`File.with_writer(path)`](#with_writer) | Write a file piece by piece |
+
+## Whole files as text
+
+<Member owner="File." name="read" params="path: String" returns="String">
+
+The whole file as one `String`, line breaks included.
+
+<Raises>a [`FileError`](../fileerror/) when the file doesn't exist or can't be read, or when
+its contents aren't valid UTF-8 text.</Raises>
+
+</Member>
+
+<Member owner="File." name="read_lines" params="path: String" returns="List[String]">
+
+The file as a list with one item for each line, without the line breaks.
+
+```emerald
+File.write("scores.txt", "90\n85\n\n70\n")
+const lines = File.read_lines("scores.txt")
+print(lines.count)
+print(lines)
+```
+
+```text title="Output"
+4
+["90", "85", "", "70"]
+```
+
+Every line break ends a line, so a blank line stays in the list as `""`. A line break at the very
+end of the file adds no extra line, and a file with nothing in it gives an empty list.
+
+<Raises>a [`FileError`](../fileerror/) in the same cases as [`read`](#read).</Raises>
+
+</Member>
+
+<Member owner="File." name="write" params="path: String, text: String">
+
+Puts `text` in the file, creating it if it isn't there. If the file already holds something, it
+is replaced, so use [`append`](#append) to keep what is there.
+
+```emerald
+File.write("greeting.txt", "Hello")
+File.write("greeting.txt", "Goodbye")
+print(File.read("greeting.txt"))
+```
+
+```text title="Output"
+Goodbye
+```
+
+The folder the file goes in must already exist; make it with
+[`Directory.create`](../directory/#create).
+
+<Raises>a [`FileError`](../fileerror/) when the file can't be written, such as when its folder
+doesn't exist.</Raises>
+
+</Member>
+
+<Member owner="File." name="write_lines" params="path: String, lines: List[String]">
+
+Writes each item of `lines` followed by a line break, including the last one, so the file ends
+the way a text file normally does. Like `write`, it replaces what the file held.
+
+```emerald
+File.write_lines("todo.txt", ["Buy milk", "Call Ada"])
+print(File.read("todo.txt").count)
+print(File.read_lines("todo.txt"))
+```
+
+```text title="Output"
+18
+["Buy milk", "Call Ada"]
+```
+
+<Raises>a [`FileError`](../fileerror/) in the same cases as [`write`](#write).</Raises>
+
+</Member>
+
+<Member owner="File." name="append" params="path: String, text: String">
+
+Adds `text` to the end of the file, creating the file if it isn't there. Nothing is added between
+the old text and the new, so include a line break when you want one.
+
+```emerald
+File.write("log.txt", "started\n")
+File.append("log.txt", "finished\n")
+print(File.read_lines("log.txt"))
+```
+
+```text title="Output"
+["started", "finished"]
+```
+
+<Raises>a [`FileError`](../fileerror/) when the file can't be read or written.</Raises>
+
+</Member>
+
+## Whole files as bytes
+
+<Member owner="File." name="read_binary" params="path: String" returns="Bytes">
+
+The whole file as [`Bytes`](../../../builtins/types/bytes/), with no check that it is text. Use
+it for images, archives, and any other file that isn't plain text.
+
+<Raises>a [`FileError`](../fileerror/) when the file doesn't exist or can't be read.</Raises>
+
+</Member>
+
+<Member owner="File." name="write_binary" params="path: String, bytes: Bytes">
+
+Puts `bytes` in the file, creating it if it isn't there, and replacing what it held.
+
+```emerald
+File.write_binary("data.bin", Bytes.from_list([1, 2, 255]))
+print(File.read_binary("data.bin"))
+```
+
+```text title="Output"
+Bytes[3: 01 02 ff]
+```
+
+<Raises>a [`FileError`](../fileerror/) when the file can't be written.</Raises>
+
+</Member>
+
+## Managing files
+
+<Member owner="File." name="exists?" id="exists" params="path: String" returns="Bool">
+
+Whether there is a file at `path`. A folder is not a file, so for a folder this is `false`; ask
+[`Directory.exists?`](../directory/#exists) instead.
+
+</Member>
+
+<Member owner="File." name="copy" params="source: String, destination: String">
+
+Makes a copy of the file at `source` at `destination`, leaving the original where it is.
+
+<Raises>a [`FileError`](../fileerror/) when `source` doesn't exist or the copy can't be
+made.</Raises>
+
+</Member>
+
+<Member owner="File." name="move" params="source: String, destination: String">
+
+Moves the file at `source` to `destination`. Moving a file to another name in the same folder
+renames it.
+
+```emerald
+File.write("draft.txt", "text")
+File.move("draft.txt", "final.txt")
+print(File.exists?("draft.txt"), File.exists?("final.txt"))
+```
+
+```text title="Output"
+false true
+```
+
+<Raises>a [`FileError`](../fileerror/) when `source` doesn't exist or the move can't be
+made.</Raises>
+
+</Member>
+
+<Member owner="File." name="delete" params="path: String">
+
+Removes the file at `path`. To remove a folder, see [`Directory.delete`](../directory/#delete).
+
+<Raises>a [`FileError`](../fileerror/) when the file doesn't exist or can't be removed.</Raises>
+
+</Member>
+
+## Streaming
+
+<Member owner="File." name="open" params="path: String" returns="FileHandle">
+
+Opens a text file for reading and gives back a [`FileHandle`](../filehandle/), which reads it a
+line at a time. Close the handle when you're done, or use [`with_open`](#with_open), which does
+it for you.
+
+<Raises>a [`FileError`](../fileerror/) when the file doesn't exist or can't be read.</Raises>
+
+</Member>
+
+<Member owner="File." name="with_open" params="path: String" block="handle: FileHandle => ...">
+
+Opens the file, gives the open [`FileHandle`](../filehandle/) to the block, and closes it
+afterwards, whether the block finishes normally, returns early, or raises an error.
+
+```emerald
+File.write_lines("names.txt", ["Ada", "Grace"])
+File.with_open("names.txt", { handle =>
+    var line = handle.read_line()
+    while line != nothing {
+        print("Hello, #{line}!")
+        line = handle.read_line()
+    }
+})
+```
+
+```text title="Output"
+Hello, Ada!
+Hello, Grace!
+```
+
+Prefer this to `open` for most work, since the file is closed even when something goes wrong.
+
+<Raises>a [`FileError`](../fileerror/) when the file doesn't exist or can't be read.</Raises>
+
+</Member>
+
+<Member owner="File." name="create" params="path: String" returns="FileWriter">
+
+Creates a text file for writing, replacing it if it already exists, and gives back a
+[`FileWriter`](../filewriter/), which writes to it a piece at a time. Close the writer when
+you're done, or use [`with_writer`](#with_writer).
+
+<Raises>a [`FileError`](../fileerror/) when the file can't be created.</Raises>
+
+</Member>
+
+<Member owner="File." name="with_writer" params="path: String" block="writer: FileWriter => ...">
+
+Creates the file, gives the open [`FileWriter`](../filewriter/) to the block, and closes it
+afterwards, whether the block finishes normally, returns early, or raises an error.
+
+```emerald
+File.with_writer("count.txt", { writer =>
+    for n in 1..3 {
+        writer.write("#{n}\n")
+    }
+})
+print(File.read_lines("count.txt"))
+```
+
+```text title="Output"
+["1", "2", "3"]
+```
+
+<Raises>a [`FileError`](../fileerror/) when the file can't be created or written.</Raises>
+
+</Member>

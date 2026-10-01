@@ -1,0 +1,170 @@
+---
+title: FileHandle
+description: An open text file, read a line at a time.
+sidebar:
+  order: 2
+---
+
+import Member from '../../../../../components/Member.astro';
+import Raises from '../../../../../components/Raises.astro';
+
+<p class="reference-facts">Standard library class · Made with <code>File.open</code></p>
+
+A `FileHandle` is a text file that is open for reading. Unlike [`File.read`](../file/#read), which
+brings the whole file into the program at once, a handle reads it a piece at a time, so a program
+can work through a large file, or stop partway.
+
+```emerald
+File.write_lines("names.txt", ["Ada", "Grace", "Katherine"])
+
+const handle = File.open("names.txt")
+print(handle.read_line())
+print(handle.read_line())
+handle.close()
+```
+
+```text title="Output"
+Ada
+Grace
+```
+
+A handle remembers where it has read up to, and each read carries on from there. It only reads;
+to write a file a piece at a time, use a [`FileWriter`](../filewriter/).
+
+Make a handle with [`File.open`](../file/#open), and close it when you are done. Better still, let
+[`File.with_open`](../file/#with_open) do both, so the file is closed even if something goes
+wrong:
+
+```emerald
+File.write_lines("names.txt", ["Ada", "Grace", "Katherine"])
+
+File.with_open("names.txt", { handle =>
+    var line = handle.read_line()
+    while line != nothing {
+        print("Hello, #{line}!")
+        line = handle.read_line()
+    }
+})
+```
+
+```text title="Output"
+Hello, Ada!
+Hello, Grace!
+Hello, Katherine!
+```
+
+## At a glance
+
+| Reading text | |
+| --- | --- |
+| [`read_line()`](#read_line) | The next line, or `nothing` at the end |
+| [`read()`](#read) | Everything left, as one `String` |
+
+| Reading bytes | |
+| --- | --- |
+| [`read_bytes(count)`](#read_bytes) | Up to `count` of the bytes left, or `nothing` at the end |
+| [`read_all_bytes()`](#read_all_bytes) | Every byte left |
+
+| Finishing | |
+| --- | --- |
+| [`close()`](#close) | Let go of the file |
+
+## Reading text
+
+<Member name="read_line" params="" returns="String?">
+
+The next line, without its line break, or `nothing` once there are no more lines. Use it in a loop
+that stops at `nothing`, as above.
+
+It splits lines the same way [`File.read_lines`](../file/#read_lines) does: a blank line comes back
+as `""`, a line break at the very end of the file adds no extra line, and a final line with no line
+break is still returned.
+
+<Raises>a [`FileError`](../fileerror/) when the handle has been closed.</Raises>
+
+</Member>
+
+<Member name="read" params="" returns="String">
+
+Everything not yet read, as one `String`. Right after `File.open` that is the whole file; after a
+few `read_line`s it is the rest.
+
+```emerald
+File.write_lines("names.txt", ["Ada", "Grace", "Katherine"])
+
+const handle = File.open("names.txt")
+print(handle.read_line())
+print(handle.read())
+handle.close()
+```
+
+```text title="Output"
+Ada
+Grace
+Katherine
+
+```
+
+<Raises>a [`FileError`](../fileerror/) when the handle has been closed, or when the text left
+isn't valid UTF-8.</Raises>
+
+</Member>
+
+## Reading bytes
+
+<Member name="read_bytes" params="count: Int" returns="Bytes?">
+
+Up to `count` of the bytes not yet read, as [`Bytes`](../../../builtins/types/bytes/), or `nothing`
+when there are none left. Fewer than `count` come back when the file ends first.
+
+```emerald
+File.write_binary("data.bin", Bytes.from_list([1, 2, 255]))
+
+const handle = File.open("data.bin")
+print(handle.read_bytes(2))
+print(handle.read_bytes(2))
+print(handle.read_bytes(2))
+handle.close()
+```
+
+```text title="Output"
+Bytes[2: 01 02]
+Bytes[1: ff]
+nothing
+```
+
+<Raises>a [`FileError`](../fileerror/) when the handle has been closed.</Raises>
+
+</Member>
+
+<Member name="read_all_bytes" params="" returns="Bytes">
+
+Every byte not yet read.
+
+<Raises>a [`FileError`](../fileerror/) when the handle has been closed.</Raises>
+
+</Member>
+
+## Finishing
+
+<Member name="close" params="">
+
+Lets go of the file. Closing a handle that is already closed does nothing, so it is safe to close
+one twice. Reading from a closed handle is an error:
+
+```emerald
+File.write("note.txt", "hi")
+
+const handle = File.open("note.txt")
+handle.close()
+print(handle.read_line())
+```
+
+```text title="Output"
+note.em:5:7: FileError: cannot read from a closed file
+  print(handle.read_line())
+        ^^^^^^^^^^^^^^^^^^
+Check that the path exists and that this program may access it.
+```
+
+</Member>

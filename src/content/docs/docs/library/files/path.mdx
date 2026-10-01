@@ -1,0 +1,178 @@
+---
+title: Path
+description: Build and take apart file names and folder paths as text.
+sidebar:
+  order: 5
+---
+
+import Member from '../../../../../components/Member.astro';
+import Raises from '../../../../../components/Raises.astro';
+
+<p class="reference-facts">Standard library namespace · Always available, with no import</p>
+
+A path is the text that says where a file or folder is, such as `reports/2026/summary.txt`. `Path`
+builds paths from pieces and takes them apart again, without touching the disk: it only works with
+the text, so it is fine to use on a path that doesn't exist yet.
+
+```emerald
+const file = Path.join(["reports", "2026", "summary.txt"])
+print(file)
+print(Path.name(file))
+print(Path.stem(file))
+print(Path.extension(file))
+print(Path.parent(file))
+```
+
+```text title="Output"
+reports/2026/summary.txt
+summary.txt
+summary
+txt
+reports/2026
+```
+
+Use `Path.join` rather than gluing pieces together with `+`, so the separators are always right.
+The paths `Path` makes go straight into [`File`](../file/) and [`Directory`](../directory/).
+
+## At a glance
+
+| Building | |
+| --- | --- |
+| [`Path.join(parts)`](#join) | Pieces put together into one path |
+
+| Taking apart | |
+| --- | --- |
+| [`Path.name(path)`](#name) | The last part, with its extension |
+| [`Path.stem(path)`](#stem) | The last part, without its extension |
+| [`Path.extension(path)`](#extension) | The extension, without the dot |
+| [`Path.parent(path)`](#parent) | Everything before the last part |
+
+| Absolute paths | |
+| --- | --- |
+| [`Path.absolute?(path)`](#absolute-1) | Whether the path starts from the top of the disk |
+| [`Path.absolute(path)`](#absolute) | The full path to something that exists |
+
+## Building
+
+<Member owner="Path." name="join" params="parts: List[String]" returns="String">
+
+The parts put together with a separator between each.
+
+```emerald
+print(Path.join(["data", "2026", "report.txt"]))
+print(Path.join(["data"]))
+```
+
+```text title="Output"
+data/2026/report.txt
+data
+```
+
+</Member>
+
+## Taking apart
+
+<Member owner="Path." name="name" params="path: String" returns="String">
+
+The last part of the path: the file or folder name, with its extension.
+
+```emerald
+print(Path.name("/home/ada/notes.txt"))
+```
+
+```text title="Output"
+notes.txt
+```
+
+</Member>
+
+<Member owner="Path." name="stem" params="path: String" returns="String">
+
+The last part without its extension. Only the final extension is removed, so `archive.tar.gz` has the
+stem `archive.tar`.
+
+```emerald
+print(Path.stem("photos/cat.jpg"))
+print(Path.stem("archive.tar.gz"))
+```
+
+```text title="Output"
+cat
+archive.tar
+```
+
+</Member>
+
+<Member owner="Path." name="extension" params="path: String" returns="String">
+
+The part after the last dot of the name, without the dot: `"txt"`, not `".txt"`. It is `""` for a name
+that has no extension.
+
+```emerald
+print(Path.extension("photos/cat.jpg"))
+print(Path.extension("Makefile") == "")
+```
+
+```text title="Output"
+jpg
+true
+```
+
+</Member>
+
+<Member owner="Path." name="parent" params="path: String" returns="String">
+
+Everything before the last part: the folder a file or folder is in. It is `""` when the path is only
+a name, with no folder in front of it.
+
+```emerald
+print(Path.parent("reports/2026/summary.txt"))
+print(Path.parent("notes.txt") == "")
+```
+
+```text title="Output"
+reports/2026
+true
+```
+
+</Member>
+
+## Absolute paths
+
+A path that starts from the top of the disk, such as `/home/ada/notes.txt`, is *absolute*. One that
+doesn't, such as `notes.txt`, is *relative*, and means "from the folder the program was run in".
+
+<Member owner="Path." name="absolute?" id="absolute-1" params="path: String" returns="Bool">
+
+Whether the path is absolute. It only reads the text of the path, so it works for a path that
+doesn't exist.
+
+```emerald
+print(Path.absolute?("/home/ada/notes.txt"))
+print(Path.absolute?("notes.txt"))
+```
+
+```text title="Output"
+true
+false
+```
+
+</Member>
+
+<Member owner="Path." name="absolute" params="path: String" returns="String">
+
+The full, absolute path to something that exists, starting from the top of the disk. Unlike the
+rest of `Path`, it looks at the disk, and needs the file or folder to be there.
+
+```emerald
+File.write("notes.txt", "hello")
+print(Path.absolute?(Path.absolute("notes.txt")))
+```
+
+```text title="Output"
+true
+```
+
+<Raises>a [`FileError`](../fileerror/) when nothing exists at `path`.</Raises>
+
+</Member>

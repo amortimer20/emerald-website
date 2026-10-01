@@ -1,0 +1,73 @@
+---
+title: FileError
+description: The error raised when a file or folder can't be read, written, or found.
+sidebar:
+  order: 6
+---
+
+import Member from '../../../../../components/Member.astro';
+
+<p class="reference-facts">Standard library class · Extends <code>RuntimeError</code></p>
+
+A `FileError` is what Emerald raises when something goes wrong with a file or folder: it isn't
+there, the program isn't allowed to use it, a write fails, or a text file isn't valid UTF-8. It
+comes from [`File`](../file/), [`Directory`](../directory/), [`FileHandle`](../filehandle/),
+[`FileWriter`](../filewriter/), and [`Path.absolute`](../path/#absolute).
+
+```emerald
+try {
+    print(File.read("missing.txt"))
+}
+catch error: FileError {
+    print("Could not read the file: #{error.message}")
+}
+```
+
+```text title="Output"
+Could not read the file: the file `missing.txt` does not exist
+```
+
+Files can fail for reasons a program can't check beforehand, so a program that reads a file the
+user named will usually want a `catch`. When the missing file is something to expect, ask
+[`File.exists?`](../file/#exists) first, and keep `catch` for the unexpected.
+
+A `FileError` is a [`RuntimeError`](../../../builtins/errors/runtimeerror/), so
+`catch error: RuntimeError` catches it too. Catching `FileError` alone handles file problems
+without also catching unrelated ones, such as a position outside a list.
+
+<Member name="message" returns="String">
+
+What went wrong, in words, naming the path involved.
+
+</Member>
+
+## What the messages say
+
+| Message | When |
+| --- | --- |
+| ``the file `notes.txt` does not exist`` | Reading or opening a file that isn't there |
+| ``could not read as UTF-8 text `data.bin` `` | A text read of a file that isn't valid UTF-8 |
+| ``could not write `reports/a.txt` `` | A write that failed, such as when the folder doesn't exist |
+| ``could not delete `old.txt` `` | Deleting something that isn't there, or can't be removed |
+| ``` `old` is not empty, so it cannot be deleted ``` | [`Directory.delete`](../directory/#delete) on a folder with something in it |
+| `cannot read from a closed file` | Reading from a [`FileHandle`](../filehandle/) after `close` |
+| `cannot write to a closed file` | Writing to a [`FileWriter`](../filewriter/) after `close` |
+
+Other operations say `could not` and the action, such as `copy`, `move`, `create`, `list`, or `find`,
+followed by the path.
+
+## When nothing catches it
+
+The program stops and shows the message with the line of the program that led to it:
+
+```emerald
+const text = File.read("missing.txt")
+print(text)
+```
+
+```text title="Output"
+error.em:1:14: FileError: the file `missing.txt` does not exist
+  const text = File.read("missing.txt")
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+Check that the path exists and that this program may access it.
+```
