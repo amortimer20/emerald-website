@@ -1,0 +1,352 @@
+---
+title: Date
+description: A day on the calendar, such as a birthday or a due date.
+sidebar:
+  order: 1
+---
+
+import Member from '../../../../../components/Member.astro';
+import Raises from '../../../../../components/Raises.astro';
+
+<p class="reference-facts">Standard library struct · Written <code>Date(2026, 9, 25)</code></p>
+
+A `Date` is a day on the calendar, with no time of day and no time zone: a birthday, a due date, a
+holiday. Use one when the question is "which day?", and a [`DateTime`](../datetime/) or an
+[`Instant`](../instant/) when it is also "what time?".
+
+```emerald
+const launch = Date(2026, 9, 25)
+print(launch)
+print("#{launch.weekday}, #{launch.month_name} #{launch.day}, #{launch.year}")
+print(launch.add(months: 1))
+```
+
+```text title="Output"
+2026-09-25
+Friday, September 25, 2026
+2026-10-25
+```
+
+A `Date` uses the Gregorian calendar, extended back before 1582 as the international standard does,
+for the years 1 through 9999. It is a value: two dates for the same day are equal, an earlier date is
+less than a later one, and a date can be a dictionary key.
+
+A date prints as `2026-09-25`, year first, which reads the same in every country and sorts correctly
+as text. For another layout, put the parts into text yourself, as above.
+
+## At a glance
+
+| Making one | |
+| --- | --- |
+| [`Date(year, month, day)`](#date) | A date from its parts |
+| [`Date.today(zone)`](#today) | Today's date |
+| [`Date.parse(text)`](#parse), [`Date.parse_maybe(text)`](#parse_maybe) | A date read from `2026-09-25` |
+
+| Parts | |
+| --- | --- |
+| [`year`](#parts), [`month`](#parts), [`day`](#parts) | The three numbers |
+| [`weekday`](#weekday) | The day of the week, as a [`Weekday`](../weekday/) |
+| [`month_name`](#month_name) | The month's name, such as `"September"` |
+| [`day_of_year`](#day_of_year) | 1 for 1 January, up to 365 or 366 |
+| [`days_in_month`](#days_in_month) | 28, 29, 30, or 31 |
+| [`leap_year?()`](#leap_year) | Whether the year has a 29 February |
+
+| Calendar arithmetic | |
+| --- | --- |
+| [`add(years:, months:, weeks:, days:)`](#add) | A later date |
+| [`subtract(years:, months:, weeks:, days:)`](#subtract) | An earlier date |
+| [`days_until(other)`](#days_until) | Days from this date to another |
+| [`months_until(other)`](#months_until) | Whole months to another date |
+| [`years_until(other)`](#years_until) | Whole years to another date |
+
+| Combining | |
+| --- | --- |
+| [`at(time)`](#at) | This date at a time of day, as a [`DateTime`](../datetime/) |
+
+## Making one
+
+<Member name="Date" id="date" params="year: Int, month: Int, day: Int" returns="Date">
+
+A date from its parts. Months are numbered from 1, so `Date(2026, 9, 25)` is 25 September 2026.
+
+```emerald
+try {
+    print(Date(2026, 2, 30))
+}
+catch error: DateTimeError {
+    print(error.message)
+}
+```
+
+```text title="Output"
+day 30 is not between 1 and 28: February 2026 has 28 days
+```
+
+<Raises>a [`DateTimeError`](../datetimeerror/) for a year outside 1 to 9999, a month outside 1 to 12,
+or a day the month doesn't have.</Raises>
+
+</Member>
+
+<Member owner="Date." name="today" params="zone: TimeZone = TimeZone.local" returns="Date">
+
+Today's date, in `zone`, which is the computer's own zone unless you say otherwise. The date changes
+at midnight where you are, so two zones can disagree about what today is.
+
+```emerald
+const today = Date.today()
+print(today.year >= 2026)
+```
+
+```text title="Output"
+true
+```
+
+</Member>
+
+<Member owner="Date." name="parse" params="text: String" returns="Date">
+
+Reads a date written as `YYYY-MM-DD`, ignoring spaces around it. That is the form a `Date` prints in,
+so reading a printed date gives the same date back.
+
+```emerald
+print(Date.parse("2026-09-25").weekday)
+```
+
+```text title="Output"
+Friday
+```
+
+<Raises>a [`DateTimeError`](../datetimeerror/) when the text is in any other layout, saying which one
+was expected, or names a day that doesn't exist.</Raises>
+
+</Member>
+
+<Member owner="Date." name="parse_maybe" params="text: String" returns="Date?">
+
+Like `parse`, but gives `nothing` instead of raising an error. It suits text a person typed, where a
+mistake is expected:
+
+```emerald
+const typed = "25/09/2026"
+print(Date.parse_maybe(typed).or(Date(2026, 1, 1)))
+```
+
+```text title="Output"
+2026-01-01
+```
+
+</Member>
+
+## Parts
+
+<Member name="year" id="parts" returns="Int">
+
+The parts of the date as whole numbers: `year`, `month` (1 to 12), and `day` (1 to 31). Each is read
+without parentheses, and cannot be assigned. To get a different date, make a new one.
+
+```emerald
+const day = Date(2026, 9, 25)
+print(day.year, day.month, day.day)
+```
+
+```text title="Output"
+2026 9 25
+```
+
+</Member>
+
+<Member name="weekday" returns="Weekday">
+
+The day of the week, as a [`Weekday`](../weekday/).
+
+```emerald
+print(Date(1969, 7, 20).weekday)
+```
+
+```text title="Output"
+Sunday
+```
+
+</Member>
+
+<Member name="month_name" returns="String">
+
+The month's English name, for building text.
+
+```emerald
+print(Date(2026, 9, 25).month_name)
+```
+
+```text title="Output"
+September
+```
+
+</Member>
+
+<Member name="day_of_year" returns="Int">
+
+1 for 1 January, counting up to 365, or 366 in a leap year.
+
+```emerald
+print(Date(2026, 9, 25).day_of_year)
+```
+
+```text title="Output"
+268
+```
+
+</Member>
+
+<Member name="days_in_month" returns="Int">
+
+How many days the date's month has: 28, 29, 30, or 31.
+
+```emerald
+print(Date(2026, 2, 1).days_in_month)
+print(Date(2028, 2, 1).days_in_month)
+```
+
+```text title="Output"
+28
+29
+```
+
+</Member>
+
+<Member name="leap_year?" id="leap_year" params="" returns="Bool">
+
+Whether the date's year has a 29 February: every fourth year, except century years that aren't
+divisible by 400. The year 2000 was a leap year; 1900 was not.
+
+```emerald
+print(Date(2000, 1, 1).leap_year?())
+print(Date(1900, 1, 1).leap_year?())
+```
+
+```text title="Output"
+true
+false
+```
+
+</Member>
+
+## Calendar arithmetic
+
+A step on the calendar depends on where it starts: a month from 31 January isn't the same number of
+days as a month from 1 March. So dates have methods with named units, rather than `+` and `-`. For
+exact lengths of time, use a [`Duration`](../duration/) with an [`Instant`](../instant/).
+
+<Member name="add" params="years: Int = 0, months: Int = 0, weeks: Int = 0, days: Int = 0" returns="Date">
+
+A later date. A negative amount goes back. Every amount must be named, because `add(1)` would
+silently mean one year; Emerald refuses it and lists the units.
+
+```emerald
+const start = Date(2026, 9, 25)
+print(start.add(weeks: 2, days: 3))
+print(start.add(years: 1, months: 1))
+```
+
+```text title="Output"
+2026-10-12
+2027-10-25
+```
+
+Years and months are moved first. If the new month doesn't have that day, the date becomes the
+month's last day, so a month after 31 January is the end of February, and a year after 29 February is
+28 February. Weeks and days then count calendar days.
+
+```emerald
+print(Date(2026, 1, 31).add(months: 1))
+print(Date(2024, 2, 29).add(years: 1))
+```
+
+```text title="Output"
+2026-02-28
+2025-02-28
+```
+
+<Raises>a [`DateTimeError`](../datetimeerror/) when the result falls outside the years 1 to 9999.</Raises>
+
+</Member>
+
+<Member name="subtract" params="years: Int = 0, months: Int = 0, weeks: Int = 0, days: Int = 0" returns="Date">
+
+An earlier date: `add` with every amount made negative.
+
+```emerald
+print(Date(2026, 9, 25).subtract(months: 9))
+```
+
+```text title="Output"
+2025-12-25
+```
+
+</Member>
+
+<Member name="days_until" params="other: Date" returns="Int">
+
+The number of days from this date to `other`, negative when `other` is earlier.
+
+```emerald
+const today = Date(2026, 9, 25)
+const holiday = Date(2026, 12, 25)
+print(today.days_until(holiday))
+print(holiday.days_until(today))
+```
+
+```text title="Output"
+91
+-91
+```
+
+</Member>
+
+<Member name="months_until" params="other: Date" returns="Int">
+
+Whole months from this date to `other`: the most months that `add(months:)` can move this date without
+going past it.
+
+```emerald
+print(Date(2026, 1, 31).months_until(Date(2026, 2, 28)))
+```
+
+```text title="Output"
+1
+```
+
+</Member>
+
+<Member name="years_until" params="other: Date" returns="Int">
+
+Whole years from this date to `other`, so `born.years_until(Date.today())` is an age. Someone born on
+29 February has their birthday on 28 February in other years.
+
+```emerald
+const born = Date(1990, 6, 15)
+print(born.years_until(Date(2026, 6, 14)))
+print(born.years_until(Date(2026, 6, 15)))
+```
+
+```text title="Output"
+35
+36
+```
+
+</Member>
+
+## Combining
+
+<Member name="at" params="time: Time" returns="DateTime">
+
+This date at a time of day, as a [`DateTime`](../datetime/).
+
+```emerald
+print(Date(2026, 9, 25).at(Time(9)))
+```
+
+```text title="Output"
+2026-09-25T09:00:00
+```
+
+</Member>

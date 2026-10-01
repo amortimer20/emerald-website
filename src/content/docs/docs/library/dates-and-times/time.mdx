@@ -1,0 +1,184 @@
+---
+title: Time
+description: A time on the clock, such as an alarm or opening hours.
+sidebar:
+  order: 2
+---
+
+import Member from '../../../../../components/Member.astro';
+import Raises from '../../../../../components/Raises.astro';
+
+<p class="reference-facts">Standard library struct · Written <code>Time(14, 30)</code></p>
+
+A `Time` is a time of day, with no date and no time zone: an alarm, a shop's opening hours, the start
+of a class. It counts to the nanosecond. Use one when the question is "what time?" regardless of the
+day, and a [`DateTime`](../datetime/) when the day matters too.
+
+```emerald
+const opens = Time(9)
+const closes = Time(17, 30)
+const now = Time(12, 15)
+print("Open from #{opens} to #{closes}")
+print(opens <= now and now < closes)
+```
+
+```text title="Output"
+Open from 09:00:00 to 17:30:00
+true
+```
+
+A `Time` is a value: two times for the same moment on the clock are equal, an earlier one is less than a
+later one, and a time can be a dictionary key. It prints as `HH:MM:SS`, with a fraction of a second
+only when there is one, in groups of three digits: `14:30:00`, `14:30:00.250`, `01:02:03.000004`.
+
+## At a glance
+
+| Making one | |
+| --- | --- |
+| [`Time(hour, minute, second, nanosecond)`](#time) | A time from its parts |
+| [`Time.now(zone)`](#now) | The time on the clock now |
+| [`Time.parse(text)`](#parse), [`Time.parse_maybe(text)`](#parse_maybe) | A time read from text such as `14:30` |
+
+| Parts | |
+| --- | --- |
+| [`hour`](#parts), [`minute`](#parts), [`second`](#parts), [`nanosecond`](#parts) | The four numbers |
+
+| Arithmetic | |
+| --- | --- |
+| [`add(hours:, minutes:, ...)`](#add) | A later time, wrapping at midnight |
+| [`subtract(hours:, minutes:, ...)`](#subtract) | An earlier time, wrapping at midnight |
+
+## Making one
+
+<Member name="Time" id="time" params="hour: Int, minute: Int = 0, second: Int = 0, nanosecond: Int = 0" returns="Time">
+
+A time from its parts. Hours run from 0 to 23, so `Time(7, 30)` is half past seven in the morning and
+`Time(19, 30)` is half past seven in the evening. Everything after the hour can be left out.
+
+```emerald
+print(Time(7, 30))
+print(Time(19, 30))
+print(Time(14, 30, 5))
+```
+
+```text title="Output"
+07:30:00
+19:30:00
+14:30:05
+```
+
+<Raises>a [`DateTimeError`](../datetimeerror/) for a part out of its range, such as
+`hour 24 is not between 0 and 23`.</Raises>
+
+</Member>
+
+<Member owner="Time." name="now" params="zone: TimeZone = TimeZone.local" returns="Time">
+
+The time on the clock now, in `zone`, which is the computer's own zone unless you say otherwise.
+
+```emerald
+const now = Time.now()
+print(now.hour < 24)
+```
+
+```text title="Output"
+true
+```
+
+</Member>
+
+<Member owner="Time." name="parse" params="text: String" returns="Time">
+
+Reads `HH:MM`, `HH:MM:SS`, or `HH:MM:SS` followed by a fraction of a second of one to nine digits,
+ignoring spaces around it. It uses a 24-hour clock, so `2:30pm` isn't accepted.
+
+```emerald
+print(Time.parse("14:30"))
+print(Time.parse("14:30:05.25"))
+```
+
+```text title="Output"
+14:30:00
+14:30:05.250
+```
+
+<Raises>a [`DateTimeError`](../datetimeerror/) for any other layout, or a part out of range.</Raises>
+
+</Member>
+
+<Member owner="Time." name="parse_maybe" params="text: String" returns="Time?">
+
+Like `parse`, but gives `nothing` instead of raising an error, for text a person typed.
+
+```emerald
+print(Time.parse_maybe("25:00"))
+print(Time.parse_maybe("08:15").or(Time(0)))
+```
+
+```text title="Output"
+nothing
+08:15:00
+```
+
+</Member>
+
+## Parts
+
+<Member name="hour" id="parts" returns="Int">
+
+The parts of the time as whole numbers: `hour` (0 to 23), `minute` (0 to 59), `second` (0 to 59), and
+`nanosecond`. Each is read without parentheses, and cannot be assigned.
+
+```emerald
+const t = Time(14, 30, 5)
+print(t.hour, t.minute, t.second)
+```
+
+```text title="Output"
+14 30 5
+```
+
+</Member>
+
+## Arithmetic
+
+<Member name="add" params="hours: Int = 0, minutes: Int = 0, seconds: Int = 0, milliseconds: Int = 0, microseconds: Int = 0, nanoseconds: Int = 0" returns="Time">
+
+A later time. Every amount must be named, because `add(5)` would silently mean five hours.
+
+```emerald
+print(Time(10).add(minutes: 90, seconds: 30))
+```
+
+```text title="Output"
+11:30:30
+```
+
+A clock wraps around, so adding past midnight starts again at 00:00:
+
+```emerald
+print(Time(23, 0).add(hours: 2))
+```
+
+```text title="Output"
+01:00:00
+```
+
+A `Time` has no date, so it can't tell you that the day changed. When that matters, use a
+[`DateTime`](../datetime/).
+
+</Member>
+
+<Member name="subtract" params="hours: Int = 0, minutes: Int = 0, seconds: Int = 0, milliseconds: Int = 0, microseconds: Int = 0, nanoseconds: Int = 0" returns="Time">
+
+An earlier time: `add` with every amount made negative, wrapping the same way.
+
+```emerald
+print(Time(0, 15).subtract(minutes: 30))
+```
+
+```text title="Output"
+23:45:00
+```
+
+</Member>

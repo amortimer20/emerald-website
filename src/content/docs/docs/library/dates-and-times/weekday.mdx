@@ -1,0 +1,61 @@
+---
+title: Weekday
+description: The seven days of the week.
+sidebar:
+  order: 7
+---
+
+<p class="reference-facts">Standard library enum · Returned by <code>Date.weekday</code></p>
+
+A `Weekday` is a day of the week. A [`Date`](../date/) or a [`DateTime`](../datetime/) gives its
+weekday with `weekday`, and the seven values are written with the type's name in front, as for any
+[enum](../../../language/enums/):
+
+```emerald
+const day = Date(2026, 9, 25).weekday
+print(day)
+print(day == Weekday.friday)
+```
+
+```text title="Output"
+Friday
+true
+```
+
+A weekday prints as its capitalized English name, which is how it appears when put into text.
+
+## The values
+
+| Value | Prints as |
+| --- | --- |
+| `Weekday.monday` | `Monday` |
+| `Weekday.tuesday` | `Tuesday` |
+| `Weekday.wednesday` | `Wednesday` |
+| `Weekday.thursday` | `Thursday` |
+| `Weekday.friday` | `Friday` |
+| `Weekday.saturday` | `Saturday` |
+| `Weekday.sunday` | `Sunday` |
+
+## Comparing weekdays
+
+Weekdays can be compared with `==` and used as dictionary keys, but they have no order and no
+number. A week is a cycle, and whether it starts on Sunday or Monday, or counts from 0 or 1, differs
+between countries and between programs. So `Weekday.monday < Weekday.tuesday` is an error, rather
+than a quiet choice of one convention. The values are listed Monday first, as in the international
+date standard, only to make them easy to read.
+
+To ask about groups of days, use a [`case`](../../../language/case/), which also makes sure every day
+is handled:
+
+```emerald
+const day = Date(2026, 9, 26).weekday
+const kind = case day {
+    when Weekday.saturday, Weekday.sunday then "weekend"
+    else then "weekday"
+}
+print(kind)
+```
+
+```text title="Output"
+weekend
+```

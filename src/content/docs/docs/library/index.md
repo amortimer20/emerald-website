@@ -14,8 +14,8 @@ when a program starts.
   numbers.
 - **[Files](files/file/):** `File` and `Directory` to read, write, and list; `Path` for working
   with file names; `FileHandle` and `FileWriter` for streaming; and `FileError`.
-- **[Dates and Times](dates-and-times/date/):** `Date`, `Time`, `DateTime`, `Instant`,
-  `Duration`, `TimeZone`, `Weekday`, `Stopwatch`, and `DateTimeError`.
+- **[Dates and Times](dates-and-times/):** `Date`, `Time`, `DateTime`, `Instant`,
+  `Duration`, `TimeZone`, `Weekday`, `Stopwatch`, and `DateTimeError`, with advice on which to use.
 - **[Regular Expressions](regex/regex/):** `Regex` and `Regex.Match`, to find, replace, and
   split text by pattern, and `RegexError`.
 - **[Console](console/console/):** `Console` and `Console.Color`, for styled output, tables,

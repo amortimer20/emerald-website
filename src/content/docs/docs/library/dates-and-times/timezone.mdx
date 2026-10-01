@@ -1,0 +1,169 @@
+---
+title: TimeZone
+description: Where the clocks are, which decides what time a moment shows.
+sidebar:
+  order: 6
+---
+
+import Member from '../../../../../components/Member.astro';
+import Raises from '../../../../../components/Raises.astro';
+
+<p class="reference-facts">Standard library struct · Written <code>TimeZone("Europe/Paris")</code></p>
+
+A `TimeZone` says where the clocks are. The same [`Instant`](../instant/) shows different times in
+different places, and a zone is what turns the moment into the time on a particular wall.
+
+```emerald
+const moment = Instant.parse("2026-09-25T14:30:00Z")
+print(moment.to_date_time(TimeZone("Europe/Paris")))
+print(moment.to_date_time(TimeZone("Asia/Kolkata")))
+```
+
+```text title="Output"
+2026-09-25T16:30:00
+2026-09-25T20:00:00
+```
+
+Functions that need a zone take it as an optional `zone`, and use [`TimeZone.local`](#local), the
+computer's own, when you give none. Two zones are equal when their names are, and a zone can be a
+dictionary key.
+
+## At a glance
+
+| Making one | |
+| --- | --- |
+| [`TimeZone(name)`](#timezone), [`TimeZone.named_maybe(name)`](#named_maybe) | A zone by its name |
+| [`TimeZone.utc`](#utc) | Coordinated Universal Time |
+| [`TimeZone.local`](#local) | The computer's own zone |
+| [`TimeZone.fixed(hours:, minutes:)`](#fixed) | A zone always the same distance from UTC |
+
+| Reading | |
+| --- | --- |
+| [`name`](#name) | The zone's name |
+| [`offset_at(instant)`](#offset_at) | How far ahead of UTC the clocks are at a moment |
+
+## Making one
+
+<Member name="TimeZone" id="timezone" params="name: String" returns="TimeZone">
+
+A zone by name. Any zone in the IANA time zone database works, such as `"America/New_York"`,
+`"Europe/Paris"`, or `"Asia/Kolkata"`, along with its whole history: New York kept its own local time
+until 1883, and Brazil stopped daylight time in 2019. Older names such as `"US/Eastern"` work too.
+`"UTC"` and an offset such as `"+05:30"` are names as well.
+
+The database is built into Emerald, so a zone gives the same answer on every computer. Names are
+case-sensitive, as the database's are:
+
+```emerald
+try {
+    print(TimeZone("america/new_york"))
+}
+catch error: DateTimeError {
+    print(error.message)
+}
+```
+
+```text title="Output"
+"america/new_york" is not a time zone Emerald knows: zone names are case-sensitive, so write "America/New_York"
+```
+
+<Raises>a [`DateTimeError`](../datetimeerror/) for a name that isn't a known zone.</Raises>
+
+</Member>
+
+<Member owner="TimeZone." name="named_maybe" params="name: String" returns="TimeZone?">
+
+Like `TimeZone(name)`, but gives `nothing` for an unknown name instead of raising an error. It suits a
+name a person typed.
+
+```emerald
+print(TimeZone.named_maybe("Asia/Kolkata"))
+print(TimeZone.named_maybe("Mars/Olympus"))
+```
+
+```text title="Output"
+Asia/Kolkata
+nothing
+```
+
+</Member>
+
+<Member owner="TimeZone." name="utc" returns="TimeZone">
+
+Coordinated Universal Time, the zone with no offset, named `UTC`.
+
+```emerald
+print(TimeZone.utc)
+```
+
+```text title="Output"
+UTC
+```
+
+</Member>
+
+<Member owner="TimeZone." name="local" returns="TimeZone">
+
+The computer's own zone, worked out once when the program starts. It is the default wherever a zone is
+optional. `emerald run` reads it the way other programs on the computer do, from the `TZ` setting if
+there is one, and otherwise from the system's own; if it can't be found, the program uses UTC rather
+than stopping. `emerald check`, and the checks Emerald runs on itself, always use UTC, so they never
+depend on the computer.
+
+</Member>
+
+<Member owner="TimeZone." name="fixed" params="hours: Int, minutes: Int = 0" returns="TimeZone">
+
+A zone that is always this far from UTC, named by its offset. The minutes take the sign of the hours.
+
+```emerald
+print(TimeZone.fixed(hours: 5, minutes: 30))
+print(TimeZone.fixed(hours: -3, minutes: -30))
+```
+
+```text title="Output"
++05:30
+-03:30
+```
+
+A fixed zone isn't the same as a place that happens to share its offset today, since a place can change
+its clocks. Use a named zone for a real place.
+
+<Raises>a [`DateTimeError`](../datetimeerror/) for minutes with the wrong sign or beyond 59, or an
+offset beyond 18 hours.</Raises>
+
+</Member>
+
+## Reading
+
+<Member name="name" returns="String">
+
+The zone's name, which is also how it prints.
+
+```emerald
+print(TimeZone("America/New_York").name)
+```
+
+```text title="Output"
+America/New_York
+```
+
+</Member>
+
+<Member name="offset_at" params="instant: Instant" returns="Duration">
+
+How far ahead of UTC the zone's clocks are at a moment, as a [`Duration`](../duration/). Negative
+means behind. It changes through the year in a zone that changes its clocks:
+
+```emerald
+const new_york = TimeZone("America/New_York")
+print(new_york.offset_at(Instant.parse("2026-01-15T12:00:00Z")))
+print(new_york.offset_at(Instant.parse("2026-07-15T12:00:00Z")))
+```
+
+```text title="Output"
+-5h
+-4h
+```
+
+</Member>

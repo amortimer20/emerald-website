@@ -1,0 +1,89 @@
+---
+title: DateTimeError
+description: The error raised when a date or time can't exist, can't be read, or is out of range.
+sidebar:
+  order: 9
+---
+
+import Member from '../../../../../components/Member.astro';
+
+<p class="reference-facts">Standard library class · Extends <code>RuntimeError</code></p>
+
+A `DateTimeError` is what Emerald raises when a date, a time, or a length of time can't be made: a day
+that isn't on the calendar, text in the wrong layout, a zone it doesn't know, a result past the years
+it can represent, or a division by a zero length. The message names the part that is wrong and, where
+it helps, the range it should be in.
+
+```emerald
+try {
+    print(Date(2026, 2, 30))
+}
+catch error: DateTimeError {
+    print("Not a real date: #{error.message}")
+}
+```
+
+```text title="Output"
+Not a real date: day 30 is not between 1 and 28: February 2026 has 28 days
+```
+
+A `DateTimeError` is a [`RuntimeError`](../../../builtins/errors/runtimeerror/), so
+`catch error: RuntimeError` catches it too. Catching `DateTimeError` alone handles date problems
+without also catching unrelated ones.
+
+<Member name="message" returns="String">
+
+What went wrong, in words, naming the value and the range or layout that was expected.
+
+</Member>
+
+## Avoiding the error
+
+Most of the time the error is for text a person typed. Each type has a `parse_maybe` that gives
+`nothing` instead of raising, so the program can ask again:
+
+```emerald
+const typed = "25/09/2026"
+const date = Date.parse_maybe(typed)
+if date == nothing {
+    print("Please write the date as 2026-09-25.")
+}
+else {
+    print("Got #{date}.")
+}
+```
+
+```text title="Output"
+Please write the date as 2026-09-25.
+```
+
+The same goes for [`Time`](../time/#parse_maybe), [`DateTime`](../datetime/#parse_maybe),
+[`Instant`](../instant/#parse_maybe), and [`TimeZone`](../timezone/#named_maybe).
+
+## What the messages say
+
+| Message | When |
+| --- | --- |
+| `month 13 is not between 1 and 12` | A part of a date or time out of its range |
+| `day 30 is not between 1 and 28: February 2026 has 28 days` | A day the month doesn't have |
+| `"25/09/2026" is not a date written as YYYY-MM-DD, such as 2026-09-25` | Text in the wrong layout; the same shape for times and date-times |
+| `"2026-09-25T14:30:00" has no Z or offset, so it could be any moment: …` | [`Instant.parse`](../instant/#parse) of text that doesn't say which zone |
+| `"Mars/Olympus" is not a time zone Emerald knows: …` | An unknown zone name; a wrong-case name says how to spell it |
+| `year 10000 is not between 1 and 9999` | A date or moment past the years that can be represented |
+| `a Duration cannot be divided by zero` | Dividing a [`Duration`](../duration/) by zero |
+| `an offset of 19 hours is not between -18 and 18` | A [fixed zone](../timezone/#fixed) too far from UTC |
+
+## When nothing catches it
+
+The program stops and shows the message with the line that led to it:
+
+```emerald
+print(Date(2026, 13, 1))
+```
+
+```text title="Output"
+error.em:1:7: DateTimeError: month 13 is not between 1 and 12
+  print(Date(2026, 13, 1))
+        ^^^^^^^^^^^^^^^^^
+Handle this error with `try` and `catch`, or correct the condition that raised it.
+```

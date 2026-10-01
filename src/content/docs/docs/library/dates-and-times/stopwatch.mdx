@@ -1,0 +1,90 @@
+---
+title: Stopwatch
+description: Measure how long something takes.
+sidebar:
+  order: 8
+---
+
+import Member from '../../../../../components/Member.astro';
+
+<p class="reference-facts">Standard library class · Made with <code>Stopwatch.start()</code></p>
+
+A `Stopwatch` measures how long something takes. It reads the computer's steady clock, which only
+moves forward, so a change to the computer's date or time partway through can't make a measurement
+wrong or negative. For the time of day, use [`Instant.now()`](../instant/#now) instead.
+
+```emerald
+const watch = Stopwatch.start()
+var total = 0
+for number in 1..100000 {
+    total += number
+}
+print(total)
+print(watch.elapsed() < Duration(seconds: 5))
+```
+
+```text title="Output"
+5000050000
+true
+```
+
+A `Stopwatch` is a class rather than a value, since it is a running thing. `Stopwatch()` isn't allowed;
+Emerald points you to `Stopwatch.start()`. A stopwatch prints as `Stopwatch(1.25s)`, showing the time
+so far.
+
+To pause a program rather than measure it, see [`Program.sleep`](../../program/program/#sleep).
+
+## At a glance
+
+| Making one | |
+| --- | --- |
+| [`Stopwatch.start()`](#start) | A stopwatch that starts now |
+
+| Reading | |
+| --- | --- |
+| [`elapsed()`](#elapsed) | The time since it started |
+| [`restart()`](#restart) | Start measuring again from now |
+
+## Making one
+
+<Member owner="Stopwatch." name="start" params="" returns="Stopwatch">
+
+A stopwatch that starts at once.
+
+</Member>
+
+## Reading
+
+<Member name="elapsed" params="" returns="Duration">
+
+The time since the stopwatch started, or was last restarted, as a [`Duration`](../duration/). It is
+read afresh at each call, which is why it is a method with parentheses: its answer changes by itself.
+
+```emerald
+const watch = Stopwatch.start()
+const first = watch.elapsed()
+const second = watch.elapsed()
+print(second >= first)
+```
+
+```text title="Output"
+true
+```
+
+</Member>
+
+<Member name="restart" params="">
+
+Starts measuring again from now, as if the stopwatch had just been made.
+
+```emerald
+const watch = Stopwatch.start()
+watch.restart()
+print(watch.elapsed() < Duration(seconds: 5))
+```
+
+```text title="Output"
+true
+```
+
+</Member>

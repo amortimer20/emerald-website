@@ -1,0 +1,252 @@
+---
+title: DateTime
+description: A date and a time of day together, with no time zone.
+sidebar:
+  order: 3
+---
+
+import Member from '../../../../../components/Member.astro';
+import Raises from '../../../../../components/Raises.astro';
+
+<p class="reference-facts">Standard library struct · Written <code>DateTime(2026, 9, 25, 14, 30)</code></p>
+
+A `DateTime` is a date and a time of day together, with no time zone: what a calendar and a wall clock
+show. A timetable entry, a meeting in a local diary, or a log line written in local time is a
+`DateTime`. It doesn't say *where* the clock is, so it names a time on the clock rather than one exact
+moment. For an exact moment, use an [`Instant`](../instant/).
+
+```emerald
+const meeting = DateTime(2026, 9, 25, 14, 30)
+print(meeting)
+print(meeting.weekday)
+print(meeting.add(days: 7, hours: 1))
+```
+
+```text title="Output"
+2026-09-25T14:30:00
+Friday
+2026-10-02T15:30:00
+```
+
+A `DateTime` is a value: equal when the date and time are, ordered from earlier to later, and usable as
+a dictionary key. It prints as `YYYY-MM-DDTHH:MM:SS`, with a fraction of a second only when there is
+one.
+
+## At a glance
+
+| Making one | |
+| --- | --- |
+| [`DateTime(year, month, day, hour, ...)`](#datetime) | A date and time from their parts |
+| [`DateTime.now(zone)`](#now) | What the calendar and clock show now |
+| [`DateTime.parse(text)`](#parse), [`DateTime.parse_maybe(text)`](#parse_maybe) | One read from text |
+| [`Date.at(time)`](../date/#at) | A [`Date`](../date/) at a [`Time`](../time/) |
+
+| Parts | |
+| --- | --- |
+| [`date`](#halves), [`time`](#halves) | The two halves |
+| [`year`](#parts), [`month`](#parts), [`day`](#parts), [`hour`](#parts), [`minute`](#parts), [`second`](#parts), [`nanosecond`](#parts), [`weekday`](#parts) | The parts of each half |
+
+| Arithmetic | |
+| --- | --- |
+| [`add(years:, months:, ..., nanoseconds:)`](#add) | A later date and time |
+| [`subtract(years:, months:, ..., nanoseconds:)`](#subtract) | An earlier date and time |
+| [`duration_until(other)`](#duration_until) | The length from this to another, as the clock shows it |
+
+| Converting | |
+| --- | --- |
+| [`to_instant(zone)`](#to_instant) | The exact moment this is, in a zone |
+
+## Making one
+
+<Member name="DateTime" id="datetime" params="year: Int, month: Int, day: Int, hour: Int = 0, minute: Int = 0, second: Int = 0, nanosecond: Int = 0" returns="DateTime">
+
+A date and a time from their parts. The time can be left out, which means midnight.
+
+```emerald
+print(DateTime(2026, 9, 25, 14, 30))
+print(DateTime(2026, 9, 25))
+```
+
+```text title="Output"
+2026-09-25T14:30:00
+2026-09-25T00:00:00
+```
+
+<Raises>a [`DateTimeError`](../datetimeerror/) for any part out of range, as `Date` and `Time` do.</Raises>
+
+</Member>
+
+<Member owner="DateTime." name="now" params="zone: TimeZone = TimeZone.local" returns="DateTime">
+
+What a calendar and clock in `zone` show now, which is the computer's own zone unless you say
+otherwise.
+
+</Member>
+
+<Member owner="DateTime." name="parse" params="text: String" returns="DateTime">
+
+Reads a date and a time separated by `T` or a space. The time can leave out its seconds, and can have a
+fraction, as [`Time.parse`](../time/#parse) allows.
+
+```emerald
+print(DateTime.parse("2026-09-25 14:30"))
+print(DateTime.parse("2026-09-25T14:30:00.5"))
+```
+
+```text title="Output"
+2026-09-25T14:30:00
+2026-09-25T14:30:00.500
+```
+
+<Raises>a [`DateTimeError`](../datetimeerror/) for any other layout, such as a date with no time, or a
+part out of range.</Raises>
+
+</Member>
+
+<Member owner="DateTime." name="parse_maybe" params="text: String" returns="DateTime?">
+
+Like `parse`, but gives `nothing` instead of raising an error.
+
+```emerald
+print(DateTime.parse_maybe("tomorrow"))
+```
+
+```text title="Output"
+nothing
+```
+
+</Member>
+
+## Parts
+
+<Member name="date" id="halves" returns="Date">
+
+The two halves of a `DateTime`: `date` is its [`Date`](../date/) and `time` is its
+[`Time`](../time/).
+
+```emerald
+const meeting = DateTime(2026, 9, 25, 14, 30)
+print(meeting.date)
+print(meeting.time)
+```
+
+```text title="Output"
+2026-09-25
+14:30:00
+```
+
+</Member>
+
+<Member name="year" id="parts" returns="Int">
+
+The parts of both halves, read directly: `year`, `month`, `day`, `hour`, `minute`, `second`, and
+`nanosecond` as whole numbers, and `weekday` as a [`Weekday`](../weekday/). Each is read without
+parentheses, and cannot be assigned.
+
+```emerald
+const meeting = DateTime(2026, 9, 25, 14, 30, 15)
+print(meeting.month, meeting.hour, meeting.second)
+```
+
+```text title="Output"
+9 14 15
+```
+
+</Member>
+
+## Arithmetic
+
+<Member name="add" params="years: Int = 0, months: Int = 0, weeks: Int = 0, days: Int = 0, hours: Int = 0, minutes: Int = 0, seconds: Int = 0, milliseconds: Int = 0, microseconds: Int = 0, nanoseconds: Int = 0" returns="DateTime">
+
+A later date and time. Every amount must be named. Years and months move the date as
+[`Date.add`](../date/#add) does, and then the weeks, days, and time units are added, carrying past
+midnight into the next day.
+
+```emerald
+print(DateTime(2026, 9, 25, 22, 30).add(hours: 3))
+print(DateTime(2026, 1, 31, 23).add(months: 1, hours: 2))
+```
+
+```text title="Output"
+2026-09-26T01:30:00
+2026-03-01T01:00:00
+```
+
+The second one first moves to 28 February, as a month after 31 January does, and then two hours
+carry it into March.
+
+<Raises>a [`DateTimeError`](../datetimeerror/) when the result falls outside the years 1 to 9999.</Raises>
+
+</Member>
+
+<Member name="subtract" params="years: Int = 0, months: Int = 0, weeks: Int = 0, days: Int = 0, hours: Int = 0, minutes: Int = 0, seconds: Int = 0, milliseconds: Int = 0, microseconds: Int = 0, nanoseconds: Int = 0" returns="DateTime">
+
+An earlier date and time: `add` with every amount made negative.
+
+```emerald
+print(DateTime(2026, 9, 25, 14, 30, 15).subtract(days: 1, hours: 15))
+```
+
+```text title="Output"
+2026-09-23T23:30:15
+```
+
+</Member>
+
+<Member name="duration_until" params="other: DateTime" returns="Duration">
+
+The length of time from this to `other`, as the calendar and clock show it, counting every day as
+exactly 24 hours. It is a [`Duration`](../duration/).
+
+```emerald
+const start = DateTime(2026, 9, 25, 14, 30)
+print(start.duration_until(DateTime(2026, 12, 25)))
+```
+
+```text title="Output"
+90d 9h 30m
+```
+
+A `DateTime` has no zone, so it can't know that clocks changed in between. For an exact difference,
+turn both into instants with `to_instant`, and subtract them.
+
+</Member>
+
+## Converting
+
+<Member name="to_instant" params="zone: TimeZone = TimeZone.local" returns="Instant">
+
+The exact moment this date and time is in `zone`.
+
+```emerald
+const meeting = DateTime(2026, 9, 25, 14, 30)
+print(meeting.to_instant(TimeZone.utc))
+print(meeting.to_instant(TimeZone("America/New_York")))
+```
+
+```text title="Output"
+2026-09-25T14:30:00Z
+2026-09-25T18:30:00Z
+```
+
+Twice a year, many zones change their clocks, and then some times on the clock are unusual:
+
+- When clocks go **back**, a time such as 01:30 happens twice. `to_instant` gives the earlier moment.
+- When clocks go **forward**, a time such as 02:30 never happens. `to_instant` moves it forward by the
+  length of the gap.
+
+```emerald
+const new_york = TimeZone("America/New_York")
+print(DateTime(2026, 11, 1, 1, 30).to_instant(new_york))
+print(DateTime(2026, 3, 8, 2, 30).to_instant(new_york))
+```
+
+```text title="Output"
+2026-11-01T05:30:00Z
+2026-03-08T07:30:00Z
+```
+
+Neither case raises an error. The second one is 03:30 in New York, since 02:30 didn't exist that
+night.
+
+</Member>

@@ -1,0 +1,241 @@
+---
+title: Instant
+description: An exact moment, the same everywhere in the world.
+sidebar:
+  order: 4
+---
+
+import Member from '../../../../../components/Member.astro';
+import Raises from '../../../../../components/Raises.astro';
+
+<p class="reference-facts">Standard library struct · Made with <code>Instant.now()</code> or <code>Instant.parse(text)</code></p>
+
+An `Instant` is an exact moment, the same everywhere in the world: when a message was sent, when an
+order was placed, a deadline. Two people in different time zones looking at the same `Instant` agree
+on when it is, even though their clocks show different times.
+
+```emerald
+const sent = Instant.parse("2026-09-25T14:30:00Z")
+const received = Instant.parse("2026-09-25T14:32:30Z")
+print(received - sent)
+print(sent + Duration(hours: 2))
+```
+
+```text title="Output"
+2m 30s
+2026-09-25T16:30:00Z
+```
+
+An `Instant` counts nanoseconds from the start of 1 January 1970 in UTC, and covers the years 1 through
+9999. It is a value: instants for the same moment are equal, an earlier one is less than a later one,
+and an instant can be a dictionary key.
+
+An `Instant` always prints in UTC, marked with `Z`: `2026-10-01T13:00:00Z`. To see what a calendar and
+clock in some place show at that moment, use [`to_date_time`](#to_date_time).
+
+Because `Instant` and [`Duration`](../duration/) are exact, they have operators: an instant plus a
+duration is always the same moment. Calendar steps such as "the same day next month" are different, and
+belong to [`Date`](../date/) and [`DateTime`](../datetime/).
+
+## At a glance
+
+| Making one | |
+| --- | --- |
+| [`Instant.now()`](#now) | The moment now |
+| [`Instant.parse(text)`](#parse), [`Instant.parse_maybe(text)`](#parse_maybe) | A moment read from text such as `2026-09-25T14:30:00Z` |
+| [`Instant.from_unix_seconds(seconds)`](#from_unix_seconds), [`Instant.from_unix_milliseconds(milliseconds)`](#from_unix_milliseconds) | A moment from a Unix timestamp |
+| [`DateTime.to_instant(zone)`](../datetime/#to_instant) | The moment a [`DateTime`](../datetime/) is in a zone |
+
+| Reading | |
+| --- | --- |
+| [`unix_seconds`](#unix_seconds), [`unix_milliseconds`](#unix_seconds) | The Unix timestamp |
+| [`to_date_time(zone)`](#to_date_time) | What the calendar and clock show there |
+
+| Arithmetic | |
+| --- | --- |
+| [`instant + duration`](#plus), [`instant - duration`](#plus) | A later or earlier moment |
+| [`instant - other`](#minus) | The exact time between two moments |
+
+## Making one
+
+<Member owner="Instant." name="now" params="" returns="Instant">
+
+The moment now, from the computer's clock. To measure how long something takes, use a
+[`Stopwatch`](../stopwatch/) instead, which a change to the computer's clock can't disturb.
+
+```emerald
+const start = Instant.now()
+print(start > Instant.parse("2026-01-01T00:00:00Z"))
+```
+
+```text title="Output"
+true
+```
+
+</Member>
+
+<Member owner="Instant." name="parse" params="text: String" returns="Instant">
+
+Reads a date and a time followed by `Z` for UTC, or by an offset from UTC. This is the form most web
+services use.
+
+```emerald
+print(Instant.parse("2026-09-25T14:30:00Z"))
+print(Instant.parse("2026-09-25T14:30:00+02:00"))
+```
+
+```text title="Output"
+2026-09-25T14:30:00Z
+2026-09-25T12:30:00Z
+```
+
+The second one is two hours ahead of UTC, so it is the earlier moment, 12:30 in UTC.
+
+<Raises>a [`DateTimeError`](../datetimeerror/) for any other layout. Text with no `Z` or offset could be any
+moment, so the message suggests adding `Z`, or reading it with
+[`DateTime.parse`](../datetime/#parse) instead.</Raises>
+
+</Member>
+
+<Member owner="Instant." name="parse_maybe" params="text: String" returns="Instant?">
+
+Like `parse`, but gives `nothing` instead of raising an error.
+
+```emerald
+print(Instant.parse_maybe("2026-09-25T14:30:00"))
+```
+
+```text title="Output"
+nothing
+```
+
+</Member>
+
+<Member owner="Instant." name="from_unix_seconds" params="seconds: Int" returns="Instant">
+
+The moment a Unix timestamp names: the number of seconds since the start of 1970, as many systems and
+file formats store a time.
+
+```emerald
+print(Instant.from_unix_seconds(0))
+print(Instant.from_unix_seconds(1790346600))
+```
+
+```text title="Output"
+1970-01-01T00:00:00Z
+2026-09-25T14:30:00Z
+```
+
+<Raises>a [`DateTimeError`](../datetimeerror/) for a moment outside the years 1 to 9999.</Raises>
+
+</Member>
+
+<Member owner="Instant." name="from_unix_milliseconds" params="milliseconds: Int" returns="Instant">
+
+The same, for a timestamp counted in milliseconds, as many web systems use.
+
+```emerald
+print(Instant.from_unix_milliseconds(1500))
+```
+
+```text title="Output"
+1970-01-01T00:00:01.500Z
+```
+
+<Raises>a [`DateTimeError`](../datetimeerror/) for a moment outside the years 1 to 9999.</Raises>
+
+</Member>
+
+## Reading
+
+<Member name="unix_seconds" returns="Int">
+
+The Unix timestamp: whole seconds since the start of 1970. `unix_milliseconds` is the same in
+milliseconds. Both round toward the past, as Unix time does, and neither needs parentheses.
+
+```emerald
+const moment = Instant.parse("2026-09-25T14:30:00Z")
+print(moment.unix_seconds)
+print(moment.unix_milliseconds)
+```
+
+```text title="Output"
+1790346600
+1790346600000
+```
+
+</Member>
+
+<Member name="to_date_time" params="zone: TimeZone = TimeZone.local" returns="DateTime">
+
+What a calendar and clock in `zone` show at this moment, as a [`DateTime`](../datetime/). The zone is
+the computer's own unless you say otherwise.
+
+```emerald
+const moment = Instant.parse("2026-09-25T14:30:00Z")
+print(moment.to_date_time(TimeZone.utc))
+print(moment.to_date_time(TimeZone("Europe/Paris")))
+print(moment.to_date_time(TimeZone.fixed(hours: 5, minutes: 30)))
+```
+
+```text title="Output"
+2026-09-25T14:30:00
+2026-09-25T16:30:00
+2026-09-25T20:00:00
+```
+
+This is how a meeting at 09:00 in New York is shown to someone in Paris:
+
+```emerald
+const meeting = DateTime(2026, 10, 1, 9).to_instant(TimeZone("America/New_York"))
+print(meeting.to_date_time(TimeZone("Europe/Paris")))
+```
+
+```text title="Output"
+2026-10-01T15:00:00
+```
+
+</Member>
+
+## Arithmetic
+
+<Member name="instant + duration" id="plus" returns="Instant">
+
+A later moment, exactly `duration` away; `instant - duration` gives an earlier one. The methods
+`after(duration)` and `before(duration)` do the same.
+
+```emerald
+const moment = Instant.parse("2026-09-25T14:30:00Z")
+print(moment + Duration(hours: 2))
+print(moment - Duration(minutes: 30))
+print(moment.after(Duration(days: 1)))
+```
+
+```text title="Output"
+2026-09-25T16:30:00Z
+2026-09-25T14:00:00Z
+2026-09-26T14:30:00Z
+```
+
+<Raises>a [`DateTimeError`](../datetimeerror/) for a moment outside the years 1 to 9999.</Raises>
+
+</Member>
+
+<Member name="instant - other" id="minus" returns="Duration">
+
+The exact time from `other` to this moment, as a [`Duration`](../duration/). It is negative when
+`other` is later. The method `since(other)` does the same.
+
+```emerald
+const sent = Instant.parse("2026-09-25T14:30:00Z")
+const later = Instant.parse("2026-09-26T16:00:00Z")
+print(later - sent)
+print(sent - later)
+```
+
+```text title="Output"
+1d 1h 30m
+-1d 1h 30m
+```
+
+</Member>

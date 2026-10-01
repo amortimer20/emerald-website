@@ -1,0 +1,196 @@
+---
+title: Duration
+description: An exact length of time, such as a timeout or a lap time.
+sidebar:
+  order: 5
+---
+
+import Member from '../../../../../components/Member.astro';
+import Raises from '../../../../../components/Raises.astro';
+
+<p class="reference-facts">Standard library struct · Written <code>Duration(hours: 1, minutes: 30)</code></p>
+
+A `Duration` is an exact length of time, to the nanosecond: a timeout, a lap time, how long until
+lunch. It can be negative. A day in a `Duration` is exactly 24 hours, unlike a day on the calendar,
+which is 23 or 25 hours long when clocks change.
+
+```emerald
+const talk = Duration(minutes: 45)
+const questions = Duration(minutes: 15)
+const total = talk + questions
+print(total)
+print(total.total_minutes)
+```
+
+```text title="Output"
+1h
+60.0
+```
+
+A `Duration` is a value: equal when the lengths are, ordered from shorter to longer, and usable as a
+dictionary key. It prints as the units that aren't zero, largest first: `2d 3h`, `1h 30m`, `45s`. A
+fraction of a second is shown as decimal seconds, such as `1.25s`, zero is `0s`, and a negative length
+starts with `-`.
+
+## At a glance
+
+| Making one | |
+| --- | --- |
+| [`Duration(days:, hours:, ...)`](#duration) | A length from any units |
+
+| Arithmetic | |
+| --- | --- |
+| [`+`, `-`](#plus) | Add or subtract two lengths |
+| [`*`, `/` by a whole number](#times) | A multiple or a part of a length |
+| [`/` by a length](#ratio) | How many times one fits in another |
+| [`abs()`](#abs), [`zero?()`](#abs), [`negative?()`](#abs) | The size without its sign, and tests |
+
+| Reading | |
+| --- | --- |
+| [`total_days`](#total), [`total_hours`](#total), [`total_minutes`](#total), [`total_seconds`](#total), [`total_milliseconds`](#total) | The whole length in one unit, with a fraction |
+| [`whole_days`](#whole), [`whole_hours`](#whole), [`whole_minutes`](#whole), [`whole_seconds`](#whole), [`whole_milliseconds`](#whole), [`whole_microseconds`](#whole), [`whole_nanoseconds`](#whole) | The whole length in one unit, rounded toward zero |
+
+## Making one
+
+<Member name="Duration" id="duration" params="days: Int = 0, hours: Int = 0, minutes: Int = 0, seconds: Int = 0, milliseconds: Int = 0, microseconds: Int = 0, nanoseconds: Int = 0" returns="Duration">
+
+Any combination of units, added together. Every amount must be named, because `Duration(5)` would
+silently mean five days; Emerald refuses it and lists the units. `Duration()` is zero.
+
+```emerald
+print(Duration(hours: 1, minutes: 30))
+print(Duration(days: 2, hours: 3))
+print(Duration(seconds: 1, milliseconds: 250))
+print(Duration())
+print(Duration(minutes: -5))
+```
+
+```text title="Output"
+1h 30m
+2d 3h
+1.25s
+0s
+-5m
+```
+
+[`Program.sleep`](../../program/program/#sleep) and the date and time types all take a `Duration`, so
+the unit is never in doubt.
+
+</Member>
+
+## Arithmetic
+
+<Member name="duration + other" id="plus" returns="Duration">
+
+The sum of two lengths; `duration - other` is the difference. `+=` and `-=` work too.
+
+```emerald
+var left = Duration(minutes: 10)
+left += Duration(minutes: 5)
+left -= Duration(minutes: 1)
+print(left)
+```
+
+```text title="Output"
+14m
+```
+
+</Member>
+
+<Member name="duration * factor" id="times" returns="Duration">
+
+A length multiplied by a whole number, or divided by one with `duration / divisor`. Division rounds
+toward zero, to the nanosecond.
+
+```emerald
+const lap = Duration(minutes: 14)
+print(lap * 3)
+print(lap / 2)
+print(Duration(seconds: 1) / 3)
+```
+
+```text title="Output"
+42m
+7m
+0.333333333s
+```
+
+<Raises>a [`DateTimeError`](../datetimeerror/) for a divisor of zero.</Raises>
+
+</Member>
+
+<Member name="duration / other" id="ratio" returns="Float">
+
+Dividing one length by another gives how many times the second fits into the first, as a `Float`.
+
+```emerald
+print(Duration(hours: 1, minutes: 30) / Duration(minutes: 45))
+```
+
+```text title="Output"
+2.0
+```
+
+<Raises>a [`DateTimeError`](../datetimeerror/) when `other` is zero.</Raises>
+
+</Member>
+
+<Member name="abs" params="" returns="Duration">
+
+The length without its sign. Two tests go with it: `zero?()` asks whether the length is zero, and
+`negative?()` whether it is below zero.
+
+```emerald
+print(Duration(minutes: -3).abs())
+print(Duration().zero?())
+print(Duration(seconds: -1).negative?())
+```
+
+```text title="Output"
+3m
+true
+true
+```
+
+</Member>
+
+## Reading
+
+<Member name="total_hours" id="total" returns="Float">
+
+The whole length in one unit, as a `Float` with a fraction. The units are `total_days`, `total_hours`,
+`total_minutes`, `total_seconds`, and `total_milliseconds`. None needs parentheses.
+
+```emerald
+const length = Duration(minutes: 90)
+print(length.total_hours)
+print(length.total_minutes)
+```
+
+```text title="Output"
+1.5
+90.0
+```
+
+</Member>
+
+<Member name="whole_hours" id="whole" returns="Int">
+
+The whole length in one unit, rounded toward zero, as an `Int`. The units are `whole_days`,
+`whole_hours`, `whole_minutes`, `whole_seconds`, `whole_milliseconds`, `whole_microseconds`, and
+`whole_nanoseconds`.
+
+```emerald
+const length = Duration(minutes: 90)
+print(length.whole_hours)
+print(length.whole_minutes)
+```
+
+```text title="Output"
+1
+90
+```
+
+Use a `whole_` unit to count, and a `total_` unit when the fraction matters.
+
+</Member>
