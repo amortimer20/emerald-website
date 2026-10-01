@@ -41,6 +41,7 @@ export default defineConfig({
 			sidebar: [
 				{ label: 'About', slug: 'about' },
 				{ label: 'Install', slug: 'install' },
+				{ label: 'Roadmap', slug: 'roadmap' },
 				{
 					label: 'Docs',
 					items: [
