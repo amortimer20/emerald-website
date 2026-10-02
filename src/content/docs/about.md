@@ -17,6 +17,10 @@ So Emerald tries to be simple without being simplistic, expressive without being
 without being tedious. Where a professional sees a wart that costs speed or maintainability, I see
 one that costs a student an afternoon, and I have tried to smooth those away.
 
+Emerald borrows ideas freely, and gladly: optionals and value types from Swift, method names and
+blocks from Ruby, its structure and checking from C#. What it adds is the care for whoever is
+learning it.
+
 ## What it is
 
 Emerald is a statically typed, general-purpose language with a small set of ideas that fit
