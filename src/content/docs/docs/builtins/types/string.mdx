@@ -49,7 +49,7 @@ longer for later characters in very long text.
 | Characters | |
 | --- | --- |
 | [`chars()`](#chars) | Each character, as a list |
-| [`code_points()`](#code_points), [`bytes()`](#bytes) | How the text is stored, for advanced uses |
+| [`code_points()`](#code_points), [`bytes()`](#bytes), [`to_bytes()`](#to_bytes) | How the text is stored, for advanced uses |
 
 | Changing case and spaces | |
 | --- | --- |
@@ -178,6 +178,17 @@ a list of its characters.
 
 ```emerald
 "é".bytes()   # → [195, 169]
+```
+
+</Member>
+
+<Member name="to_bytes" params="" returns="Bytes">
+
+The text's UTF-8 bytes as a [`Bytes`](../bytes/) value, ready for `File.write_binary`. When
+you want a plain list of numbers instead, use [`bytes()`](#bytes).
+
+```emerald
+"é".to_bytes()   # → Bytes[2: c3 a9]
 ```
 
 </Member>

@@ -186,6 +186,33 @@ Nemo does not fetch
 
 Calling `pet.fetch()` without the `is` check is an error, and its message suggests exactly this.
 
+Every value can also tell you the name of its type, as text, through its `type_name` property. It
+gives the object's own class, even through a name of the base type:
+
+```emerald
+class Animal {
+    const name: String
+}
+
+class Dog extends Animal {
+    constructor(name: String) {
+        super(name)
+    }
+}
+
+const pet: Animal = Dog("Rex")
+print(pet.type_name)
+print(pet.name.type_name)
+```
+
+```text title="Output"
+Dog
+String
+```
+
+`type_name` is for learning and finding bugs, such as printing what a value turned out to be. To
+make a decision in your program, use `is`, which Emerald can check.
+
 ## Classes meant only as a base
 
 Sometimes a base class exists only to be extended: every shape has an area, but there is no such thing
@@ -236,6 +263,7 @@ printed in a certain way, a [trait](../traits/) is usually the better tool.
 - `@override` replaces a base method, deliberately; each object runs its own class's version.
 - `super.method()` runs the base class's version.
 - `is` tests an object's class, and inside the test Emerald treats it as that class.
+- `type_name` gives any value's type as text, for learning and finding bugs.
 - `@abstract` marks a class that is only a base, and methods its subclasses must supply.
 
 Next, [traits](../traits/): abilities that unrelated types can share.
