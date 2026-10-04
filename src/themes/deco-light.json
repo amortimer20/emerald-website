@@ -50,6 +50,7 @@
 			"scope": [
 				"entity.name.type",
 				"support.type",
+				"support.class",
 				"entity.name.namespace",
 				"storage.modifier.annotation",
 				"punctuation.definition.annotation"
