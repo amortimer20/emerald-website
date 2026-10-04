@@ -255,8 +255,9 @@ tables.em:5:39: `header:` cannot be given with struct rows
 A struct table takes its header from the public field names.
 ```
 
-<Raises>a `RuntimeError` when the rows, with the header counted as the first row, don't all have the
-same number of cells, or when a cell contains a line break. The message names the row and column.</Raises>
+<Raises>a `RuntimeError` when the header and the rows don't all have the same number of cells, or
+when a cell contains a line break. The message names the header or the row, and the column for a line
+break. Rows are numbered from 1; the header is called "the header", not a row.</Raises>
 
 </Member>
 
