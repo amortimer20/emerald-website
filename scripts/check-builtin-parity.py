@@ -8,7 +8,9 @@ pages are written by hand. This keeps the two describing the same members:
   (or, on a page with no <Member> entries, such as a language page, a heading);
 - every <Member> on a page the catalog links to is either in the catalog, linked
   to that same anchor, or declared in Emerald's prelude (whose `##` comments the
-  editor reads instead).
+  editor reads instead);
+- every public member of a prelude type the catalog's `type_pages` links to has
+  the anchor hover will link it to: its name, or an exception in `member_anchors`.
 
   python3 scripts/check-builtin-parity.py
 
@@ -29,17 +31,27 @@ prelude = (emerald_lang / "src/prelude.em").read_text(encoding="utf-8")
 # Members the prelude declares, by owning type: the editor documents these from
 # their `##` comments, so a page may describe them without a catalog entry.
 prelude_members = set()
-owner = None
+owners = []  # (indent, dotted type name) for each type declaration still open
 for line in prelude.splitlines():
-    declared = re.match(r"(?:class|struct|enum|trait)\s+([A-Z]\w*)", line)
-    if declared:
-        owner = declared.group(1)
+    indent = len(line) - len(line.lstrip(" "))
+    if line.strip() == "}":
+        if owners and owners[-1][0] == indent:
+            owners.pop()
         continue
-    if line.startswith("}"):
-        owner = None
+    declared = re.match(r"\s*(?:class|struct|enum|trait)\s+([A-Z]\w*)", line)
+    if declared:
+        # A one-line declaration (`enum Kind { a, b }`) opens and closes at once.
+        if not line.rstrip().endswith("}"):
+            parent = owners[-1][1] + "." if owners else ""
+            owners.append((indent, parent + declared.group(1)))
+        continue
     member = re.match(r"\s*(?:func|var|const)\s+(?:([A-Z]\w*)\.)?([a-z_]\w*[?!]?)", line)
-    if member:
-        prelude_members.add((member.group(1) or owner, member.group(2)))
+    if not member:
+        continue
+    if owners and indent == owners[-1][0] + 4:
+        prelude_members.add((owners[-1][1], member.group(2)))
+    elif not owners and indent == 0 and line.startswith("func "):
+        prelude_members.add(("", member.group(2)))
 
 
 def page_file(path):
@@ -100,12 +112,48 @@ for member in catalog["members"]:
             problems.append(f"{label}: links to {page}, but {file} has no heading #{anchor}")
         linked.setdefault(file, set()).add(anchor)
 
+declared = {(owner.rsplit(".", 1)[-1], name) for owner, name in prelude_members}
 for file, targets in sorted(linked.items()):
     members, _ = anchors(file)
     for anchor, (owner, name) in sorted(members.items()):
         # A capitalized entry is the type's constructor, documented with the type.
-        if anchor not in targets and (owner, name) not in prelude_members and not name[0].isupper():
+        if anchor not in targets and (owner, name) not in declared and not name[0].isupper():
             problems.append(f"{file}: `{name}` (#{anchor}) is in neither the catalog nor the prelude")
+
+trait_methods = {"to_string", "equals", "hash", "compare"}
+
+# Hover links a prelude type to its page (`type_pages`, relative to the site
+# root), and each of its members to the anchor its name gives there, unless
+# `member_anchors` names the entry that documents it (a group such as Date's
+# `parts`, an operator's entry, or an id renamed to avoid a clash).
+member_anchors = catalog.get("member_anchors", {})
+used_anchors = set()
+for type_name, page in sorted(catalog.get("type_pages", {}).items()):
+    file = page_file(page.removeprefix("docs/"))
+    if file is None:
+        problems.append(f"type {type_name}: links to {page}, but there is no page there")
+        continue
+    members, _ = anchors(file)
+    by_name = {name: anchor for anchor, (_, name) in members.items()}
+    for member_owner, name in sorted(prelude_members):
+        # Private members can't be reached from a program, and trait methods
+        # are described on the trait's page.
+        if member_owner != type_name or name.startswith("_") or name in trait_methods:
+            continue
+        key = f"{type_name}.{name}"
+        if key in member_anchors:
+            used_anchors.add(key)
+            if member_anchors[key] not in members:
+                problems.append(f"{file}: member_anchors sends {key} to #{member_anchors[key]}, which is not a <Member> id")
+            continue
+        anchor = re.sub(r"[?!]", "", name)
+        if name in by_name and by_name[name] != anchor:
+            problems.append(f"{file}: `{name}` has id {by_name[name]!r}, but hover links to #{anchor}")
+        elif name not in by_name and anchor not in members:
+            problems.append(f"{file}: no <Member> for {type_name}'s `{name}`, which hover links to #{anchor}")
+
+for key in sorted(set(member_anchors) - used_anchors):
+    problems.append(f"member_anchors names {key}, which is not a public prelude member of a linked type")
 
 for problem in problems:
     print(problem)
