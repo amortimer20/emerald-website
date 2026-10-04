@@ -161,7 +161,7 @@ for n in 1..10 {
 `while true` makes a loop that only `break` can end. It suits a loop that should keep going until
 something happens:
 
-```emerald
+```emerald input="hi|quit"
 while true {
     const answer = input("Say something (or quit): ")
     break if answer == "quit"

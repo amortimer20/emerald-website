@@ -48,7 +48,7 @@ it.
 Compare the value with `nothing`. Inside the branch where it can't be `nothing`, Emerald knows it is
 an `Int`, and lets you use it as one:
 
-```emerald
+```emerald input="12"
 const answer = input("How old are you? ")
 const age = answer.to_int_maybe()
 if age == nothing {
