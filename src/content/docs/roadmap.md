@@ -17,8 +17,9 @@ corrects what you write in Visual Studio Code. Releases are listed on
 
 ## Next
 
-- **Networking.** Sockets, and a web server to build on, using the same tasks that already let each
-  connection run on its own.
+- **The rest of the standard library.** Emerald 1.0 comes with a complete standard library, so the
+  gaps get filled before it: first a look at what programs commonly need, then the libraries
+  themselves, with networking among them.
 - **A package manager.** A way to share Emerald code and use other people's, with versions.
 - **A browser playground.** A page where you can try Emerald with nothing to install, so a class on
   school computers can start straight away.
@@ -26,10 +27,15 @@ corrects what you write in Visual Studio Code. Releases are listed on
 ## Later
 
 - **A real compiler.** Emerald's static types are what make a fast language possible, and a native
-  compiler is what Emerald 1.0 needs. How to build it, and on what, is still being decided, and will
-  be settled by building prototypes.
-- **Multicore.** Running tasks at the same time on several processor cores, once the compiler is
-  chosen.
+  compiler is what Emerald 1.0 needs. Emerald is written in Zig, and the compiler will be too. How
+  it turns a program into something fast is still being decided, and will be settled by building
+  prototypes.
+- **Emerald 1.0.** The compiler and the complete standard library, together.
+
+## After 1.0
+
+- **Multicore.** Running tasks at the same time on several processor cores.
+- **A debugger.** Stepping through an Emerald program one line at a time.
 
 ## What is not planned
 
