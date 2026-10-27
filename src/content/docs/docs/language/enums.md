@@ -123,6 +123,70 @@ Add an arm for each, or `else { }` to accept the gap deliberately.
 This is the real payoff. If you later add `Light.flashing`, every `case` that doesn't handle it is
 pointed out, instead of silently doing nothing.
 
+## Values that carry data
+
+Sometimes each value needs something of its own. A download that has finished has a file; one that
+failed has a message saying why; one that is still waiting has neither. A value can carry its own data,
+written like a function's parameters after its name:
+
+```emerald
+enum Download {
+    waiting
+    finished(path: String)
+    failed(message: String)
+}
+
+func describe(download: Download): String {
+    return case download {
+        when Download.waiting then "Waiting"
+        when Download.finished(path) then "Saved to #{path}"
+        when Download.failed(message) then "Failed: #{message}"
+    }
+}
+
+print(describe(Download.finished("report.pdf")))
+print(describe(Download.failed(message: "the disk is full")))
+print(Download.finished("report.pdf"))
+```
+
+```text title="Output"
+Saved to report.pdf
+Failed: the disk is full
+Download.finished(path: "report.pdf")
+```
+
+A value that carries data is built like a struct, with its data in parentheses, by position or by name.
+A value without data, like `Download.waiting`, is written without them. Either way it is a `Download`.
+
+In a `case`, `when Download.finished(path)` matches every finished download, whatever its path, and
+names its data `path` for that arm alone. The names are yours to choose, in the order the data is
+declared; write `_` for data you don't need. Emerald still checks that every value is covered, and a
+value that carries data can't be matched without naming it:
+
+```emerald
+enum Download {
+    waiting
+    finished(path: String)
+}
+
+const download = Download.waiting
+const text = case download {
+    when Download.waiting then "Waiting"
+    when Download.finished then "Done"
+}
+```
+
+```text title="Output"
+enums.em:9:10: `Download.finished` carries data, so a match names it
+      when Download.finished then "Done"
+           ^^^^^^^^^^^^^^^^^
+Write `Download.finished(path)`, or `Download.finished(_)` to ignore it.
+```
+
+Two values are equal when they are the same value with equal data, and they print with their data, as a
+struct does. JSON and CSV write an enum as its value's name, so they can't write one that carries data;
+turn it into something they can first.
+
 ## Enums with methods
 
 An enum can have methods, declared after its values. Inside, `self` is the value the method was
@@ -148,8 +212,8 @@ print(Light.red.next())
 Light.green
 ```
 
-An enum can't have stored fields; its values are just names. An enum can be the type of a field, which
-is where it is often most useful:
+An enum can't have stored fields shared by all its values; a value only carries the data its own
+choice declares. An enum can be the type of a field, which is where it is often most useful:
 
 ```emerald
 enum Suit {
@@ -173,6 +237,8 @@ Card(rank: 10, suit: Suit.hearts)
 - `enum Name { a, b, c }` declares a type with exactly those values, written `Name.a`.
 - An enum catches misspellings that a string would let through.
 - A `case` over an enum can cover every value; Emerald names any it misses.
+- A value can carry data of its own, `finished(path: String)`, and a `case` names it with
+  `when Download.finished(path)`.
 - Enums can have methods, and can be the type of a field, but have no stored fields.
 
 Next, [nested types](../nested-types/): types declared inside other types.

@@ -115,7 +115,8 @@ A `case` that produces a value needs one for every possible subject. Add `else t
 
 When the `when`s do cover everything, as `true` and `false` do for a `Bool`, the `else` can be left
 off. [Enums](../enums/) are where this matters most: a `case` over an enum can list every one of its
-values.
+values, and `when Download.finished(path)` matches a value that carries data and names that data for
+its arm.
 
 A `case` is either all blocks or all `then`s. Mixing the two in one `case` is an error that says so,
 and so is producing a value that nothing uses.

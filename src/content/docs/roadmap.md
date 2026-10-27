@@ -9,8 +9,9 @@ plans, not promises: the order can change, and the bigger items are still being 
 ## Today
 
 Emerald is an interpreter with the whole language: functions, optionals, collections, structs,
-classes, traits, enums, typed errors, projects, tests, tasks and channels, and a standard library
-with files, dates and times, regular expressions, JSON, CSV, HTTP, and more. It comes with a
+classes, traits, enums whose values can carry data, generics, typed errors, projects, tests, tasks
+and channels, and a standard library with files, dates and times, regular expressions, JSON, CSV,
+HTTP, and more. It comes with a
 formatter, a REPL that keeps your session alive, and a language server that completes, explains, and
 corrects what you write in Visual Studio Code. Releases are listed on
 [GitHub](https://github.com/amortimer20/emerald-lang/releases).

@@ -153,7 +153,8 @@ with no matching field, like `size` above, are ignored. So a settings file saved
 or newer version of the program still loads.
 
 The type can be `String`, `Int`, `Float`, `Bool`, `Json`, an optional, a `List`, a `Dict`
-with `String` keys, an enum (read from its value's name, such as `"hard"`), a date or time
+with `String` keys, an enum whose values carry no data (read from its value's name, such as
+`"hard"`), a date or time
 (`Date`, `Time`, `DateTime`, or `Instant`), or a struct made of those. Anything else, such as
 a class or a `Set`, is reported before the program runs.
 
@@ -209,7 +210,7 @@ That prints:
 
 It writes the same types that [`decode`](#decode) reads. A struct's fields appear in the
 order they are declared, and a dictionary's entries in the order they were added. An enum is
-written as its value's name, a date or time as text such as `"2026-09-30"`, and an absent
+written as its value's name, so one whose values carry data can't be written, a date or time as text such as `"2026-09-30"`, and an absent
 optional as `null`. Private fields are never written. A value JSON can't hold, such as a
 `Set`, a class, or a function, is reported before the program runs.
 

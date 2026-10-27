@@ -123,7 +123,8 @@ many cells as the header.</Raises>
 Reads rows into a list of your own struct, such as `as: List[Score]`. The first row names the columns,
 and each name is matched to a field of the struct. Columns the struct doesn't have are ignored.
 
-A field can be a `String`, `Int`, `Float`, `Bool`, an enum, a `Date`, `Time`, `DateTime`, or `Instant`, or
+A field can be a `String`, `Int`, `Float`, `Bool`, an enum whose values carry no data, a `Date`, `Time`,
+`DateTime`, or `Instant`, or
 an optional of one of those. A `Bool` can be `true` or `false` in any capitals.
 
 ```emerald

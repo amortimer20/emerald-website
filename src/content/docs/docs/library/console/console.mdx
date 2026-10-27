@@ -196,7 +196,7 @@ print(Console.table([Player("Ada", 120), Player("Grace", 95, "Hopper")]))
 
 Only a struct's public fields become columns. A field whose name starts with `_` is private, and is
 left out. The other cells show as `print` would show them, so an enum value is `Choice.yes`, and a
-`Bool` is `true`. A numeric column, with its header, lines up at the right edge, so a long number
+`Bool` is `true`. An enum whose values carry data can't be a cell, since its data has no column. A numeric column, with its header, lines up at the right edge, so a long number
 stays under its heading:
 
 ```emerald
