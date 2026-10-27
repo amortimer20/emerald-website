@@ -44,3 +44,5 @@ keeps the usual `==`, and Emerald warns about it.
 
 To use values with custom equality as dictionary keys or in a set, adopt
 [`Hashable`](../hashable/) as well.
+
+A [generic](../../../language/generics/) declaration can ask for it, as in `Item with Equatable`, to use `==`. Numbers, [`String`](../../types/string/), [`Bool`](../../types/bool/), and [`Bytes`](../../types/bytes/) count as adopting it there, and each built-in one has an [`equals`](../../types/int/#equals) method for the purpose.

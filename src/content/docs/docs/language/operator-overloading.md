@@ -140,4 +140,4 @@ multiplying money. If you have to explain what `+` means for your type, a named 
 - `+=` and friends work once the operator does.
 - `Ordered` gives `<` and sorting through `compare`; `Equatable` gives your own `==`.
 
-Next, [errors](../errors/): what happens when something goes wrong while a program runs.
+Next, [generics](../generics/): types and functions written once for every kind of value.

@@ -41,3 +41,5 @@ keeps the field-by-field form, and Emerald warns about it.
 
 An enum can adopt `Textual` too, to show its values in its own words instead of as
 `Weekday.monday`.
+
+A [generic](../../../language/generics/) declaration can ask for it, as in `Item with Textual`, to call `to_string()`. Numbers, [`String`](../../types/string/), and [`Bool`](../../types/bool/) count as adopting it there.

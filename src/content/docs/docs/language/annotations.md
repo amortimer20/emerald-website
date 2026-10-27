@@ -1,7 +1,7 @@
 ---
 title: Annotations
 sidebar:
-  order: 30
+  order: 31
 description: The four @ words that tell Emerald something about the declaration below them, and what each is for.
 ---
 

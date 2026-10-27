@@ -1,7 +1,7 @@
 ---
 title: Projects and Namespaces
 sidebar:
-  order: 29
+  order: 30
 description: Grow a program beyond one file with a project folder, reach names in other folders through their namespace, and keep helpers private to a file.
 ---
 

@@ -69,6 +69,11 @@ from an `Int`. Very large and very small values print in scientific notation, su
 | [`finite?()`](#finite), [`infinite?()`](#infinite), [`nan?()`](#nan-1) | Checking for them |
 | [`to_int()`](#to_int) | Converting to an `Int` |
 
+| Comparing as methods | |
+| --- | --- |
+| [`compare(other)`](#compare) | `-1`, `0`, or `1`, as `<` orders them |
+| [`equals(other)`](#equals), [`hash()`](#hash) | What `==` and a dictionary use |
+
 ## Operators
 
 | Operator | Meaning | Example |
@@ -249,6 +254,49 @@ Whether the value is less than zero.
 
 ```emerald
 -0.5.negative?()   # → true
+```
+
+</Member>
+
+## Comparing as methods
+
+`<`, `==`, and a dictionary already compare and look up numbers. These methods do the same
+things by name, which is what a [generic](../../../language/generics/) function calls when it asks
+for [`Ordered`](../../traits/ordered/), [`Equatable`](../../traits/equatable/), or [`Hashable`](../../traits/hashable/): an `Float` counts as
+adopting all three, so it works wherever one is asked for. In your own code, the operators read better.
+
+<Member name="compare" params="other: Float" returns="Int">
+
+`-1` when this number comes before `other`, `0` when they are equal, and `1` when it comes after,
+in the order `<` uses. A whole number given as `other` is compared as the same number.
+
+```emerald
+2.5.compare(2)      # → 1
+0.5.compare(0.75)   # → -1
+```
+
+</Member>
+
+<Member name="equals" params="other: Float" returns="Bool">
+
+Whether this number and `other` are equal, as `==` decides.
+
+```emerald
+0.5.equals(0.5)     # → true
+```
+
+</Member>
+
+<Member name="hash" params="" returns="Int">
+
+A number for the number, the same for equal values, which is how a dictionary or set finds it.
+It can change from one run to the next, so never save it or show it to anyone.
+
+`compare` and `hash` raise an error for `Float.nan`, which has no place in an order and is not
+equal even to itself.
+
+```emerald
+2.5.hash() == 2.5.hash()   # → true
 ```
 
 </Member>

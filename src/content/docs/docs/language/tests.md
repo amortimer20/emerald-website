@@ -1,7 +1,7 @@
 ---
 title: Tests
 sidebar:
-  order: 28
+  order: 29
 description: Check that your code does what you meant with assert, write test functions with @test, and run them all with emerald test.
 ---
 

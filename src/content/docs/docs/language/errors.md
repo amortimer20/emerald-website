@@ -1,7 +1,7 @@
 ---
 title: Errors
 sidebar:
-  order: 27
+  order: 28
 description: What happens when something goes wrong while a program runs, how to handle it with try and catch, and how to raise errors of your own.
 ---
 

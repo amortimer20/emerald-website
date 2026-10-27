@@ -45,3 +45,5 @@ place, and a positive number when it comes after. Only the sign matters.
 Emerald's own types that have an order adopt it: [`Date`](../../../library/dates-and-times/date/),
 [`Time`](../../../library/dates-and-times/time/), and
 [`Duration`](../../../library/dates-and-times/duration/), among others.
+
+A [generic](../../../language/generics/) declaration can ask for it, as in `Item with Ordered`, to use `<` and sort. [`Int`](../../types/int/), [`Float`](../../types/float/), and [`String`](../../types/string/) count as adopting it there, and each has a [`compare`](../../types/int/#compare) method for the purpose.

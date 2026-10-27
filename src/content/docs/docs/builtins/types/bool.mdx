@@ -31,6 +31,10 @@ own, so `if count` is an error; write what you mean, such as `if count > 0`.
 | --- | --- |
 | [`to_string()`](#to_string) | `"true"` or `"false"` |
 
+| Comparing as methods | |
+| --- | --- |
+| [`equals(other)`](#equals), [`hash()`](#hash) | What `==` and a dictionary use |
+
 ## Operators
 
 | Operator | Meaning | Example |
@@ -61,3 +65,32 @@ true.to_string()   # → "true"
 ```
 
 </Member>
+
+## Comparing as methods
+
+`<`, `==`, and a dictionary already compare and look up values. These methods do the same
+things by name, which is what a [generic](../../../language/generics/) function calls when it asks
+for [`Equatable`](../../traits/equatable/), or [`Hashable`](../../traits/hashable/): an `Bool` counts as
+adopting both, so it works wherever one is asked for. In your own code, the operators read better.
+
+<Member name="equals" params="other: Bool" returns="Bool">
+
+Whether this value and `other` are equal, as `==` decides.
+
+```emerald
+true.equals(false)   # → false
+```
+
+</Member>
+
+<Member name="hash" params="" returns="Int">
+
+A number for the value, the same for equal values, which is how a dictionary or set finds it.
+It can change from one run to the next, so never save it or show it to anyone.
+
+```emerald
+true.hash() == true.hash()   # → true
+```
+
+</Member>
+

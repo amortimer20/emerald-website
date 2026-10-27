@@ -47,3 +47,5 @@ struct that adopts only `Equatable` cannot be a key, and Emerald says why.
 A struct that keeps the usual field-by-field equality needs neither trait: it can already
 be a key, as long as its fields can. An object of a class can never be a key, even with
 `Hashable`, since its fields could change while it is stored.
+
+A [generic](../../../language/generics/) declaration can ask for it, as in `Key with Hashable`, so its values can be dictionary keys and set members. Numbers, [`String`](../../types/string/), [`Bool`](../../types/bool/), and [`Bytes`](../../types/bytes/) count as adopting it there, and each built-in one has a [`hash`](../../types/int/#hash) method for the purpose.
