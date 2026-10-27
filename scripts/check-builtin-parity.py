@@ -10,7 +10,8 @@ pages are written by hand. This keeps the two describing the same members:
   to that same anchor, or declared in Emerald's prelude (whose `##` comments the
   editor reads instead);
 - every public member of a prelude type the catalog's `type_pages` links to has
-  the anchor hover will link it to: its name, or an exception in `member_anchors`.
+  the anchor hover will link it to: its name, or an exception in `member_anchors`;
+- a member the catalog marks `deprecated` says "Deprecated" in its <Member> entry.
 
   python3 scripts/check-builtin-parity.py
 
@@ -111,6 +112,14 @@ for member in catalog["members"]:
         elif not members and anchor not in headings:
             problems.append(f"{label}: links to {page}, but {file} has no heading #{anchor}")
         linked.setdefault(file, set()).add(anchor)
+        # A deprecated member's entry says so, so a reader of the page learns
+        # what the editor's strike-through tells a writer.
+        if member.get("deprecated") and members and anchor in members:
+            text = open(file, encoding="utf-8").read()
+            entry = re.search(r'<Member\s[^>]*id="' + re.escape(anchor) + r'"[^>]*>(.*?)</Member>', text, re.S) or \
+                re.search(r'<Member\s[^>]*name="' + re.escape(anchor) + r'"[^>]*>(.*?)</Member>', text, re.S)
+            if entry is None or "Deprecated" not in entry.group(1):
+                problems.append(f"{label}: is deprecated, but its entry in {file} does not say so")
 
 declared = {(owner.rsplit(".", 1)[-1], name) for owner, name in prelude_members}
 for file, targets in sorted(linked.items()):
