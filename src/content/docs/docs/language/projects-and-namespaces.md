@@ -170,4 +170,4 @@ mean your own. `Emerald.File` still reaches the built-in one.
 - A name starting with `_` is private to its file.
 - Your names win over built-ins, which stay reachable as `Emerald.name`.
 
-Next, [annotations](../annotations/): the `@` words that tell Emerald something about a declaration.
+Next, [sharing code](../sharing-code/): using a library someone else wrote, and writing one of your own.

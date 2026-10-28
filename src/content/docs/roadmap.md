@@ -11,7 +11,8 @@ plans, not promises: the order can change, and the bigger items are still being 
 Emerald is an interpreter with the whole language: functions, optionals, collections, structs,
 classes, traits, enums whose values can carry data, generics, typed errors, projects, tests, tasks
 and channels, and a standard library with files, dates and times, regular expressions, JSON, CSV,
-HTTP, and more. It comes with a
+HTTP, and more. Code is shared by [copying a library's folder](../docs/language/sharing-code/)
+into a project, with no package manager. It comes with a
 formatter, a REPL that keeps your session alive, and a language server that completes, explains, and
 corrects what you write in Visual Studio Code. Releases are listed on
 [GitHub](https://github.com/amortimer20/emerald-lang/releases).
@@ -21,8 +22,6 @@ corrects what you write in Visual Studio Code. Releases are listed on
 - **The rest of the standard library.** Emerald 1.0 comes with a complete standard library, so the
   gaps get filled before it: first a look at what programs commonly need, then the libraries
   themselves, with networking among them.
-- **Sharing code.** A guide to using someone else's Emerald code and writing your own for others.
-  There is no package manager: a library is a folder you copy into your project.
 - **A browser playground.** A page where you can try Emerald with nothing to install, so a class on
   school computers can start straight away.
 
@@ -32,6 +31,8 @@ corrects what you write in Visual Studio Code. Releases are listed on
   compiler is what Emerald 1.0 needs. Emerald is written in Zig, and the compiler will be too. How
   it turns a program into something fast is still being decided, and will be settled by building
   prototypes.
+- **Graphics, games, and sound.** Libraries for drawing, games, and audio that come with Emerald,
+  written for beginners and built on a proven engine. How they look is still being designed.
 - **Emerald 1.0.** The compiler and the complete standard library, together.
 
 ## After 1.0
