@@ -49,6 +49,8 @@ longer for later characters in very long text.
 | Characters | |
 | --- | --- |
 | [`chars()`](#chars) | Each character, as a list |
+| [`letter?()`](#letter), [`digit?()`](#digit), [`whitespace?()`](#whitespace) | Whether every character is a letter, a digit, or a space |
+| [`upper?()`](#upper-1), [`lower?()`](#lower-1) | Whether its letters are all capitals, or all small |
 | [`code_points()`](#code_points), [`bytes()`](#bytes), [`to_bytes()`](#to_bytes) | How the text is stored, for advanced uses |
 
 | Changing case and spaces | |
@@ -66,7 +68,7 @@ longer for later characters in very long text.
 | --- | --- |
 | [`substring(start)`](#substring) | Part of it, by position |
 | [`split(separator)`](#split) | Pieces between a separator |
-| [`lines()`](#lines) | Each line |
+| [`lines()`](#lines), [`words()`](#words) | Each line, or each word |
 | [`partition(separator)`](#partition) | Before and after the first separator |
 
 | Making new text | |
@@ -165,10 +167,79 @@ Each character, in order, as a list of one-character strings.
 
 </Member>
 
+<Member name="letter?" params="" returns="Bool">
+
+Whether the text has at least one character and every character is a letter, in any
+language. Ask it of one character from [`chars()`](#chars) to test that character alone.
+
+```emerald
+"abc".letter?()   # → true
+"é".letter?()     # → true
+"a1".letter?()    # → false
+"".letter?()      # → false
+```
+
+</Member>
+
+<Member name="digit?" params="" returns="Bool">
+
+Whether the text has at least one character and every character is a digit from `0` to `9`,
+the digits [`to_int()`](#to_int) reads.
+
+```emerald
+"2026".digit?()   # → true
+"-1".digit?()     # → false
+
+const password = "hunter2"
+password.chars().any? { character => character.digit?() }   # → true
+```
+
+</Member>
+
+<Member name="whitespace?" params="" returns="Bool">
+
+Whether the text has at least one character and every character is a space, a tab, or a line
+break. Unlike [`blank?()`](#blank), it is `false` for `""`.
+
+```emerald
+" \t".whitespace?()   # → true
+"".whitespace?()      # → false
+```
+
+</Member>
+
+<Member name="upper?" id="upper-1" params="" returns="Bool">
+
+Whether the text has at least one letter and every letter is a capital. Characters that are
+not letters, such as digits, don't count either way.
+
+```emerald
+"ABC".upper?()   # → true
+"A1".upper?()    # → true
+"Ab".upper?()    # → false
+"1".upper?()     # → false
+```
+
+</Member>
+
+<Member name="lower?" id="lower-1" params="" returns="Bool">
+
+Whether the text has at least one letter and every letter is small, the opposite of
+[`upper?()`](#upper-1).
+
+```emerald
+"abc".lower?()   # → true
+"a!".lower?()    # → true
+"Abc".lower?()   # → false
+```
+
+</Member>
+
 <Member name="code_points" params="" returns="List[Int]">
 
 The Unicode number of each code point the text is stored as. A character can be stored as
-more than one code point, so for characters, use [`chars()`](#chars) instead.
+more than one code point, so for characters, use [`chars()`](#chars) instead. To turn a
+number back into a character, use [`Int`'s `to_character()`](../int/#to_character).
 
 ```emerald
 "é".code_points()   # → [233]
@@ -354,6 +425,18 @@ empty line, and a Windows line break (`\r\n`) counts as one.
 
 ```emerald
 "one\ntwo\r\nthree\n".lines()   # → ["one", "two", "three"]
+```
+
+</Member>
+
+<Member name="words" params="" returns="List[String]">
+
+Each word: the text between spaces, tabs, and line breaks. However many spaces there are,
+no word is ever empty, which is the difference from `split(" ")`.
+
+```emerald
+"  the  quick brown ".words()   # → ["the", "quick", "brown"]
+"  the  quick".split(" ")       # → ["", "", "the", "", "quick"]
 ```
 
 </Member>

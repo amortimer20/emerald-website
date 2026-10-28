@@ -106,6 +106,7 @@ Many methods take a block, written in braces after the call, which runs for each
 | Combining and splitting | |
 | --- | --- |
 | [`chain(other)`](#chain), [`zip(other)`](#zip) | Join two lists, or pair them up |
+| [`join(separator)`](#join) | A list of `String`s as one `String` |
 | [`chunks(size)`](#chunks), [`windows(size)`](#windows), [`pairs()`](#pairs) | Pieces of a list |
 | [`partition { ... }`](#partition) | Split in two by a block |
 
@@ -706,6 +707,19 @@ This list's items followed by `other`'s.
 
 ```emerald
 [1, 2].chain([3, 4])   # → [1, 2, 3, 4]
+```
+
+</Member>
+
+<Member name="join" params={'separator: String = ""'} returns="String">
+
+The items run together as one `String`, with `separator` between each pair. It works on a
+list of `String`s only; turn other items into text with `map` first.
+
+```emerald
+["Ada", "Grace", "Alan"].join(", ")   # → "Ada, Grace, Alan"
+["a", "b", "c"].join()                # → "abc"
+[1, 2, 3].map { number => "#{number}" }.join(" + ")   # → "1 + 2 + 3"
 ```
 
 </Member>

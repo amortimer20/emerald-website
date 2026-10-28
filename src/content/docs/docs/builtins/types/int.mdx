@@ -65,6 +65,7 @@ a `Float` is expected, an `Int` is accepted and becomes one.
 | Converting | |
 | --- | --- |
 | [`to_float()`](#to_float) | The same number as a `Float` |
+| [`to_character()`](#to_character) | The character with this code point |
 
 | Comparing as methods | |
 | --- | --- |
@@ -408,6 +409,22 @@ its own wherever a `Float` is expected.
 ```emerald
 3.to_float()   # → 3.0
 ```
+
+</Member>
+
+<Member name="to_character" params="" returns="String">
+
+The character whose Unicode code point this number is, as a one-character
+[`String`](../string/). It undoes [`code_points()`](../string/#code_points), so a list of
+numbers becomes text again with `map` and [`join`](../list/#join).
+
+```emerald
+97.to_character()   # → "a"
+[72, 105].map { code => code.to_character() }.join()   # → "Hi"
+```
+
+<Raises>when the number is negative, past `1114111`, or from `55296` to `57343`, which are
+not characters' code points.</Raises>
 
 </Member>
 
