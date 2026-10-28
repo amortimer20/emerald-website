@@ -37,6 +37,7 @@ different numbers for the same seed, so don't save them expecting to get the sam
 | Choosing | |
 | --- | --- |
 | [`next(range)`](#next) | A whole number from a range |
+| [`next_fraction()`](#next_fraction) | A number from `0.0` up to `1.0` |
 | [`choose(list)`](#choose) | One item from a list, or `nothing` if it is empty |
 | [`shuffle!(list)`](#shuffle) | Shuffle a list in place |
 
@@ -68,6 +69,20 @@ print(roll.between?(1, 6))   # → true
 ```
 
 <Raises>when `range` is empty.</Raises>
+
+</Member>
+
+<Member name="next_fraction" params="" returns="Float">
+
+A number from `0.0` up to, but never reaching, `1.0`, as the built-in
+[`random_fraction()`](../../../builtins/functions/random/#random_fraction) gives, but
+repeatably. It moves the generator along exactly as `next` does.
+
+```emerald
+const first = Random(42).next_fraction()
+const again = Random(42).next_fraction()
+print(first == again)   # → true
+```
 
 </Member>
 

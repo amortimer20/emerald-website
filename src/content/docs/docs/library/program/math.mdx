@@ -1,17 +1,19 @@
 ---
 title: Math
-description: Constants, trigonometry, logarithms, and powers.
+description: Constants, the larger or smaller of two values, trigonometry, logarithms, and powers.
 sidebar:
   order: 1
 ---
 
 import Member from '../../../../../components/Member.astro';
+import Raises from '../../../../../components/Raises.astro';
 
 <p class="reference-facts">Standard library namespace · Always available, with no import</p>
 
-`Math` holds the math that isn't a method of one number: the constants π and e,
-trigonometry, logarithms, and powers. Every function takes `Float` values and gives back a
-`Float`, and an `Int` is accepted wherever a `Float` is expected.
+`Math` holds the math that isn't a method of one number: the constants π and e, the larger
+or smaller of two values, trigonometry, logarithms, and powers. Apart from `max` and `min`,
+every function takes `Float` values and gives back a `Float`, and an `Int` is accepted
+wherever a `Float` is expected.
 
 ```emerald
 const radius = 3
@@ -51,6 +53,10 @@ A number's own methods cover the rest: [`square_root()`](../../../builtins/types
 | [`Math.pi`](#pi) | π, the ratio of a circle's circumference to its diameter |
 | [`Math.e`](#e) | e, the base of natural logarithms |
 
+| Choosing | |
+| --- | --- |
+| [`Math.max(first, second)`](#max), [`Math.min(first, second)`](#min) | The larger or smaller of two values |
+
 | Trigonometry | |
 | --- | --- |
 | [`Math.sin(radians)`](#sin), [`Math.cos(radians)`](#cos), [`Math.tan(radians)`](#tan) | Sine, cosine, and tangent |
@@ -83,6 +89,43 @@ e, the base of natural logarithms.
 ```emerald
 Math.e   # → 2.718281828459045
 ```
+
+</Member>
+
+## Choosing
+
+<Member owner="Math." name="max" params="first: T, second: T" returns="T">
+
+The larger of two values. It works for anything with an order: numbers, `String`s, dates, and
+your own types that adopt `Ordered`. When they are equal, it gives `first`.
+
+```emerald
+var best = 0
+for score in [70, 95, 85] {
+    best = Math.max(best, score)
+}
+print(best)                          # prints 95
+Math.max("pear", "apple")            # → "pear"
+```
+
+An `Int` beside a `Float` becomes a `Float`, so the answer is always the same kind of number:
+`Math.max(3, 2.5)` is `3.0`. For more than two values, a list's
+[`max()`](../../../builtins/types/list/#max) finds the largest.
+
+<Raises>when either value is `NaN`, which has no place in the order.</Raises>
+
+</Member>
+
+<Member owner="Math." name="min" params="first: T, second: T" returns="T">
+
+The smaller of two values, the opposite of [`Math.max`](#max), with the same rules.
+
+```emerald
+Math.min(3, 2.5)                     # → 2.5
+Math.min(10, 10)                     # → 10
+```
+
+<Raises>when either value is `NaN`.</Raises>
 
 </Member>
 

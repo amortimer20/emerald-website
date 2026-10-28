@@ -1,6 +1,6 @@
 ---
 title: Program
-description: The running program's own arguments, and a way to pause it.
+description: The running program's own arguments, its environment variables, and a way to pause it.
 sidebar:
   order: 2
 ---
@@ -10,8 +10,8 @@ import Raises from '../../../../../components/Raises.astro';
 
 <p class="reference-facts">Standard library namespace · Always available, with no import</p>
 
-`Program` is about the program that is running: the words it was started with, and a way to
-pause it for a moment.
+`Program` is about the program that is running: the words it was started with, the
+environment variables it can read, and a way to pause it for a moment.
 
 ```emerald
 for count in 3.down_to(1) {
@@ -28,6 +28,7 @@ To stop a program early, use the built-in [`exit()`](../../../builtins/functions
 | The program | |
 | --- | --- |
 | [`Program.arguments`](#arguments) | The words given after `--` when the program was started |
+| [`Program.environment(name)`](#environment) | One environment variable's value |
 | [`Program.sleep(duration)`](#sleep) | Pause for a length of time |
 
 ## The program
@@ -57,6 +58,26 @@ emerald run greet.em -- Ada Grace    # prints Hello, Ada! and Hello, Grace!
 Each argument is text; convert one with `to_int()` or `to_int_maybe()` when you want a number.
 `arguments` is a value, not a method, so it is written without `()`. Under `emerald check`
 and in the REPL it is always an empty list, since no program was started.
+
+</Member>
+
+<Member owner="Program." name="environment" params="name: String" returns="String?">
+
+The value of the environment variable called `name`, or `nothing` when it isn't set. An
+environment variable is a setting the computer gives every program it starts, often used for a
+secret such as an API key, so the key stays out of the program's code.
+
+```emerald
+const key = Program.environment("WEATHER_KEY").or("")
+if key.blank?() {
+    print_error("Set WEATHER_KEY to your API key first.")
+    exit(1)
+}
+```
+
+A program can read variables but never change them.
+
+<Raises>when the variable is set to something that isn't UTF-8 text.</Raises>
 
 </Member>
 

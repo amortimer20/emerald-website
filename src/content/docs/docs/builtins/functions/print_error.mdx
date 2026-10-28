@@ -1,0 +1,29 @@
+---
+title: "print_error"
+description: Shows values on standard error, where error messages belong.
+sidebar:
+  order: 2
+---
+
+import Member from '../../../../../components/Member.astro';
+
+<p class="reference-facts">Built-in function · Available everywhere, with no import</p>
+
+`print_error` is [`print`](../print/) for messages about something going wrong. A terminal
+shows both in the same window, but when a program's output is saved to a file with `>`, its
+error messages still reach the screen instead of hiding in the file.
+
+```emerald
+const file_name = Program.arguments.first.or("scores.txt")
+if not File.exists?(file_name) {
+    print_error("No file named #{file_name}")
+    exit(1)
+}
+```
+
+<Member name="print_error" params="values...">
+
+Shows each value, separated by a space, exactly as `print` does, then ends the line, on
+standard error. Anything already printed is shown first, so the lines stay in order.
+
+</Member>

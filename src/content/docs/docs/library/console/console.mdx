@@ -58,6 +58,7 @@ can be seen; see [When styling appears](#when-styling-appears) below.
 | --- | --- |
 | [`Console.table(rows, header:)`](#table) | Rows of cells, or a list of structs, as a table |
 | [`Console.panel(text, title:, color:)`](#panel) | A box around some text |
+| [`Console.clear()`](#clear) | Clear the terminal |
 
 | Asking | |
 | --- | --- |
@@ -304,6 +305,24 @@ print(Console.panel(Console.table([["x", "1"]]), title: "Nested"))
 │ └───┴───┘ │
 └───────────┘
 ```
+
+</Member>
+
+<Member owner="Console." name="clear" params="">
+
+Clears the terminal and puts the cursor at the top left, so a game or menu can draw its next
+screen from the top.
+
+```emerald
+for round in 1..3 {
+    Console.clear()
+    print("Round #{round}")
+    Program.sleep(Duration(seconds: 1))
+}
+```
+
+It only clears a terminal. When the program's output goes to a file or another program, it
+does nothing, so the saved output stays clean. `--color` and `NO_COLOR` don't change it.
 
 </Member>
 

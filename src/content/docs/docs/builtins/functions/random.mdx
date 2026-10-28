@@ -1,8 +1,8 @@
 ---
 title: "random"
-description: A random whole number from a range.
+description: A random whole number from a range, or a random fraction.
 sidebar:
-  order: 4
+  order: 5
 ---
 
 import Member from '../../../../../components/Member.astro';
@@ -24,6 +24,19 @@ One number from `range`. The range's ends decide what is possible: `random(1..6)
 `6`, but `random(0..<10)` can never give `10`.
 
 <Raises>when `range` is empty.</Raises>
+
+</Member>
+
+<Member name="random_fraction" params="" returns="Float">
+
+A number from `0.0` up to, but never reaching, `1.0`. Compare it with a chance to make
+something happen that often:
+
+```emerald
+if random_fraction() < 0.3 {
+    print("A rare find!")
+}
+```
 
 </Member>
 

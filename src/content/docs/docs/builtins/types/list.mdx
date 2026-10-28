@@ -61,13 +61,14 @@ Many methods take a block, written in braces after the call, which runs for each
 | Adding and removing (changes the list) | |
 | --- | --- |
 | [`append(item)`](#append), [`insert(index, item)`](#insert) | Add an item |
+| [`append_all(items)`](#append_all) | Add every item of another list |
 | [`remove(item)`](#remove), [`remove_all(item)`](#remove_all), [`remove_if { ... }`](#remove_if) | Remove items by value |
 | [`remove_at(index)`](#remove_at), [`remove_first()`](#remove_first), [`remove_last()`](#remove_last) | Remove an item by position |
 | [`clear()`](#clear) | Remove every item |
 
 | Searching | |
 | --- | --- |
-| [`contains?(item)`](#contains) | Whether an item is in it |
+| [`contains?(item)`](#contains), [`index_of(item)`](#index_of) | Whether an item is in it, and where |
 | [`find { ... }`](#find), [`find_index { ... }`](#find_index) | The first item a block accepts, or its position |
 
 | Visiting each item | |
@@ -80,6 +81,7 @@ Many methods take a block, written in braces after the call, which runs for each
 | [`filter { ... }`](#filter), [`reject { ... }`](#reject) | The items a block accepts, or rejects |
 | [`flat_map { ... }`](#flat_map), [`filter_map { ... }`](#filter_map) | Several items, or none, for each item |
 | [`take(count)`](#take), [`drop(count)`](#drop) | The first items, or all but the first |
+| [`repeat(times)`](#repeat) | The items several times over |
 | [`take_while { ... }`](#take_while), [`drop_while { ... }`](#drop_while) | Items from the start, while a block accepts them |
 
 | Ordering | |
@@ -198,6 +200,19 @@ print(scores)   # prints [90, 72, 85]
 
 </Member>
 
+<Member name="append_all" params="items: List[T]">
+
+Adds every item of `items` at the end, in order. To make a new list and leave both alone, use
+[`chain`](#chain) instead.
+
+```emerald
+var scores = [90, 72]
+scores.append_all([85, 100])
+print(scores)   # prints [90, 72, 85, 100]
+```
+
+</Member>
+
 <Member name="insert" params="index: Int, item: T">
 
 Adds `item` at position `index`, moving the items after it along. An `index` equal to
@@ -309,6 +324,18 @@ Whether an item equal to `item` is in the list.
 
 ```emerald
 [1, 2, 3].contains?(2)   # → true
+```
+
+</Member>
+
+<Member name="index_of" params="item: T" returns="Int?">
+
+The position of the first item equal to `item`, or `nothing` when there is none. Positions
+start at `0`.
+
+```emerald
+["Ada", "Grace", "Alan"].index_of("Grace")   # → 1
+["Ada"].index_of("Linus")                    # → nothing
 ```
 
 </Member>
@@ -433,6 +460,25 @@ The first `count` items. When the list is shorter, all of it.
 ```
 
 <Raises>when `count` is negative.</Raises>
+
+</Member>
+
+<Member name="repeat" params="times: Int" returns="List[T]">
+
+The items `times` times over, as [`String`'s `repeat`](../string/#repeat) repeats text. A list
+is a value, so each copy is its own: changing one row of a grid built this way changes only
+that row.
+
+```emerald
+[0].repeat(3)      # → [0, 0, 0]
+[1, 2].repeat(2)   # → [1, 2, 1, 2]
+
+var grid = [["."].repeat(3)].repeat(3)
+grid[1][1] = "X"
+print(grid)   # prints [[".", ".", "."], [".", "X", "."], [".", ".", "."]]
+```
+
+<Raises>when `times` is negative.</Raises>
 
 </Member>
 
