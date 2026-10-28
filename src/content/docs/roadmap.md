@@ -19,24 +19,23 @@ corrects what you write in Visual Studio Code. Releases are listed on
 
 ## Next
 
-- **The rest of the standard library.** Emerald 1.0 comes with a complete standard library, so the
-  gaps get filled before it: first a look at what programs commonly need, then the libraries
-  themselves, with networking among them.
-- **A browser playground.** A page where you can try Emerald with nothing to install, so a class on
-  school computers can start straight away.
-
-## Later
-
+- **A review of the whole interpreter.** Every crash, wrong answer, and untested rule found and
+  fixed, so the interpreter is a contract the compiler can be checked against.
 - **A real compiler.** Emerald's static types are what make a fast language possible, and a native
   compiler is what Emerald 1.0 needs. Emerald is written in Zig, and the compiler will be too. How
   it turns a program into something fast is still being decided, and will be settled by building
   prototypes.
+
+## Later
+
 - **Graphics, games, and sound.** Libraries for drawing, games, and audio that come with Emerald,
   written for beginners and built on a proven engine. How they look is still being designed.
 - **Emerald 1.0.** The compiler and the complete standard library, together.
 
 ## After 1.0
 
+- **A browser playground.** A page where you can try Emerald with nothing to install, so a class on
+  school computers can start straight away.
 - **Multicore.** Running tasks at the same time on several processor cores.
 - **A debugger.** Stepping through an Emerald program one line at a time.
 
