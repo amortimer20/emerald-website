@@ -21,7 +21,8 @@ corrects what you write in Visual Studio Code. Releases are listed on
 - **The rest of the standard library.** Emerald 1.0 comes with a complete standard library, so the
   gaps get filled before it: first a look at what programs commonly need, then the libraries
   themselves, with networking among them.
-- **A package manager.** A way to share Emerald code and use other people's, with versions.
+- **Sharing code.** A guide to using someone else's Emerald code and writing your own for others.
+  There is no package manager: a library is a folder you copy into your project.
 - **A browser playground.** A page where you can try Emerald with nothing to install, so a class on
   school computers can start straight away.
 
@@ -41,6 +42,6 @@ corrects what you write in Visual Studio Code. Releases are listed on
 ## What is not planned
 
 Emerald leaves things out on purpose, so that what it has stays easy to learn and to read. It does not
-plan to add `null`, operator spellings such as `&&` and `||` alongside `and` and `or`, or several
+plan to add a package manager, `null`, operator spellings such as `&&` and `||` alongside `and` and `or`, or several
 ways to write the same thing. Ideas to improve what is there are welcome on
 [GitHub](https://github.com/amortimer20/emerald-lang/issues).
