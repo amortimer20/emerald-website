@@ -58,8 +58,9 @@ already open, and editors such as VS Code, find it once you close and reopen the
 
 </Steps>
 
-Emerald runs on Macs with Apple silicon (M1 or later). To check yours, open the Apple menu and
-choose **About This Mac**: the **Chip** line says Apple M1, M2, or later.
+Emerald runs on Macs with Apple silicon (M1 or later) and macOS 15 Sequoia or later. To check
+yours, open the Apple menu and choose **About This Mac**: the **Chip** line says Apple M1, M2, or
+later, and the **macOS** line shows the version.
 
 </TabItem>
 <TabItem label="Linux">
@@ -195,7 +196,11 @@ it and open a new one. In VS Code, close and reopen the whole editor, not just i
 scripts. Ask whoever looks after the computers, or install Emerald on a computer of your own.
 
 **The Mac installer says this Mac has an Intel processor.** Emerald's Mac release is for Apple
-silicon only, for now.
+silicon only; Intel Macs are not supported.
+
+**The Mac installer says Emerald needs macOS 15.** Update macOS from **System Settings**, under
+**General**, then **Software Update**, and run the command again. Every Mac with Apple silicon
+can run macOS 15.
 
 **The download fails.** Check your internet connection and run the command again. If you named
 a version, check that it is spelled as it is on the releases page, with its `v`.
