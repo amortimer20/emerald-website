@@ -46,7 +46,8 @@ still running
 
 `catch error: RuntimeError` names the error `error`, and says which kind of error to catch.
 `RuntimeError` is the kind Emerald raises for problems like this one, and `error.message` is its
-explanation.
+explanation. The wording of the messages Emerald raises is part of the language, so a program that
+prints or compares `error.message` gets the same text on every system.
 
 Before reaching for `try`, check whether there is a way that can't fail. For turning typed text into a
 number, `to_int_maybe` with a check (see [Optionals](../optionals/)) is usually simpler than catching
@@ -196,7 +197,8 @@ cleanup always runs
 ```
 
 `finally` also runs when an error goes uncaught, before the program stops, and a `try` can have a
-`finally` without any `catch`.
+`finally` without any `catch`. The one exception is running out of memory: Emerald stops the program with
+a message and a nonzero status, and neither a `catch` nor a `finally` runs.
 
 ## Passing an error on
 
